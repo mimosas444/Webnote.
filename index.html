@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Webnote — Messages Anonymes</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <!-- QR Code lib -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -16,10 +18,14 @@
     <div class="blob b3"></div>
   </div>
 
-  <!-- NAVBAR -->
+  <!-- ══ NAVBAR ══ -->
   <nav id="navbar">
     <div class="nav-logo">webnote<span class="dot">.</span></div>
     <div class="nav-actions">
+      <!-- Theme toggle -->
+      <button class="theme-toggle" id="themeToggle" title="Changer de thème">
+        <span id="theme-ico">☀️</span>
+      </button>
       <button class="btn-ghost" id="nav-login-btn">Connexion</button>
       <button class="btn-primary" id="nav-signup-btn">S'inscrire</button>
       <div id="nav-user" class="nav-user hidden">
@@ -30,7 +36,7 @@
     </div>
   </nav>
 
-  <!-- LANDING -->
+  <!-- ══ LANDING ══ -->
   <div id="page-landing" class="page active">
     <div class="hero">
       <div class="hero-tag">✦ 100% Anonyme</div>
@@ -49,7 +55,7 @@
     </div>
   </div>
 
-  <!-- AUTH -->
+  <!-- ══ AUTH ══ -->
   <div id="page-auth" class="page">
     <div class="auth-wrap">
       <div class="auth-left">
@@ -60,14 +66,12 @@
           <div class="auth-t">"J'ai reçu des messages fous en 10 min"</div>
         </div>
       </div>
-
       <div class="auth-card glass">
         <div class="auth-tabs">
           <button class="auth-tab active" id="tab-login">Connexion</button>
           <button class="auth-tab" id="tab-signup">Inscription</button>
           <div class="auth-tab-slider" id="tab-slider"></div>
         </div>
-
         <!-- LOGIN -->
         <div id="form-login" class="auth-form">
           <div class="field">
@@ -91,7 +95,6 @@
           <div id="login-error" class="error-msg hidden"></div>
           <button class="btn-primary btn-full" id="login-submit"><span>Se connecter</span></button>
         </div>
-
         <!-- SIGNUP -->
         <div id="form-signup" class="auth-form hidden">
           <div class="field">
@@ -118,12 +121,10 @@
                 <svg class="eye-closed hidden" viewBox="0 0 20 20" fill="none"><path d="M2 2l16 16M8.5 8.6A3 3 0 0013 13M5.3 5.4C3.6 6.6 2.3 8.2 2 10c1 4 4.5 6 8 6a9 9 0 004.2-1.1M9 4.1C9.3 4 9.7 4 10 4c3.5 0 7 2 8 6-.3 1-.8 2-1.5 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
               </button>
             </div>
-            <div class="pwd-strength-wrap" id="pwd-strength-wrap">
+            <div class="pwd-strength-wrap">
               <div class="strength-bars">
-                <div class="sbar" id="sbar1"></div>
-                <div class="sbar" id="sbar2"></div>
-                <div class="sbar" id="sbar3"></div>
-                <div class="sbar" id="sbar4"></div>
+                <div class="sbar" id="sbar1"></div><div class="sbar" id="sbar2"></div>
+                <div class="sbar" id="sbar3"></div><div class="sbar" id="sbar4"></div>
               </div>
               <span class="strength-label" id="strength-label"></span>
             </div>
@@ -135,11 +136,11 @@
     </div>
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- ══ DASHBOARD ══ -->
   <div id="page-dashboard" class="page">
     <div class="dash-container">
 
-      <!-- HEADER -->
+      <!-- Header -->
       <div class="dash-topbar">
         <div class="dash-header-info">
           <div class="dash-avatar-big" id="dash-avatar">?</div>
@@ -153,7 +154,26 @@
         </button>
       </div>
 
-      <!-- SHARE CARD -->
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card glass">
+          <span class="stat-em">💬</span>
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-label">Total reçus</div>
+        </div>
+        <div class="stat-card glass">
+          <span class="stat-em">📅</span>
+          <div class="stat-num" id="stat-today">0</div>
+          <div class="stat-label">Aujourd'hui</div>
+        </div>
+        <div class="stat-card glass">
+          <span class="stat-em">🔥</span>
+          <div class="stat-num" id="stat-week">0</div>
+          <div class="stat-label">Cette semaine</div>
+        </div>
+      </div>
+
+      <!-- Share card -->
       <div class="share-card glass">
         <div class="share-card-inner">
           <div class="share-info">
@@ -183,30 +203,62 @@
             Snapchat
           </button>
         </div>
+
+        <!-- QR CODE -->
+        <button class="qr-toggle-btn" id="qr-toggle-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14.01" y2="14"/><line x1="18" y1="14" x2="18.01" y2="14"/><line x1="14" y1="18" x2="14.01" y2="18"/><line x1="18" y1="18" x2="18.01" y2="18"/></svg>
+          Afficher le QR Code
+        </button>
+        <div class="qr-wrap hidden" id="qr-wrap">
+          <div class="qr-box">
+            <div id="qr-code-el"></div>
+            <div class="qr-logo-overlay">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg>
+            </div>
+          </div>
+          <div class="qr-info">
+            <div class="qr-title">Scanner pour envoyer un message</div>
+            <div class="qr-sub">Fonctionne sans compte</div>
+          </div>
+          <button class="qr-dl-btn" id="qr-dl-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger le QR
+          </button>
+        </div>
       </div>
 
-      <!-- STATS -->
-      <div class="stats-row">
-        <div class="stat-card glass">
-          <div class="stat-num" id="stat-total">0</div>
-          <div class="stat-label">Total reçus</div>
+      <!-- Activité -->
+      <div class="activity-card glass">
+        <div class="act-head">
+          <div class="act-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Messages des 7 derniers jours
+          </div>
+          <div class="act-total">Total : <span id="act-total">0</span></div>
         </div>
-        <div class="stat-card glass">
-          <div class="stat-num" id="stat-today">0</div>
-          <div class="stat-label">Aujourd'hui</div>
-        </div>
-        <div class="stat-card glass">
-          <div class="stat-num" id="stat-week">0</div>
-          <div class="stat-label">Cette semaine</div>
-        </div>
+        <div class="chart" id="act-chart"></div>
+        <div class="act-legend"><div class="act-dot"></div>Messages par jour</div>
       </div>
 
-      <!-- TOOLBAR -->
+      <!-- Export -->
+      <div class="export-card glass" id="export-btn">
+        <div class="exp-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="8 13 12 17 16 13"/><line x1="12" y1="17" x2="12" y2="9"/></svg>
+        </div>
+        <div class="exp-info">
+          <div class="exp-title">Exporter mes messages</div>
+          <div class="exp-sub">Télécharger un fichier .txt de tous tes messages</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="exp-arrow"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </div>
+
+      <!-- Toolbar messages -->
       <div class="toolbar">
         <div class="filter-pills">
           <button class="pill active" id="filter-all">Tous</button>
           <button class="pill" id="filter-today">Aujourd'hui</button>
           <button class="pill" id="filter-week">Cette semaine</button>
+          <button class="pill" id="filter-unread">Nouveaux</button>
         </div>
         <div class="view-toggle">
           <button class="view-btn active" id="view-grid" title="Grille">
@@ -218,7 +270,15 @@
         </div>
       </div>
 
-      <!-- MESSAGES -->
+      <!-- Search -->
+      <div class="search-wrap hidden" id="search-wrap">
+        <div class="input-wrap">
+          <svg class="input-icon" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M14.5 14.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input type="text" id="search-input" placeholder="Rechercher dans les messages…"/>
+        </div>
+      </div>
+
+      <!-- Messages -->
       <div id="messages-container" class="messages-grid">
         <div class="empty-state" id="empty-state">
           <div class="empty-icon">✉️</div>
@@ -229,7 +289,7 @@
     </div>
   </div>
 
-  <!-- SEND PAGE -->
+  <!-- ══ SEND PAGE (publique) ══ -->
   <div id="page-send" class="page">
     <div class="send-card glass">
       <div class="send-avatar" id="send-avatar">?</div>
