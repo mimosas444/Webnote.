@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Webnote — Messages Anonymes</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+  <nav id="navbar">
+    <div class="nav-logo">webnote<span class="dot">.</span></div>
+    <div class="nav-actions">
+      <button class="btn-ghost" id="nav-login-btn">Connexion</button>
+      <button class="btn-primary" id="nav-signup-btn">S'inscrire</button>
+      <div id="nav-user" class="nav-user hidden">
+        <span id="nav-username"></span>
+        <button class="btn-ghost" id="nav-logout-btn">Déconnexion</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════ PAGES ═══════════════════ -->
+
+  <!-- LANDING -->
+  <div id="page-landing" class="page active">
+    <div class="hero">
+      <div class="hero-tag">100% Anonyme</div>
+      <h1 class="hero-title">Reçois des messages<br/><em>sans filtres.</em></h1>
+      <p class="hero-sub">Crée ton compte, partage ton lien, et découvre ce que les gens pensent vraiment de toi.</p>
+      <button class="btn-primary btn-lg" id="landing-start-btn">Commencer gratuitement</button>
+      <div class="hero-hint">Aucune carte requise · Toujours gratuit</div>
+    </div>
+    <div class="floating-notes">
+      <div class="fn fn1">"t'es vraiment trop drôle omg 😭"</div>
+      <div class="fn fn2">"j'aurais voulu te le dire en vrai"</div>
+      <div class="fn fn3">"tu mérites tout ce qui t'arrive 🤍"</div>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="page-auth" class="page">
+    <div class="auth-card">
+      <div class="auth-logo">webnote<span class="dot">.</span></div>
+
+      <!-- TABS -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login">Connexion</button>
+        <button class="auth-tab" id="tab-signup">Inscription</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="form-login" class="auth-form">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="ton@email.com" />
+        </div>
+        <div class="field">
+          <label>Mot de passe</label>
+          <input type="password" id="login-password" placeholder="••••••••" />
+        </div>
+        <div id="login-error" class="error-msg hidden"></div>
+        <button class="btn-primary btn-full" id="login-submit">Se connecter</button>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="form-signup" class="auth-form hidden">
+        <div class="field">
+          <label>Nom d'utilisateur</label>
+          <input type="text" id="signup-username" placeholder="ton_pseudo" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="signup-email" placeholder="ton@email.com" />
+        </div>
+        <div class="field">
+          <label>Mot de passe</label>
+          <input type="password" id="signup-password" placeholder="Minimum 6 caractères" />
+        </div>
+        <div id="signup-error" class="error-msg hidden"></div>
+        <button class="btn-primary btn-full" id="signup-submit">Créer mon compte</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page">
+    <div class="dash-header">
+      <div>
+        <h2 class="dash-title">Mes messages</h2>
+        <p class="dash-sub" id="dash-count">Chargement…</p>
+      </div>
+      <div class="link-box">
+        <span class="link-label">Ton lien unique</span>
+        <div class="link-row">
+          <span id="share-link" class="link-text"></span>
+          <button class="btn-copy" id="copy-link-btn">Copier</button>
+        </div>
+        <div class="share-btns">
+          <button class="share-btn wa" id="share-wa">WhatsApp</button>
+          <button class="share-btn tw" id="share-tw">Twitter / X</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="messages-container" class="messages-grid">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">✉️</div>
+        <p>Aucun message pour l'instant.<br/>Partage ton lien pour commencer !</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEND (public — accessible sans compte) -->
+  <div id="page-send" class="page">
+    <div class="send-card">
+      <div class="send-avatar" id="send-avatar">?</div>
+      <h2 class="send-title">Envoie un message anonyme à<br/><span id="send-username-display">…</span></h2>
+      <p class="send-hint">Ton identité ne sera jamais révélée 🤍</p>
+      <textarea id="send-message" placeholder="Écris ce que tu veux dire…" maxlength="500"></textarea>
+      <div class="char-count"><span id="char-count">0</span>/500</div>
+      <div id="send-error" class="error-msg hidden"></div>
+      <button class="btn-primary btn-full" id="send-submit">Envoyer anonymement</button>
+      <div id="send-success" class="success-msg hidden">
+        ✅ Message envoyé ! Reste anonyme 😌
+        <br/><a href="index.html" class="back-link">Créer mon propre compte →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
+
