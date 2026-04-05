@@ -22,7 +22,7 @@ const firebaseConfig = {
   appId: "1:756128668649:web:da1ac2ec48f661d1688978"
 };
 
-const ADMIN_UID = "pOEobpTzahTB8kLhWKw54K0BDSW2"; // ← Remplace par ton vrai UID après première connexion
+const ADMIN_UID = "anonymous"; // ← Remplace par ton vrai UID après première connexion
 
 const fireApp = initializeApp(firebaseConfig);
 const auth    = getAuth(fireApp);
@@ -916,4 +916,25 @@ function fbErr(code) {
   const m = { "auth/email-already-in-use":"Email déjà utilisé.", "auth/invalid-email":"Email invalide.", "auth/weak-password":"Mot de passe trop faible.", "auth/user-not-found":"Aucun compte avec cet email.", "auth/wrong-password":"Mot de passe incorrect.", "auth/invalid-credential":"Email ou mot de passe incorrect.", "auth/too-many-requests":"Trop de tentatives. Réessaie plus tard." };
   return m[code] || "Une erreur s'est produite.";
 }
+
+// ════════════════════════════════════════
+//  DATETIME — auth & send popup clocks
+// ════════════════════════════════════════
+function updateDatetime() {
+  const now = new Date();
+  const date = now.toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" });
+  const time = now.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit", second:"2-digit" });
+  const str = `${date}\n${time}`;
+
+  // Top-right corner
+  ["auth-datetime","send-datetime"].forEach(id => {
+    const el = $(id); if (el) el.textContent = `${date} · ${time}`;
+  });
+  // Inside popup
+  ["auth-datetime-popup","send-datetime-popup"].forEach(id => {
+    const el = $(id); if (el) el.innerHTML = `${date}<br/>${time}`;
+  });
+}
+updateDatetime();
+setInterval(updateDatetime, 1000);
 
