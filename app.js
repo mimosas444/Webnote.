@@ -395,7 +395,20 @@ function renderMessages(searchTerm = "") {
     const isNew = msg.createdAt && msg.createdAt.toDate() >= cutoff24;
     const badges = `${isNew ? '<span class="msg-badge new">🆕 Nouveau</span>' : ""}${msg.approved ? '<span class="msg-badge approved">✅ Approuvé</span>' : ""}`;
     const replyHtml = msg.adminReply ? `<div class="msg-reply"><span class="msg-reply-lbl">Réponse de l'équipe</span>${escHtml(msg.adminReply)}</div>` : "";
-    card.innerHTML = `<div class="msg-header">${badges}</div><div class="msg-text">${escHtml(msg.message)}</div>${replyHtml}<div class="msg-footer"><div class="msg-time">🕐 ${msg.createdAt ? formatDate(msg.createdAt.toDate()) : "À l'instant"}</div></div>`;
+    card.innerHTML = `
+      <div class="msg-header">${badges}</div>
+      <div class="msg-text">${escHtml(msg.message)}</div>
+      ${replyHtml}
+      <div class="msg-footer">
+        <div class="msg-time">🕐 ${msg.createdAt ? formatDate(msg.createdAt.toDate()) : "À l'instant"}</div>
+        <button class="msg-share-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Partager
+        </button>
+      </div>
+    `;
+    // Share button click
+    card.querySelector(".msg-share-btn").addEventListener("click", () => openShareModal(msg.message));
     container.appendChild(card);
   });
 }
@@ -698,4 +711,153 @@ function fbErr(code) {
   const m = { "auth/email-already-in-use":"Email déjà utilisé.","auth/invalid-email":"Email invalide.","auth/weak-password":"Mot de passe trop faible.","auth/user-not-found":"Aucun compte avec cet email.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-credential":"Email ou mot de passe incorrect.","auth/too-many-requests":"Trop de tentatives. Réessaie plus tard." };
   return m[code] || "Une erreur s'est produite.";
 }
+
+// ════════════════════════════════════════
+//  SHARE MESSAGE AS IMAGE
+// ════════════════════════════════════════
+let capturedImageBlob = null;
+let capturedImageUrl  = null;
+
+function openShareModal(message) {
+  capturedImageBlob = null;
+  capturedImageUrl  = null;
+
+  // Set message text
+  const msgEl = $("shr-msg-text");
+  if (msgEl) msgEl.textContent = message;
+
+  // Show modal
+  $("shr-overlay")?.classList.remove("hidden");
+
+  // Auto-generate image after a short delay (let fonts load)
+  setTimeout(() => generateShareImage(), 300);
+}
+
+function closeShareModal() {
+  $("shr-overlay")?.classList.add("hidden");
+  capturedImageBlob = null;
+  if (capturedImageUrl) { URL.revokeObjectURL(capturedImageUrl); capturedImageUrl = null; }
+}
+
+// Close on overlay click
+$("shr-overlay")?.addEventListener("click", e => {
+  if (e.target === $("shr-overlay")) closeShareModal();
+});
+$("shr-close")?.addEventListener("click", closeShareModal);
+
+async function generateShareImage() {
+  const card = $("shr-card");
+  if (!card || typeof html2canvas === "undefined") return;
+
+  // Show loading spinner
+  const existing = card.querySelector(".shr-generating");
+  if (existing) existing.remove();
+  const loading = document.createElement("div");
+  loading.className = "shr-generating";
+  loading.innerHTML = `<div class="shr-spinner"></div><span>Génération…</span>`;
+  card.appendChild(loading);
+
+  try {
+    const canvas = await html2canvas(card, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false,
+      imageTimeout: 8000,
+    });
+
+    // Store blob for sharing
+    canvas.toBlob(blob => {
+      capturedImageBlob = blob;
+      capturedImageUrl  = URL.createObjectURL(blob);
+    }, "image/png");
+
+    loading.remove();
+  } catch (e) {
+    console.error("html2canvas error:", e);
+    loading.remove();
+    showToast("⚠️ Fais une capture d'écran !");
+  }
+}
+
+// ── Download ──
+$("shr-dl-btn")?.addEventListener("click", async () => {
+  // Re-generate if needed
+  if (!capturedImageUrl) {
+    await generateShareImage();
+    await new Promise(r => setTimeout(r, 1200));
+  }
+  if (!capturedImageUrl) {
+    showToast("⚠️ Fais une capture d'écran !");
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = capturedImageUrl;
+  a.download = "message-webnote.png";
+  a.click();
+  showToast("✅ Image enregistrée !");
+});
+
+// ── WhatsApp ──
+$("shr-wa-btn")?.addEventListener("click", async () => {
+  if (!capturedImageUrl) {
+    await generateShareImage();
+    await new Promise(r => setTimeout(r, 1200));
+  }
+
+  // Try Web Share API (works on mobile)
+  if (navigator.share && capturedImageBlob) {
+    try {
+      const file = new File([capturedImageBlob], "message-webnote.png", { type: "image/png" });
+      await navigator.share({
+        files: [file],
+        title: "Message anonyme Webnote",
+        text: "Regarde ce message anonyme que j'ai reçu 👀"
+      });
+      return;
+    } catch (e) {
+      // Fallback below
+    }
+  }
+
+  // Fallback: download + open WA
+  if (capturedImageUrl) {
+    const a = document.createElement("a"); a.href = capturedImageUrl; a.download = "message-webnote.png"; a.click();
+    setTimeout(() => {
+      window.open(`https://wa.me/?text=${encodeURIComponent("Regarde ce message anonyme que j'ai reçu 👀\n\nEnvoie-moi le tien : " + currentShareLink)}`, "_blank");
+    }, 600);
+    showToast("📥 Image enregistrée → ouvre WhatsApp !");
+  } else {
+    showToast("⚠️ Fais une capture d'écran !");
+  }
+});
+
+// ── Copy image to clipboard ──
+$("shr-copy-btn")?.addEventListener("click", async () => {
+  if (!capturedImageUrl) {
+    await generateShareImage();
+    await new Promise(r => setTimeout(r, 1200));
+  }
+  if (!capturedImageBlob) {
+    showToast("⚠️ Génération en cours, réessaie !");
+    return;
+  }
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": capturedImageBlob })
+      ]);
+      showToast("✅ Image copiée ! Colle dans Insta / Snap 📋");
+    } else {
+      // Fallback: download
+      const a = document.createElement("a"); a.href = capturedImageUrl; a.download = "message-webnote.png"; a.click();
+      showToast("✅ Image enregistrée !");
+    }
+  } catch (e) {
+    // Some browsers don't allow clipboard image write
+    const a = document.createElement("a"); a.href = capturedImageUrl; a.download = "message-webnote.png"; a.click();
+    showToast("✅ Image enregistrée !");
+  }
+});
 
