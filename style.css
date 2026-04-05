@@ -761,3 +761,58 @@ body{
   animation: spin .7s linear infinite;
   flex-shrink: 0;
 }
+
+/* ── Message action buttons row ── */
+.msg-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.msg-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .69rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, transform .15s, opacity .2s;
+  white-space: nowrap;
+}
+.msg-action-btn:hover { transform: translateY(-1px); }
+.msg-action-btn:active { transform: translateY(0); opacity: .8; }
+.msg-action-btn:disabled { opacity: .5; cursor: wait; }
+
+/* Save button — purple gradient */
+.msg-save-btn {
+  background: linear-gradient(135deg, rgba(99,102,241,.14), rgba(168,85,247,.14));
+  border: 1px solid rgba(99,102,241,.22);
+  color: var(--accent);
+}
+.msg-save-btn:hover { background: linear-gradient(135deg, rgba(99,102,241,.25), rgba(168,85,247,.22)); }
+
+/* Share button */
+.msg-share-btn {
+  background: linear-gradient(135deg, rgba(92,110,248,.12), rgba(192,132,252,.1));
+  border: 1px solid rgba(92,110,248,.2);
+  color: var(--accent);
+}
+.msg-share-btn:hover { background: linear-gradient(135deg, rgba(92,110,248,.22), rgba(192,132,252,.18)); }
+
+/* Copy text button */
+.msg-copy-btn {
+  background: var(--surface);
+  border: 1px solid var(--bd2);
+  color: var(--tx2);
+}
+.msg-copy-btn:hover { background: var(--accent-lt); color: var(--accent); border-color: var(--accent); }
+
+@media(max-width:400px) {
+  .msg-actions-row { gap: 3px; }
+  .msg-action-btn span { display: none; }
+  .msg-action-btn { padding: 6px 8px; }
+}
