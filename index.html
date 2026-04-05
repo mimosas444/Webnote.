@@ -4,6 +4,20 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Webnote — Messages Anonymes</title>
+
+  <!-- OG -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="Webnote"/>
+  <meta property="og:title" content="Webnote — Envoie-moi un message anonyme 🎭"/>
+  <meta property="og:description" content="Dis ce que tu penses vraiment. 100% anonyme, gratuit et instantané !"/>
+  <meta property="og:image" content="https://i.postimg.cc/5tVjYPqP/image-1775360096561.jpg"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:url" content="https://mimosas444.github.io/Webnote./"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Webnote — Envoie-moi un message anonyme 🎭"/>
+  <meta name="twitter:description" content="Dis ce que tu penses vraiment. 100% anonyme !"/>
+  <meta name="twitter:image" content="https://i.postimg.cc/5tVjYPqP/image-1775360096561.jpg"/>
   <link rel="stylesheet" href="style.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -104,17 +118,43 @@
 </div>
 
 <!-- AUTH -->
-<div id="page-auth" class="page">
-  <div class="auth-wrap">
-    <div class="auth-left">
-      <div class="auth-brand">webnote<span class="dot">.</span></div>
-      <p class="auth-brand-sub">Messages anonymes, expérience élégante.</p>
-      <div class="auth-testimonials">
-        <div class="auth-t glass">"Enfin une app stylée pour ça 🔥"</div>
-        <div class="auth-t glass">"J'ai reçu des messages fous en 10 min 😱"</div>
+<div id="page-auth" class="page auth-page-bg">
+  <!-- Header top-right branding -->
+  <div class="auth-topright">
+    <div class="auth-topright-brand">webnote<span class="dot">.</span></div>
+    <div class="auth-topright-datetime" id="auth-datetime"></div>
+  </div>
+
+  <!-- Floating decorative notes -->
+  <div class="auth-bg-notes" aria-hidden="true">
+    <div class="auth-fn auth-fn1 glass">"enfin j'ose le dire 🤍"</div>
+    <div class="auth-fn auth-fn2 glass">"t'es incroyable vraiment ✨"</div>
+    <div class="auth-fn auth-fn3 glass">"je t'ai toujours admiré 🫶"</div>
+  </div>
+
+  <div class="auth-popup-wrap">
+    <!-- Glass popup card -->
+    <div class="auth-popup glass">
+      <!-- Popup header -->
+      <div class="auth-popup-header">
+        <div class="auth-popup-logo">
+          <div class="auth-popup-logo-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg>
+          </div>
+          <span>webnote<span class="dot">.</span></span>
+        </div>
+        <div class="auth-popup-datetime" id="auth-datetime-popup"></div>
       </div>
-    </div>
-    <div class="auth-card glass">
+
+      <div class="auth-popup-title">Bienvenue 👋</div>
+      <div class="auth-popup-sub">Connecte-toi ou crée ton compte</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login">Connexion</button>
+        <button class="auth-tab" id="tab-signup">Inscription</button>
+        <div class="auth-tab-slider" id="tab-slider"></div>
+      </div>
+      <div class="auth-card glass">
       <div class="auth-tabs">
         <button class="auth-tab active" id="tab-login">Connexion</button>
         <button class="auth-tab" id="tab-signup">Inscription</button>
@@ -177,8 +217,9 @@
         <div id="signup-error" class="error-msg hidden"></div>
         <button class="btn-primary btn-full" id="signup-submit"><span>Créer mon compte</span></button>
       </div>
-    </div>
-  </div>
+    </div><!-- end auth-card -->
+    </div><!-- end auth-popup -->
+  </div><!-- end auth-popup-wrap -->
 </div>
 
 <!-- DASHBOARD -->
@@ -415,21 +456,54 @@
 </div>
 
 <!-- SEND PAGE -->
-<div id="page-send" class="page">
-  <div class="send-card glass">
-    <div class="send-avatar" id="send-avatar">?</div>
-    <h2 class="send-title">Message anonyme pour<br/><span id="send-username-display">…</span></h2>
-    <p class="send-hint">Ton identité ne sera jamais révélée 🤍</p>
-    <div class="input-wrap textarea-wrap">
-      <textarea id="send-message" placeholder="Écris ce que tu veux dire…" maxlength="500"></textarea>
-    </div>
-    <div class="char-count"><span id="char-count">0</span>/500</div>
-    <div id="send-error" class="error-msg hidden"></div>
-    <button class="btn-primary btn-full" id="send-submit"><span>Envoyer anonymement 🤍</span></button>
-    <div id="send-success" class="success-msg hidden">
-      <div class="success-icon">✅</div>
-      <p>Message envoyé ! Reste anonyme 😌</p>
-      <a href="index.html" class="back-link">Créer mon propre compte →</a>
+<div id="page-send" class="page send-page-bg">
+  <!-- Top-right branding -->
+  <div class="auth-topright">
+    <div class="auth-topright-brand">webnote<span class="dot">.</span></div>
+    <div class="auth-topright-datetime" id="send-datetime"></div>
+  </div>
+
+  <!-- Decorative bg notes -->
+  <div class="auth-bg-notes" aria-hidden="true">
+    <div class="auth-fn auth-fn1 glass">"dis-lui ce que tu ressens 💭"</div>
+    <div class="auth-fn auth-fn2 glass">"reste anonyme, sois honnête 🫶"</div>
+    <div class="auth-fn auth-fn3 glass">"personne ne saura que c'est toi 🤫"</div>
+  </div>
+
+  <div class="send-popup-wrap">
+    <div class="send-popup glass">
+      <!-- Popup header -->
+      <div class="send-popup-header">
+        <div class="auth-popup-logo">
+          <div class="auth-popup-logo-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg>
+          </div>
+          <span>webnote<span class="dot">.</span></span>
+        </div>
+        <div class="send-popup-datetime" id="send-datetime-popup"></div>
+      </div>
+
+      <div class="send-avatar" id="send-avatar">?</div>
+      <h2 class="send-title">Message pour<br/><span id="send-username-display">…</span></h2>
+      <p class="send-hint">🤍 Ton identité ne sera jamais révélée</p>
+
+      <div class="input-wrap textarea-wrap">
+        <textarea id="send-message" placeholder="Écris ce que tu penses vraiment…" maxlength="500"></textarea>
+      </div>
+      <div class="char-count"><span id="char-count">0</span>/500</div>
+      <div id="send-error" class="error-msg hidden"></div>
+      <button class="btn-primary btn-full" id="send-submit"><span>Envoyer anonymement 🤍</span></button>
+      <div id="send-success" class="success-msg hidden">
+        <div class="success-icon">✅</div>
+        <p>Message envoyé ! Reste anonyme 😌</p>
+        <a href="index.html" class="back-link">Créer mon propre compte →</a>
+      </div>
+
+      <!-- Footer -->
+      <div class="send-popup-footer">
+        <span>Pas encore de compte ?</span>
+        <a href="index.html" class="send-popup-cta">Rejoindre Webnote →</a>
+      </div>
     </div>
   </div>
 </div>
