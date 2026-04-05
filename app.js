@@ -22,7 +22,7 @@ const firebaseConfig = {
   appId: "1:756128668649:web:da1ac2ec48f661d1688978"
 };
 
-const ADMIN_UID = "anonymous"; // ← Remplace par ton vrai UID après première connexion
+const ADMIN_UID = "pOEobpTzahTB8kLhWKw54K0BDSW2"; // ← Remplace par ton vrai UID après première connexion
 
 const fireApp = initializeApp(firebaseConfig);
 const auth    = getAuth(fireApp);
