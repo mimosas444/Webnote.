@@ -684,3 +684,213 @@ body{
   .share-btn{padding:7px}
 }
 
+/* ════════════════════════════════════════
+   AUTH POPUP — Glassmorphism popup design
+════════════════════════════════════════ */
+
+/* Full-page background */
+.auth-page-bg, .send-page-bg {
+  background: var(--bg) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top-right branding */
+.auth-topright {
+  position: fixed;
+  top: clamp(14px,3vw,22px);
+  right: clamp(14px,3vw,26px);
+  z-index: 200;
+  text-align: right;
+  pointer-events: none;
+}
+.auth-topright-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(.95rem,2vw,1.15rem);
+  font-weight: 700;
+  color: var(--tx);
+  letter-spacing: -.3px;
+}
+.auth-topright-datetime {
+  font-size: clamp(.62rem,.15vw+.58rem,.72rem);
+  color: var(--tx3);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* Decorative floating notes */
+.auth-bg-notes {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.auth-fn {
+  position: absolute;
+  border-radius: 14px;
+  padding: 11px 17px;
+  font-size: clamp(.72rem,.15vw+.68rem,.82rem);
+  color: var(--tx2);
+  max-width: 210px;
+  font-style: italic;
+  animation: float 7s ease-in-out infinite;
+}
+.auth-fn1 { top: 16%; left: 3%; animation-delay: 0s; }
+.auth-fn2 { bottom: 18%; right: 3%; animation-delay: 2.8s; }
+.auth-fn3 { top: 58%; left: 2%; animation-delay: 5.5s; }
+@media (max-width: 600px) { .auth-bg-notes { display: none; } }
+
+/* Popup wrapper — centers the popup */
+.auth-popup-wrap, .send-popup-wrap {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: clamp(70px,10vh,90px) clamp(12px,4vw,20px) clamp(24px,4vw,40px);
+  width: 100%;
+}
+
+/* The glass popup card */
+.auth-popup, .send-popup {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 26px;
+  padding: clamp(22px,4vw,32px) clamp(18px,4vw,28px);
+  animation: popupIn .45s cubic-bezier(.34,1.56,.64,1) both;
+  position: relative;
+  overflow: hidden;
+}
+/* top gradient line */
+.auth-popup::before, .send-popup::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), #c084fc, var(--accent));
+  opacity: .8;
+}
+
+@keyframes popupIn {
+  from { opacity: 0; transform: scale(.9) translateY(22px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Popup header row */
+.auth-popup-header, .send-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* Logo in popup */
+.auth-popup-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--tx);
+}
+.auth-popup-logo-icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), #c084fc);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(92,110,248,.35);
+  flex-shrink: 0;
+}
+
+/* Date/time inside popup */
+.auth-popup-datetime, .send-popup-datetime {
+  font-size: clamp(.58rem,.12vw+.55rem,.66rem);
+  color: var(--tx3);
+  font-weight: 500;
+  text-align: right;
+  line-height: 1.5;
+}
+
+/* Title inside popup */
+.auth-popup-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem,3vw,1.6rem);
+  font-weight: 700;
+  color: var(--tx);
+  margin-bottom: 4px;
+}
+.auth-popup-sub {
+  font-size: .82rem;
+  color: var(--tx3);
+  margin-bottom: 20px;
+}
+
+/* Nested auth-card inside popup (transparent) */
+.auth-popup .auth-card {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  max-width: 100% !important;
+}
+
+/* ── SEND POPUP specifics ── */
+.send-popup {
+  max-width: 460px;
+  text-align: center;
+}
+.send-popup .send-avatar {
+  width: clamp(58px,12vw,72px);
+  height: clamp(58px,12vw,72px);
+  margin: 0 auto 16px;
+  font-size: clamp(1.4rem,3.5vw,1.8rem);
+}
+.send-popup .send-title {
+  font-size: clamp(1.1rem,2.5vw,1.35rem);
+  margin-bottom: 6px;
+}
+.send-popup .send-hint {
+  font-size: .8rem;
+  margin-bottom: 16px;
+}
+.send-popup .textarea-wrap textarea {
+  height: 130px;
+  text-align: left;
+}
+.send-popup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: .76rem;
+  color: var(--tx3);
+  flex-wrap: wrap;
+}
+.send-popup-cta {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: .76rem;
+}
+.send-popup-cta:hover { text-decoration: underline; }
+
+/* Override page-auth padding since it's now full bg */
+#page-auth.page { padding-top: 0; }
+#page-send.page { padding-top: 0; }
+
+/* ── Responsive tweaks for popup ── */
+@media (max-width: 480px) {
+  .auth-popup, .send-popup {
+    border-radius: 20px;
+    padding: 20px 16px;
+  }
+  .auth-popup-wrap, .send-popup-wrap {
+    padding: 60px 10px 24px;
+  }
+}
