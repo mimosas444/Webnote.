@@ -390,25 +390,72 @@ function renderMessages(searchTerm = "") {
   if (currentFilter === "unread") filtered = filtered.filter(m => m.createdAt && m.createdAt.toDate() >= cutoff24);
   if (searchTerm) filtered = filtered.filter(m => m.message?.toLowerCase().includes(searchTerm));
   if (filtered.length === 0) { const emp = $("empty-state"); if (emp) { emp.classList.remove("hidden"); container.appendChild(emp); } return; }
+
   filtered.forEach((msg, i) => {
-    const card = document.createElement("div"); card.className = "msg-card"; card.style.animationDelay = `${i * 0.04}s`;
+    const card = document.createElement("div");
+    card.className = "msg-card";
+    card.style.animationDelay = `${i * 0.04}s`;
+
     const isNew = msg.createdAt && msg.createdAt.toDate() >= cutoff24;
-    const badges = `${isNew ? '<span class="msg-badge new">🆕 Nouveau</span>' : ""}${msg.approved ? '<span class="msg-badge approved">✅ Approuvé</span>' : ""}`;
-    const replyHtml = msg.adminReply ? `<div class="msg-reply"><span class="msg-reply-lbl">Réponse de l'équipe</span>${escHtml(msg.adminReply)}</div>` : "";
+    const badges = `
+      ${isNew ? '<span class="msg-badge new">🆕 Nouveau</span>' : ""}
+      ${msg.approved ? '<span class="msg-badge approved">✅ Approuvé</span>' : ""}
+    `;
+    const replyHtml = msg.adminReply
+      ? `<div class="msg-reply"><span class="msg-reply-lbl">Réponse de l'équipe</span>${escHtml(msg.adminReply)}</div>`
+      : "";
+
     card.innerHTML = `
       <div class="msg-header">${badges}</div>
       <div class="msg-text">${escHtml(msg.message)}</div>
       ${replyHtml}
       <div class="msg-footer">
         <div class="msg-time">🕐 ${msg.createdAt ? formatDate(msg.createdAt.toDate()) : "À l'instant"}</div>
-        <button class="msg-share-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          Partager
-        </button>
+        <div class="msg-actions-row">
+          <!-- Save image directly -->
+          <button class="msg-action-btn msg-save-btn" title="Enregistrer comme image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Enregistrer
+          </button>
+          <!-- Open share modal -->
+          <button class="msg-action-btn msg-share-btn" title="Partager">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Partager
+          </button>
+          <!-- Copy text -->
+          <button class="msg-action-btn msg-copy-btn" title="Copier le texte">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copier
+          </button>
+        </div>
       </div>
     `;
-    // Share button click
+
+    // Share → open modal
     card.querySelector(".msg-share-btn").addEventListener("click", () => openShareModal(msg.message));
+
+    // Save → generate & download silently
+    card.querySelector(".msg-save-btn").addEventListener("click", async (e) => {
+      const btn = e.currentTarget;
+      btn.textContent = "⏳";
+      btn.disabled = true;
+      const url = await buildImageUrl(msg.message);
+      if (url) {
+        const a = document.createElement("a"); a.href = url; a.download = "message-webnote.png"; a.click();
+        URL.revokeObjectURL(url);
+        showToast("✅ Image enregistrée !");
+      } else {
+        showToast("⚠️ Erreur, fais une capture !");
+      }
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Enregistrer`;
+      btn.disabled = false;
+    });
+
+    // Copy text
+    card.querySelector(".msg-copy-btn").addEventListener("click", () => {
+      navigator.clipboard.writeText(msg.message).then(() => showToast("📋 Message copié !"));
+    });
+
     container.appendChild(card);
   });
 }
@@ -700,11 +747,23 @@ function escHtml(str) {
 }
 
 function formatDate(date) {
-  const diff = Math.floor((Date.now() - date) / 1000);
+  // Use local device time — works correctly for any timezone (Haiti, etc.)
+  const now  = new Date();
+  const diff = Math.floor((now - date) / 1000);
+
+  if (diff < 0)     return "À l'instant"; // clock skew
   if (diff < 60)    return "À l'instant";
-  if (diff < 3600)  return `Il y a ${Math.floor(diff/60)} min`;
-  if (diff < 86400) return `Il y a ${Math.floor(diff/3600)}h`;
-  return date.toLocaleDateString("fr-FR", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" });
+  if (diff < 3600)  return `Il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)}h`;
+  if (diff < 604800) {
+    const days = Math.floor(diff / 86400);
+    return `Il y a ${days} jour${days > 1 ? "s" : ""}`;
+  }
+  // More than a week — show local date
+  return date.toLocaleDateString("fr-FR", {
+    day: "numeric", month: "short",
+    hour: "2-digit", minute: "2-digit"
+  });
 }
 
 function fbErr(code) {
@@ -722,15 +781,13 @@ function openShareModal(message) {
   capturedImageBlob = null;
   capturedImageUrl  = null;
 
-  // Set message text
   const msgEl = $("shr-msg-text");
   if (msgEl) msgEl.textContent = message;
 
-  // Show modal
   $("shr-overlay")?.classList.remove("hidden");
 
-  // Auto-generate image after a short delay (let fonts load)
-  setTimeout(() => generateShareImage(), 300);
+  // Small delay so modal renders, then generate
+  setTimeout(() => generateShareImage(), 250);
 }
 
 function closeShareModal() {
@@ -739,23 +796,31 @@ function closeShareModal() {
   if (capturedImageUrl) { URL.revokeObjectURL(capturedImageUrl); capturedImageUrl = null; }
 }
 
-// Close on overlay click
-$("shr-overlay")?.addEventListener("click", e => {
-  if (e.target === $("shr-overlay")) closeShareModal();
-});
+$("shr-overlay")?.addEventListener("click", e => { if (e.target === $("shr-overlay")) closeShareModal(); });
 $("shr-close")?.addEventListener("click", closeShareModal);
 
-async function generateShareImage() {
-  const card = $("shr-card");
-  if (!card || typeof html2canvas === "undefined") return;
+// ── Core: build canvas from card, return object URL ──
+async function buildImageUrl(message) {
+  if (typeof html2canvas === "undefined") return null;
 
-  // Show loading spinner
-  const existing = card.querySelector(".shr-generating");
-  if (existing) existing.remove();
-  const loading = document.createElement("div");
-  loading.className = "shr-generating";
-  loading.innerHTML = `<div class="shr-spinner"></div><span>Génération…</span>`;
-  card.appendChild(loading);
+  // Temporarily set message in hidden card
+  const msgEl = $("shr-msg-text");
+  const prev  = msgEl ? msgEl.textContent : "";
+  if (msgEl) msgEl.textContent = message;
+
+  const card = $("shr-card");
+  if (!card) { if (msgEl) msgEl.textContent = prev; return null; }
+
+  // ⚠️ KEY FIX: Remove any existing spinner BEFORE capturing
+  card.querySelectorAll(".shr-generating").forEach(el => el.remove());
+
+  // Make card visible off-screen if modal is hidden
+  const wasHidden = $("shr-overlay")?.classList.contains("hidden");
+  if (wasHidden) {
+    $("shr-overlay").style.visibility = "hidden";
+    $("shr-overlay").style.opacity    = "0";
+    $("shr-overlay").classList.remove("hidden");
+  }
 
   try {
     const canvas = await html2canvas(card, {
@@ -764,100 +829,129 @@ async function generateShareImage() {
       allowTaint: true,
       backgroundColor: null,
       logging: false,
-      imageTimeout: 8000,
+      imageTimeout: 10000,
     });
 
-    // Store blob for sharing
-    canvas.toBlob(blob => {
-      capturedImageBlob = blob;
-      capturedImageUrl  = URL.createObjectURL(blob);
-    }, "image/png");
-
-    loading.remove();
+    return await new Promise(resolve => {
+      canvas.toBlob(blob => {
+        if (!blob) { resolve(null); return; }
+        resolve(URL.createObjectURL(blob));
+      }, "image/png");
+    });
   } catch (e) {
-    console.error("html2canvas error:", e);
-    loading.remove();
-    showToast("⚠️ Fais une capture d'écran !");
+    console.error("html2canvas:", e);
+    return null;
+  } finally {
+    if (wasHidden) {
+      $("shr-overlay").classList.add("hidden");
+      $("shr-overlay").style.visibility = "";
+      $("shr-overlay").style.opacity    = "";
+    }
+    if (msgEl) msgEl.textContent = prev;
   }
 }
 
-// ── Download ──
-$("shr-dl-btn")?.addEventListener("click", async () => {
-  // Re-generate if needed
+async function generateShareImage() {
+  const card = $("shr-card");
+  if (!card || typeof html2canvas === "undefined") return;
+
+  // Show spinner in actions area, NOT on the card
+  const actionsEl = $("shr-overlay")?.querySelector(".shr-actions");
+  const origHTML  = actionsEl ? actionsEl.innerHTML : "";
+  if (actionsEl) actionsEl.innerHTML = `<div style="color:rgba(255,255,255,.6);font-size:.8rem;display:flex;align-items:center;gap:8px;justify-content:center;width:100%;padding:8px 0"><div class="shr-spinner"></div>Génération de l'image…</div>`;
+
+  // Remove any old spinner on card just in case
+  card.querySelectorAll(".shr-generating").forEach(el => el.remove());
+
+  try {
+    const canvas = await html2canvas(card, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false,
+      imageTimeout: 10000,
+    });
+
+    await new Promise(resolve => {
+      canvas.toBlob(blob => {
+        if (blob) {
+          capturedImageBlob = blob;
+          capturedImageUrl  = URL.createObjectURL(blob);
+        }
+        resolve();
+      }, "image/png");
+    });
+  } catch (e) {
+    console.error("html2canvas:", e);
+    showToast("⚠️ Erreur de génération !");
+  } finally {
+    // Always restore action buttons
+    if (actionsEl) actionsEl.innerHTML = origHTML;
+    rebindModalButtons();
+  }
+}
+
+function rebindModalButtons() {
+  $("shr-dl-btn")?.addEventListener("click", handleDownload);
+  $("shr-wa-btn")?.addEventListener("click", handleWhatsApp);
+  $("shr-copy-btn")?.addEventListener("click", handleCopyImage);
+}
+
+// ── Button handlers (named so they can be rebound) ──
+async function handleDownload() {
   if (!capturedImageUrl) {
     await generateShareImage();
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise(r => setTimeout(r, 800));
   }
-  if (!capturedImageUrl) {
-    showToast("⚠️ Fais une capture d'écran !");
-    return;
-  }
+  if (!capturedImageUrl) { showToast("⚠️ Fais une capture d'écran !"); return; }
   const a = document.createElement("a");
-  a.href = capturedImageUrl;
-  a.download = "message-webnote.png";
-  a.click();
+  a.href = capturedImageUrl; a.download = "message-webnote.png"; a.click();
   showToast("✅ Image enregistrée !");
-});
+}
 
-// ── WhatsApp ──
-$("shr-wa-btn")?.addEventListener("click", async () => {
+async function handleWhatsApp() {
   if (!capturedImageUrl) {
     await generateShareImage();
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise(r => setTimeout(r, 800));
   }
-
-  // Try Web Share API (works on mobile)
   if (navigator.share && capturedImageBlob) {
     try {
       const file = new File([capturedImageBlob], "message-webnote.png", { type: "image/png" });
-      await navigator.share({
-        files: [file],
-        title: "Message anonyme Webnote",
-        text: "Regarde ce message anonyme que j'ai reçu 👀"
-      });
+      await navigator.share({ files: [file], title: "Message anonyme Webnote", text: "Regarde ce message anonyme 👀" });
       return;
-    } catch (e) {
-      // Fallback below
-    }
+    } catch (e) { /* fallback */ }
   }
-
-  // Fallback: download + open WA
   if (capturedImageUrl) {
     const a = document.createElement("a"); a.href = capturedImageUrl; a.download = "message-webnote.png"; a.click();
-    setTimeout(() => {
-      window.open(`https://wa.me/?text=${encodeURIComponent("Regarde ce message anonyme que j'ai reçu 👀\n\nEnvoie-moi le tien : " + currentShareLink)}`, "_blank");
-    }, 600);
+    setTimeout(() => window.open(`https://wa.me/?text=${encodeURIComponent("Regarde ce message anonyme que j'ai reçu 👀\n\nEnvoie-moi le tien : " + currentShareLink)}`, "_blank"), 600);
     showToast("📥 Image enregistrée → ouvre WhatsApp !");
   } else {
     showToast("⚠️ Fais une capture d'écran !");
   }
-});
+}
 
-// ── Copy image to clipboard ──
-$("shr-copy-btn")?.addEventListener("click", async () => {
-  if (!capturedImageUrl) {
-    await generateShareImage();
-    await new Promise(r => setTimeout(r, 1200));
-  }
+async function handleCopyImage() {
   if (!capturedImageBlob) {
-    showToast("⚠️ Génération en cours, réessaie !");
-    return;
+    await generateShareImage();
+    await new Promise(r => setTimeout(r, 800));
   }
+  if (!capturedImageBlob) { showToast("⚠️ Génération en cours, réessaie !"); return; }
   try {
     if (navigator.clipboard && window.ClipboardItem) {
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": capturedImageBlob })
-      ]);
-      showToast("✅ Image copiée ! Colle dans Insta / Snap 📋");
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": capturedImageBlob })]);
+      showToast("✅ Image copiée ! Colle dans Insta/Snap 📋");
     } else {
-      // Fallback: download
       const a = document.createElement("a"); a.href = capturedImageUrl; a.download = "message-webnote.png"; a.click();
       showToast("✅ Image enregistrée !");
     }
   } catch (e) {
-    // Some browsers don't allow clipboard image write
     const a = document.createElement("a"); a.href = capturedImageUrl; a.download = "message-webnote.png"; a.click();
     showToast("✅ Image enregistrée !");
   }
-});
+}
+
+$("shr-dl-btn")?.addEventListener("click", handleDownload);
+$("shr-wa-btn")?.addEventListener("click", handleWhatsApp);
+$("shr-copy-btn")?.addEventListener("click", handleCopyImage);
 
