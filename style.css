@@ -918,3 +918,146 @@ html { scroll-behavior: smooth; }
 }
 
 /* Remove html2canvas script if accidentally left */
+
+/* ════════════════════════════════════════
+   REACTIONS + LANDING v2 + CLEAN CARDS
+════════════════════════════════════════ */
+
+/* ── Message reactions ── */
+.msg-reactions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 8px 0 4px;
+}
+.react-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--surface);
+  border: 1.5px solid var(--bd);
+  border-radius: 50px;
+  padding: 4px 10px;
+  font-size: .92rem;
+  cursor: pointer;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), background .2s, border-color .2s;
+  user-select: none;
+  line-height: 1;
+}
+.react-btn:hover { background: var(--accent-lt); border-color: var(--bd2); transform: scale(1.1); }
+.react-btn.reacted { background: var(--accent-lt); border-color: var(--accent); }
+.react-n {
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Cleaner message action icons ── */
+.msg-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.msg-action-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--bd);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--tx3);
+  transition: background .2s, color .2s, transform .15s;
+  padding: 0;
+}
+.msg-action-btn:hover { background: var(--accent-lt); color: var(--accent); border-color: var(--accent); transform: scale(1.1); }
+
+/* ── Landing v2 — clean like ngl ── */
+.hero { padding-top: clamp(52px,9vh,90px); }
+
+.hero-title {
+  font-size: clamp(2rem,6.5vw,3.8rem) !important;
+  letter-spacing: -1.2px;
+}
+
+.hero-sub {
+  font-size: clamp(.88rem,.4vw+.8rem,1rem) !important;
+  max-width: 360px !important;
+}
+
+/* Remove hero-hint (too much bla-bla) */
+.hero-hint { display: none; }
+
+/* How it works row */
+.how-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px,2vw,16px);
+  width: 100%;
+  max-width: 560px;
+  flex-wrap: nowrap;
+}
+.how-step {
+  border-radius: 16px;
+  padding: clamp(14px,2.5vw,20px) clamp(12px,2vw,20px);
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+}
+.how-num {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.4rem,3vw,1.8rem);
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.how-text {
+  font-size: clamp(.72rem,.15vw+.68rem,.8rem);
+  font-weight: 600;
+  color: var(--tx2);
+}
+.how-arrow {
+  font-size: clamp(.9rem,2vw,1.2rem);
+  color: var(--tx3);
+  flex-shrink: 0;
+}
+@media(max-width:400px){
+  .how-row { gap: 5px; }
+  .how-step { padding: 12px 8px; }
+  .how-arrow { font-size: .8rem; }
+}
+
+/* ── Cleaner features grid ── */
+.feat-card {
+  border-radius: 18px;
+  padding: clamp(18px,3vw,26px) clamp(16px,2.5vw,22px);
+  transition: transform .22s, box-shadow .22s;
+}
+.feat-card:hover { transform: translateY(-4px); }
+.feat-ico-wrap { font-size: 1.6rem; margin-bottom: 10px; line-height: 1; }
+.feat-card-title { font-weight: 700; font-size: .9rem; color: var(--tx); margin-bottom: 4px; }
+.feat-card-sub { font-size: .74rem; color: var(--tx3); line-height: 1.5; }
+
+/* ── Footer minimal ── */
+.landing-footer {
+  text-align: center;
+  padding: clamp(32px,5vw,52px) 0 clamp(40px,6vw,60px);
+}
+.footer-logo { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--tx); margin-bottom:8px; }
+.footer-copy { font-size:.72rem; color:var(--tx3); }
+
+/* ── Msg footer cleaner ── */
+.msg-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--bd);
+}
+.msg-time { font-size: .67rem; color: var(--tx3); }
+
+/* ── Share modal — 2 buttons only ── */
+.shr-actions { gap: 10px; }
+.shr-btn { flex: 1; font-size: .82rem; padding: 12px 10px; }
