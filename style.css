@@ -816,3 +816,105 @@ body{
   .msg-action-btn span { display: none; }
   .msg-action-btn { padding: 6px 8px; }
 }
+
+/* ════════════════════════════════════════
+   SHARE MODAL — Canvas preview v2
+════════════════════════════════════════ */
+
+/* Remove old shr-card styles if any, keep overlay */
+.shr-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  display: flex; align-items: center; justify-content: center;
+  padding: clamp(12px,4vw,24px);
+}
+.shr-overlay.hidden { display: none !important; }
+
+.shr-modal {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px; width: 100%; max-width: 360px;
+  animation: popupIn .4s cubic-bezier(.34,1.56,.64,1) both;
+  position: relative;
+}
+
+.shr-close {
+  position: absolute; top: -14px; right: -14px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+  color: #fff; font-size: .78rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, transform .2s; z-index: 10;
+}
+.shr-close:hover { background: rgba(255,255,255,.28); transform: rotate(90deg); }
+
+/* Canvas preview */
+.shr-preview-wrap {
+  position: relative; width: 100%;
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+.shr-canvas-preview {
+  width: 100%; height: auto; display: block;
+  border-radius: 18px;
+}
+.shr-preview-loader {
+  position: absolute; inset: 0;
+  background: rgba(10,8,30,.65);
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; border-radius: 18px;
+  color: rgba(255,255,255,.7); font-size: .82rem; font-weight: 600;
+}
+
+/* Action buttons */
+.shr-actions {
+  display: flex; gap: 8px; width: 100%; flex-wrap: wrap;
+}
+.shr-btn {
+  flex: 1; min-width: 90px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; border-radius: 12px; padding: 11px 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: .79rem; font-weight: 700;
+  cursor: pointer; transition: transform .15s, opacity .2s; white-space: nowrap;
+}
+.shr-btn:hover { transform: translateY(-2px); }
+.shr-btn:active { transform: translateY(0); opacity: .85; }
+.shr-dl   { background: linear-gradient(135deg,#6366f1,#a855f7); color:#fff; box-shadow:0 4px 16px rgba(99,102,241,.4); }
+.shr-wa   { background: #25D366; color:#fff; box-shadow:0 4px 14px rgba(37,211,102,.35); }
+.shr-copy { background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22); color:#fff; backdrop-filter:blur(10px); }
+
+.shr-tip { font-size: .68rem; color: rgba(255,255,255,.35); text-align: center; }
+
+/* Spinner */
+.shr-spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2.5px solid rgba(255,255,255,.25);
+  border-top-color: #fff;
+  animation: spin .7s linear infinite; flex-shrink: 0;
+}
+
+/* ════════ SMOOTH SCROLL + FLUID TRANSITIONS ════════ */
+html { scroll-behavior: smooth; }
+
+/* Smooth page transitions */
+.page { transition: opacity .25s ease; }
+.page.active { opacity: 1; }
+
+/* Smooth card hover */
+.msg-card, .stat-card, .feat-card, .ann-card, .poll-card, .feature-item {
+  will-change: transform;
+}
+
+/* Smooth scroll inside page containers */
+.page-container { scroll-behavior: smooth; }
+
+/* Better momentum scrolling on iOS */
+.page, body { -webkit-overflow-scrolling: touch; }
+
+/* Fluid font sizing across all devices */
+@media (min-width: 1400px) {
+  .hero-title { font-size: 5rem; }
+  .page-container { max-width: 920px; }
+}
+
+/* Remove html2canvas script if accidentally left */
