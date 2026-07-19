@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-//  WEBNOTE — app.js  v5
+//  WEBNOTE — app.js  v6 (skeleton + polish)
 // ═══════════════════════════════════════════
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -30,6 +30,7 @@ const db      = getFirestore(fireApp);
 let currentUser = null, currentUsername = "", currentShareLink = "";
 let allMessages = [], currentFilter = "all", isGridView = true;
 let qrGenerated = false, qrVisible = false, isAdmin = false, selectedEmoji = "📢";
+let bootHidden = false;
 
 const urlParams  = new URLSearchParams(window.location.search);
 const targetUser = urlParams.get("user");
@@ -59,28 +60,42 @@ function updateDatetime() {
 }
 updateDatetime(); setInterval(updateDatetime, 30000);
 
+// ── BOOT SKELETON ──
+// Hidden the first time auth state resolves (or after a safety timeout so the
+// app never gets stuck behind the splash if something goes wrong offline).
+function hideBootSkeleton() {
+  if (bootHidden) return;
+  bootHidden = true;
+  const el = $("boot-skeleton");
+  if (el) { el.classList.add("boot-hide"); setTimeout(() => el.remove(), 500); }
+}
+setTimeout(hideBootSkeleton, 4000); // safety net
+
 // ── PAGES ──
-const pages = { landing:$("page-landing"), auth:$("page-auth"), dashboard:$("page-dashboard"), community:$("page-community"), admin:$("page-admin"), send:$("page-send") };
+const pages = { landing:$("page-landing"), auth:$("page-auth"), dashboard:$("page-dashboard"), community:$("page-community"), about:$("page-about"), admin:$("page-admin"), send:$("page-send") };
 function showPage(name) {
   Object.values(pages).forEach(p => { if (p) { p.style.display="none"; p.classList.remove("active"); } });
   const page = pages[name]; if (!page) return;
   page.style.display = "flex"; void page.offsetWidth; page.classList.add("active");
+  window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   document.querySelectorAll(".nav-tab, .mob-btn").forEach(b => b.classList.toggle("active", b.dataset.page === name));
 }
 document.querySelectorAll(".nav-tab, .mob-btn").forEach(btn => {
   btn.addEventListener("click", () => {
-    if (!currentUser) return;
     const t = btn.dataset.page;
+    // "about" is reachable with or without an account
+    if (t !== "about" && !currentUser) return;
     if (t === "admin" && !isAdmin) return;
     showPage(t);
     if (t === "community") loadCommunity();
     if (t === "admin") loadAdminPanel();
   });
 });
+$("landing-about-btn")?.addEventListener("click", () => showPage("about"));
 
 // ── AUTH STATE ──
 onAuthStateChanged(auth, async (user) => {
-  if (targetUser) { await loadSendPage(targetUser); return; }
+  if (targetUser) { await loadSendPage(targetUser); hideBootSkeleton(); return; }
   if (user) {
     currentUser = user; isAdmin = user.uid === ADMIN_UID;
     $("nav-login-btn")?.classList.add("hidden");
@@ -107,6 +122,7 @@ onAuthStateChanged(auth, async (user) => {
     $("mobile-nav")?.classList.add("hidden");
     showPage("landing");
   }
+  hideBootSkeleton();
 });
 
 function resetDashboard() {
@@ -181,6 +197,18 @@ $("login-submit")?.addEventListener("click",async()=>{
 });
 $("nav-logout-btn")?.addEventListener("click",()=>signOut(auth));
 
+// ── SKELETON HELPERS ──
+function setStatsLoading(loading){
+  document.querySelectorAll(".stat-card").forEach(c => c.classList.toggle("is-loading", loading));
+}
+function setMessagesLoading(loading){
+  $("messages-skeleton")?.classList.toggle("hidden", !loading);
+  $("messages-container")?.classList.toggle("hidden", loading);
+}
+function setCommunityLoading(loading){
+  $("community-skeleton")?.classList.toggle("hidden", !loading);
+}
+
 // ── DASHBOARD ──
 async function loadDashboard(){
   const base=window.location.origin+window.location.pathname;
@@ -238,12 +266,15 @@ function downloadQR(){
 }
 
 async function fetchMessages(){
+  setStatsLoading(true);
+  setMessagesLoading(true);
   try{
     const q=query(collection(db,"messages"),where("recipientId","==",currentUser.uid),orderBy("createdAt","desc"));
     const snap=await getDocs(q);
     allMessages=snap.docs.map(d=>({id:d.id,...d.data()}));
     updateStats(); buildChart(); renderMessages();
   }catch(e){console.error("fetchMessages:",e);}
+  finally{ setStatsLoading(false); setMessagesLoading(false); }
 }
 
 function setFilter(f){
@@ -293,6 +324,7 @@ function buildChart(){
 function renderMessages(searchTerm=""){
   const container=$("messages-container");if(!container)return;
   container.innerHTML="";
+  container.classList.add("content-fade-in");
   const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const week=new Date(today);week.setDate(today.getDate()-7);
   const cutoff24=new Date(now-86400000);
@@ -305,7 +337,7 @@ function renderMessages(searchTerm=""){
 
   filtered.forEach((msg,i)=>{
     const card=document.createElement("div");
-    card.className="msg-card"; card.style.animationDelay=i*0.04+"s";
+    card.className="msg-card"; card.style.animationDelay=Math.min(i*0.04,0.4)+"s";
     const isNew=msg.createdAt&&msg.createdAt.toDate()>=cutoff24;
     const badges=(isNew?'<span class="msg-badge new">🆕 Nouveau</span>':"")+(msg.approved?'<span class="msg-badge approved">✅ Approuvé</span>':"");
     const replyHtml=msg.adminReply?'<div class="msg-reply"><span class="msg-reply-lbl">Réponse de l\'équipe</span>'+escHtml(msg.adminReply)+'</div>':"";
@@ -323,9 +355,9 @@ function renderMessages(searchTerm=""){
       '<div class="msg-footer">'+
         '<div class="msg-time">'+( msg.createdAt?formatDate(msg.createdAt.toDate()):"À l\'instant" )+'</div>'+
         '<div class="msg-actions-row">'+
-          '<button class="msg-action-btn msg-share-btn">'+
+          '<button class="msg-action-btn msg-share-btn" title="Partager">'+
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>'+
-          '<button class="msg-action-btn msg-copy-btn">'+
+          '<button class="msg-action-btn msg-copy-btn" title="Copier">'+
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'+
         '</div>'+
       '</div>';
@@ -362,7 +394,11 @@ function exportMessages(){
 }
 
 // ── COMMUNITY ──
-async function loadCommunity(){ await Promise.all([loadAnnouncements(),loadPolls(),loadFeatureRequests()]); }
+async function loadCommunity(){
+  setCommunityLoading(true);
+  await Promise.all([loadAnnouncements(),loadPolls(),loadFeatureRequests()]);
+  setCommunityLoading(false);
+}
 
 async function loadAnnouncements(){
   const list=$("announcements-list");if(!list)return;
