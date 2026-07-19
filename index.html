@@ -8,8 +8,6 @@
   <!-- Open Graph -->
   <meta property="og:type"         content="website"/>
   <meta property="og:site_name"    content="Webnote"/>
-  <meta property="og:type"         content="website"/>
-  <meta property="og:site_name"    content="Webnote"/>
   <meta property="og:title"        content="Webnote. Messages anonymes"/>
   <meta property="og:description"  content="Reçois des messages anonymes de tes amis. 100% anonyme et gratuit."/>
   <meta property="og:image"        content="https://i.postimg.cc/5tVjYPqP/image-1775360096561.jpg"/>
@@ -27,6 +25,12 @@
 
 </head>
 <body>
+
+<!-- ══ APP BOOT SKELETON ══ -->
+<div id="boot-skeleton" class="boot-skeleton">
+  <div class="boot-logo">webnote<span class="dot">.</span></div>
+  <div class="boot-bar"><div class="boot-bar-fill"></div></div>
+</div>
 
 <!-- ══ BG BLOBS (global) ══ -->
 <div class="bg-blobs" aria-hidden="true">
@@ -47,6 +51,10 @@
     <button class="nav-tab" data-page="community">
       <svg viewBox="0 0 20 20" fill="none" width="14"><path d="M17 8.5c0 3.6-3.1 6.5-7 6.5a7.8 7.8 0 01-3-.6L3 15.5l.8-3.5A6.3 6.3 0 013 8.5C3 4.9 6.1 2 10 2s7 2.9 7 6.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>Communauté</span>
+    </button>
+    <button class="nav-tab" data-page="about">
+      <svg viewBox="0 0 20 20" fill="none" width="14"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v4.2M10 6.8h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>À propos</span>
     </button>
     <button class="nav-tab admin-only hidden" data-page="admin">
       <svg viewBox="0 0 20 20" fill="none" width="14"><path d="M10 2l1.5 4.5H16l-3.5 2.5 1.5 4.5L10 11l-4 2.5 1.5-4.5L4 6.5h4.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -77,6 +85,10 @@
   <button class="mob-btn" data-page="community">
     <svg viewBox="0 0 20 20" fill="none" width="18"><path d="M17 8.5c0 3.6-3.1 6.5-7 6.5a7.8 7.8 0 01-3-.6L3 15.5l.8-3.5A6.3 6.3 0 013 8.5C3 4.9 6.1 2 10 2s7 2.9 7 6.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span>Communauté</span>
+  </button>
+  <button class="mob-btn" data-page="about">
+    <svg viewBox="0 0 20 20" fill="none" width="18"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M10 9v4.2M10 6.8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <span>À propos</span>
   </button>
   <button class="mob-btn admin-only hidden" data-page="admin">
     <svg viewBox="0 0 20 20" fill="none" width="18"><path d="M10 2l1.5 4.5H16l-3.5 2.5 1.5 4.5L10 11l-4 2.5 1.5-4.5L4 6.5h4.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -154,6 +166,7 @@
     <footer class="landing-footer">
       <div class="footer-logo">webnote<span class="dot">.</span></div>
       <p class="footer-copy">© 2026 Webnote — Tous droits réservés</p>
+      <button class="footer-about-link" id="landing-about-btn">À propos de Webnote</button>
     </footer>
   </div>
 </div>
@@ -341,6 +354,13 @@
       </div>
     </div>
 
+    <!-- Skeleton loaders (messages) -->
+    <div id="messages-skeleton" class="messages-grid hidden">
+      <div class="msg-card skel-card"><div class="skel-line w40 h10"></div><div class="skel-line w95"></div><div class="skel-line w80"></div><div class="skel-line w60"></div><div class="skel-foot"><div class="skel-line w30 h8"></div><div class="skel-line w20 h8"></div></div></div>
+      <div class="msg-card skel-card"><div class="skel-line w40 h10"></div><div class="skel-line w90"></div><div class="skel-line w70"></div><div class="skel-foot"><div class="skel-line w30 h8"></div><div class="skel-line w20 h8"></div></div></div>
+      <div class="msg-card skel-card"><div class="skel-line w40 h10"></div><div class="skel-line w95"></div><div class="skel-line w50"></div><div class="skel-foot"><div class="skel-line w30 h8"></div><div class="skel-line w20 h8"></div></div></div>
+    </div>
+
     <div id="messages-container" class="messages-grid">
       <div class="empty-state" id="empty-state"><div class="empty-icon">✉️</div><p>Aucun message pour l'instant.<br/>Partage ton lien pour commencer !</p></div>
     </div>
@@ -351,6 +371,12 @@
 <div id="page-community" class="page">
   <div class="page-container">
     <div class="section-header"><h2 class="section-title">Communauté</h2><p class="section-sub">Communiqués, sondages et suggestions</p></div>
+
+    <div id="community-skeleton" class="community-skeleton-wrap hidden">
+      <div class="skel-card ann-skel"><div class="skel-line w30 h12"></div><div class="skel-line w95"></div><div class="skel-line w70"></div></div>
+      <div class="skel-card ann-skel"><div class="skel-line w40 h12"></div><div class="skel-line w80"></div></div>
+    </div>
+
     <div class="community-section"><div class="sec-label">📢 Communiqués officiels</div><div id="announcements-list"><div class="empty-state"><div class="empty-icon">📭</div><p>Aucun communiqué pour l'instant.</p></div></div></div>
     <div class="community-section"><div class="sec-label">📊 Sondages actifs</div><div id="polls-list"><div class="empty-state"><div class="empty-icon">📊</div><p>Aucun sondage pour l'instant.</p></div></div></div>
     <div class="community-section">
@@ -361,6 +387,63 @@
         <button class="btn-primary" id="feature-submit-btn"><span>Proposer</span></button>
       </div>
       <div id="features-list" class="features-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ À PROPOS ══ -->
+<div id="page-about" class="page">
+  <div class="page-container about-container">
+    <div class="section-header">
+      <h2 class="section-title">À propos de Webnote</h2>
+      <p class="section-sub">Un espace pour recevoir ce que les gens n'osent pas te dire en face</p>
+    </div>
+
+    <div class="about-hero glass">
+      <div class="about-hero-ico">🤍</div>
+      <p class="about-hero-text">Webnote te donne un lien unique à partager. N'importe qui peut t'écrire un message, sans créer de compte et sans jamais révéler son identité. Toi seul·e peux lire ce que tu reçois.</p>
+    </div>
+
+    <div class="sec-label">Comment ça marche</div>
+    <div class="about-steps">
+      <div class="about-step glass">
+        <div class="about-step-num">01</div>
+        <div class="about-step-title">Crée ton compte</div>
+        <div class="about-step-text">Un pseudo, un email, un mot de passe. Ça prend 30 secondes.</div>
+      </div>
+      <div class="about-step glass">
+        <div class="about-step-num">02</div>
+        <div class="about-step-title">Partage ton lien ou ton QR</div>
+        <div class="about-step-text">Sur Instagram, Snapchat, WhatsApp — où tu veux, comme tu veux.</div>
+      </div>
+      <div class="about-step glass">
+        <div class="about-step-num">03</div>
+        <div class="about-step-title">Reçois et exporte</div>
+        <div class="about-step-text">Consulte tes messages, réagis, et partage tes préférés en story.</div>
+      </div>
+    </div>
+
+    <div class="sec-label">Anonymat & sécurité</div>
+    <div class="about-grid">
+      <div class="about-card glass">
+        <div class="about-card-ico">🕵️</div>
+        <div class="about-card-title">Aucune identité stockée</div>
+        <div class="about-card-text">Les personnes qui t'écrivent n'ont pas besoin de compte. Webnote ne relie jamais un message à un auteur identifiable.</div>
+      </div>
+      <div class="about-card glass">
+        <div class="about-card-ico">🔒</div>
+        <div class="about-card-title">Toi seul·e lis tes messages</div>
+        <div class="about-card-text">Ton espace est privé et protégé par ton compte. Personne d'autre n'y a accès.</div>
+      </div>
+      <div class="about-card glass">
+        <div class="about-card-ico">🧭</div>
+        <div class="about-card-title">Modération communautaire</div>
+        <div class="about-card-text">L'équipe Webnote publie des communiqués et répond aux suggestions pour faire évoluer le site avec vous.</div>
+      </div>
+    </div>
+
+    <div class="about-footer-note">
+      <p>Webnote est un projet indépendant, gratuit et sans publicité. Une suggestion ou un bug à signaler ? Passe par l'onglet <strong>Communauté</strong> une fois connecté·e.</p>
     </div>
   </div>
 </div>
