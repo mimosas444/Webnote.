@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-//  WEBNOTE — app.js  v6 (skeleton + polish)
+//  WEBNOTE — app.js  v6 (skeletons + about + polish)
 // ═══════════════════════════════════════════
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -30,10 +30,17 @@ const db      = getFirestore(fireApp);
 let currentUser = null, currentUsername = "", currentShareLink = "";
 let allMessages = [], currentFilter = "all", isGridView = true;
 let qrGenerated = false, qrVisible = false, isAdmin = false, selectedEmoji = "📢";
-let bootHidden = false;
 
 const urlParams  = new URLSearchParams(window.location.search);
 const targetUser = urlParams.get("user");
+
+// ── BOOT LOADER ──
+function hideBootLoader() {
+  const el = $("boot-loader");
+  if (!el) return;
+  el.classList.add("boot-hide");
+  setTimeout(() => el.remove(), 550);
+}
 
 // ── THEME ──
 const savedTheme = localStorage.getItem("wn-theme") || "light";
@@ -60,46 +67,38 @@ function updateDatetime() {
 }
 updateDatetime(); setInterval(updateDatetime, 30000);
 
-// ── BOOT SKELETON ──
-// Hidden the first time auth state resolves (or after a safety timeout so the
-// app never gets stuck behind the splash if something goes wrong offline).
-function hideBootSkeleton() {
-  if (bootHidden) return;
-  bootHidden = true;
-  const el = $("boot-skeleton");
-  if (el) { el.classList.add("boot-hide"); setTimeout(() => el.remove(), 500); }
-}
-setTimeout(hideBootSkeleton, 4000); // safety net
-
 // ── PAGES ──
-const pages = { landing:$("page-landing"), auth:$("page-auth"), dashboard:$("page-dashboard"), community:$("page-community"), about:$("page-about"), admin:$("page-admin"), send:$("page-send") };
+const pages = { landing:$("page-landing"), auth:$("page-auth"), dashboard:$("page-dashboard"), community:$("page-community"), admin:$("page-admin"), send:$("page-send"), about:$("page-about") };
 function showPage(name) {
   Object.values(pages).forEach(p => { if (p) { p.style.display="none"; p.classList.remove("active"); } });
   const page = pages[name]; if (!page) return;
   page.style.display = "flex"; void page.offsetWidth; page.classList.add("active");
-  window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   document.querySelectorAll(".nav-tab, .mob-btn").forEach(b => b.classList.toggle("active", b.dataset.page === name));
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 document.querySelectorAll(".nav-tab, .mob-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     const t = btn.dataset.page;
-    // "about" is reachable with or without an account
-    if (t !== "about" && !currentUser) return;
+    if (!currentUser) { if (t === "about") showPage("about"); return; }
     if (t === "admin" && !isAdmin) return;
     showPage(t);
     if (t === "community") loadCommunity();
     if (t === "admin") loadAdminPanel();
   });
 });
+$("nav-about-ghost")?.addEventListener("click", () => showPage("about"));
 $("landing-about-btn")?.addEventListener("click", () => showPage("about"));
+$("footer-about-btn")?.addEventListener("click", () => showPage("about"));
+$("about-cta-btn")?.addEventListener("click", () => { showAuthTab("signup"); showPage("auth"); });
 
 // ── AUTH STATE ──
 onAuthStateChanged(auth, async (user) => {
-  if (targetUser) { await loadSendPage(targetUser); hideBootSkeleton(); return; }
+  if (targetUser) { await loadSendPage(targetUser); hideBootLoader(); return; }
   if (user) {
     currentUser = user; isAdmin = user.uid === ADMIN_UID;
     $("nav-login-btn")?.classList.add("hidden");
     $("nav-signup-btn")?.classList.add("hidden");
+    $("nav-about-ghost")?.classList.add("hidden");
     $("nav-user")?.classList.remove("hidden");
     if ($("nav-tabs")) $("nav-tabs").style.display = "flex";
     $("mobile-nav")?.classList.remove("hidden");
@@ -110,19 +109,28 @@ onAuthStateChanged(auth, async (user) => {
     $("nav-avatar-letter").textContent = currentUsername[0].toUpperCase();
     $("dash-username-title").textContent = currentUsername;
     $("dash-avatar").textContent = currentUsername[0].toUpperCase();
-    resetDashboard(); await loadDashboard(); showPage("dashboard");
+    const uidShort = ("ID·" + user.uid.slice(0,8)).toUpperCase();
+    if ($("dash-uid")) $("dash-uid").textContent = uidShort;
+    resetDashboard();
+    showDashSkeleton();
+    showPage("dashboard");
+    await loadDashboard();
+    hideDashSkeleton();
     const ls=$("login-submit"); if(ls){ls.disabled=false;ls.querySelector("span").textContent="Se connecter";}
     const ss=$("signup-submit"); if(ss){ss.disabled=false;ss.querySelector("span").textContent="Créer mon compte";}
   } else {
     currentUser=null; currentUsername=""; isAdmin=false; allMessages=[];
     $("nav-login-btn")?.classList.remove("hidden");
     $("nav-signup-btn")?.classList.remove("hidden");
+    $("nav-about-ghost")?.classList.remove("hidden");
     $("nav-user")?.classList.add("hidden");
     if ($("nav-tabs")) $("nav-tabs").style.display = "none";
     $("mobile-nav")?.classList.add("hidden");
-    showPage("landing");
+    if (!document.querySelector(".page.active") || document.querySelector(".page.active") === pages.dashboard) {
+      showPage("landing");
+    }
   }
-  hideBootSkeleton();
+  hideBootLoader();
 });
 
 function resetDashboard() {
@@ -132,6 +140,24 @@ function resetDashboard() {
   ["stat-total","stat-today","stat-week"].forEach(id => { const el=$(id); if(el) el.textContent="0"; });
   document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
   $("filter-all")?.classList.add("active");
+}
+
+// ── SKELETON HELPERS ──
+function showDashSkeleton() {
+  $("dash-skeleton")?.classList.remove("hidden");
+  $("dash-content")?.classList.add("hidden");
+}
+function hideDashSkeleton() {
+  $("dash-skeleton")?.classList.add("hidden");
+  $("dash-content")?.classList.remove("hidden");
+}
+function showCommunitySkeleton() {
+  $("community-skeleton")?.classList.remove("hidden");
+  $("community-content")?.classList.add("hidden");
+}
+function hideCommunitySkeleton() {
+  $("community-skeleton")?.classList.add("hidden");
+  $("community-content")?.classList.remove("hidden");
 }
 
 // ── LANDING ──
@@ -197,18 +223,6 @@ $("login-submit")?.addEventListener("click",async()=>{
 });
 $("nav-logout-btn")?.addEventListener("click",()=>signOut(auth));
 
-// ── SKELETON HELPERS ──
-function setStatsLoading(loading){
-  document.querySelectorAll(".stat-card").forEach(c => c.classList.toggle("is-loading", loading));
-}
-function setMessagesLoading(loading){
-  $("messages-skeleton")?.classList.toggle("hidden", !loading);
-  $("messages-container")?.classList.toggle("hidden", loading);
-}
-function setCommunityLoading(loading){
-  $("community-skeleton")?.classList.toggle("hidden", !loading);
-}
-
 // ── DASHBOARD ──
 async function loadDashboard(){
   const base=window.location.origin+window.location.pathname;
@@ -266,15 +280,12 @@ function downloadQR(){
 }
 
 async function fetchMessages(){
-  setStatsLoading(true);
-  setMessagesLoading(true);
   try{
     const q=query(collection(db,"messages"),where("recipientId","==",currentUser.uid),orderBy("createdAt","desc"));
     const snap=await getDocs(q);
     allMessages=snap.docs.map(d=>({id:d.id,...d.data()}));
     updateStats(); buildChart(); renderMessages();
   }catch(e){console.error("fetchMessages:",e);}
-  finally{ setStatsLoading(false); setMessagesLoading(false); }
 }
 
 function setFilter(f){
@@ -324,7 +335,6 @@ function buildChart(){
 function renderMessages(searchTerm=""){
   const container=$("messages-container");if(!container)return;
   container.innerHTML="";
-  container.classList.add("content-fade-in");
   const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const week=new Date(today);week.setDate(today.getDate()-7);
   const cutoff24=new Date(now-86400000);
@@ -337,11 +347,10 @@ function renderMessages(searchTerm=""){
 
   filtered.forEach((msg,i)=>{
     const card=document.createElement("div");
-    card.className="msg-card"; card.style.animationDelay=Math.min(i*0.04,0.4)+"s";
+    card.className="msg-card"; card.style.animationDelay=i*0.04+"s";
     const isNew=msg.createdAt&&msg.createdAt.toDate()>=cutoff24;
     const badges=(isNew?'<span class="msg-badge new">🆕 Nouveau</span>':"")+(msg.approved?'<span class="msg-badge approved">✅ Approuvé</span>':"");
     const replyHtml=msg.adminReply?'<div class="msg-reply"><span class="msg-reply-lbl">Réponse de l\'équipe</span>'+escHtml(msg.adminReply)+'</div>':"";
-    // Reactions state for this card (local)
     const reacts = { "❤️": msg._r1||0, "😂": msg._r2||0, "🔥": msg._r3||0, "😮": msg._r4||0 };
     const reactHtml = Object.entries(reacts).map(([em,n]) =>
       `<button class="react-btn" data-em="${em}">${em}${n>0?'<span class="react-n">'+n+'</span>':''}</button>`
@@ -355,14 +364,13 @@ function renderMessages(searchTerm=""){
       '<div class="msg-footer">'+
         '<div class="msg-time">'+( msg.createdAt?formatDate(msg.createdAt.toDate()):"À l\'instant" )+'</div>'+
         '<div class="msg-actions-row">'+
-          '<button class="msg-action-btn msg-share-btn" title="Partager">'+
+          '<button class="msg-action-btn msg-share-btn">'+
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>'+
-          '<button class="msg-action-btn msg-copy-btn" title="Copier">'+
+          '<button class="msg-action-btn msg-copy-btn">'+
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'+
         '</div>'+
       '</div>';
 
-    // Reactions — local toggle animation
     card.querySelectorAll(".react-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         btn.classList.toggle("reacted");
@@ -395,9 +403,9 @@ function exportMessages(){
 
 // ── COMMUNITY ──
 async function loadCommunity(){
-  setCommunityLoading(true);
+  showCommunitySkeleton();
   await Promise.all([loadAnnouncements(),loadPolls(),loadFeatureRequests()]);
-  setCommunityLoading(false);
+  hideCommunitySkeleton();
 }
 
 async function loadAnnouncements(){
@@ -489,7 +497,7 @@ async function voteFeature(featureId,hasVoted,currentVotes){
   }catch(e){console.error(e);}
 }
 
-// ── ADMIN ──
+// ── ADMIN / ANONYME ──
 async function loadAdminPanel(){
   if(!isAdmin)return;
   await Promise.all([loadAdminAnnouncements(),loadAdminPolls(),loadAdminFeedback()]);
@@ -635,7 +643,6 @@ function drawShareCard(message, canvas, callback) {
   const ctx = canvas.getContext("2d");
 
   const draw = () => {
-    // Background image (cover)
     if (bgImg.complete && bgImg.naturalWidth > 0) {
       const ir=bgImg.naturalWidth/bgImg.naturalHeight, cr=W/H;
       let sx=0,sy=0,sw=bgImg.naturalWidth,sh=bgImg.naturalHeight;
@@ -647,31 +654,25 @@ function drawShareCard(message, canvas, callback) {
       g.addColorStop(0,"#0d0b2e");g.addColorStop(.5,"#1a1050");g.addColorStop(1,"#2d0b50");
       ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
     }
-    // Overlay
     const ov=ctx.createLinearGradient(0,0,0,H);
     ov.addColorStop(0,"rgba(5,4,20,.62)");ov.addColorStop(.5,"rgba(10,8,35,.46)");ov.addColorStop(1,"rgba(5,4,20,.72)");
     ctx.fillStyle=ov;ctx.fillRect(0,0,W,H);
-    // Glass panel
     const pad=70,cx=pad,cy=pad*2.5,cw=W-pad*2,ch=H-pad*5,r=60;
     rrect(ctx,cx,cy,cw,ch,r);ctx.fillStyle="rgba(255,255,255,.07)";ctx.fill();
     ctx.strokeStyle="rgba(255,255,255,.12)";ctx.lineWidth=2;ctx.stroke();
-    // Top gradient border
     const tg=ctx.createLinearGradient(cx,cy,cx+cw,cy);
     tg.addColorStop(0,"rgba(99,102,241,0)");tg.addColorStop(.3,"rgba(99,102,241,.9)");
     tg.addColorStop(.7,"rgba(168,85,247,.9)");tg.addColorStop(1,"rgba(99,102,241,0)");
     ctx.strokeStyle=tg;ctx.lineWidth=4;
     ctx.beginPath();ctx.moveTo(cx+r,cy);ctx.lineTo(cx+cw-r,cy);ctx.stroke();
-    // Logo icon
     const lx=cx+52,ly=cy+70;
     const lg=ctx.createLinearGradient(lx,ly-30,lx+60,ly+30);
     lg.addColorStop(0,"#6366f1");lg.addColorStop(1,"#a855f7");
     rrect(ctx,lx,ly-30,60,60,15);ctx.fillStyle=lg;ctx.fill();
     ctx.font="700 48px Georgia,serif";ctx.fillStyle="rgba(255,255,255,.9)";
     ctx.textBaseline="middle";ctx.fillText("webnote.",lx+76,ly);
-    // Quote mark
     ctx.font="bold 200px Georgia,serif";ctx.fillStyle="rgba(99,102,241,.2)";
     ctx.textBaseline="top";ctx.fillText("\u201C",cx+42,cy+155);
-    // Message (word wrapped)
     ctx.font="500 52px Arial,sans-serif";ctx.fillStyle="#f0f0ff";ctx.textBaseline="top";
     const msgX=cx+58,msgY=cy+285,msgW=cw-116,lineH=76;
     const lines=wrapText(ctx,message,msgW);
@@ -683,18 +684,15 @@ function drawShareCard(message, canvas, callback) {
       show[show.length-1]=last+"…";
     }
     show.forEach((line,i)=>ctx.fillText(line,msgX,msgY+i*lineH));
-    // Divider
     const divY=cy+ch-175;
     ctx.strokeStyle="rgba(255,255,255,.1)";ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(cx+58,divY);ctx.lineTo(cx+cw-58,divY);ctx.stroke();
-    // Footer
     const fy=divY+46;
     ctx.font="700 27px Arial,sans-serif";ctx.fillStyle="rgba(255,255,255,.35)";ctx.textBaseline="top";
     ctx.fillText("MESSAGE ANONYME",cx+58,fy);
     ctx.font="500 25px Arial,sans-serif";ctx.fillStyle="rgba(160,140,255,.68)";
     ctx.fillText("webnote \xB7 mimosas444.github.io/Webnote.",cx+58,fy+42);
     ctx.font="62px serif";ctx.fillText("\uD83C\uDFAD",cx+cw-110,fy+6);
-    // Export JPEG (solid, no transparency = no sticker on WA)
     canvas.toBlob(b=>{if(callback)callback(b);},"image/jpeg",0.94);
   };
 
@@ -721,7 +719,6 @@ async function getBlob(){
   return null;
 }
 
-// Modal buttons
 $("shr-dl-btn")?.addEventListener("click",async()=>{
   const blob=await getBlob();if(!blob){showToast("⚠️ Patiente encore !");return;}
   const url=URL.createObjectURL(blob);
@@ -742,18 +739,6 @@ $("shr-copy-btn")?.addEventListener("click",async()=>{
   setTimeout(()=>URL.revokeObjectURL(url),2000);showToast("✅ Image enregistrée !");
 });
 
-async function directSaveImage(message){
-  return new Promise(resolve=>{
-    const canvas=document.createElement("canvas");
-    drawShareCard(message,canvas,blob=>{
-      if(!blob){resolve(false);return;}
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement("a");a.href=url;a.download="message-webnote.jpg";a.click();
-      setTimeout(()=>URL.revokeObjectURL(url),2000);resolve(true);
-    });
-  });
-}
-
 // ════════════════════════════════════════
 //  HELPERS
 // ════════════════════════════════════════
@@ -769,7 +754,6 @@ function replaceEl(id,fn){const el=$(id);if(!el)return;const clone=el.cloneNode(
 function showErr(el,msg){if(!el)return;el.textContent=msg;el.classList.remove("hidden");}
 function escHtml(str){return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 
-// Inject / update a meta tag dynamically
 function setMetaTag(property, content) {
   let el = document.querySelector('meta[property="'+property+'"]') || document.querySelector('meta[name="'+property+'"]');
   if (!el) {
@@ -780,7 +764,6 @@ function setMetaTag(property, content) {
   el.setAttribute("content", content);
 }
 
-// Fixed formatDate — uses device local time (correct for any timezone, Haiti included)
 function formatDate(date){
   const now=new Date();
   const diff=Math.floor((now.getTime()-date.getTime())/1000);
@@ -795,3 +778,6 @@ function fbErr(code){
   const m={"auth/email-already-in-use":"Email déjà utilisé.","auth/invalid-email":"Email invalide.","auth/weak-password":"Mot de passe trop faible.","auth/user-not-found":"Aucun compte.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-credential":"Email ou mot de passe incorrect.","auth/too-many-requests":"Trop de tentatives."};
   return m[code]||"Une erreur s'est produite.";
 }
+
+// Safety net: hide boot loader even if auth callback is slow
+setTimeout(hideBootLoader, 4000);
