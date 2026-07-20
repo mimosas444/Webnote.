@@ -1,31 +1,16 @@
 // ═══════════════════════════════════════════
 //  SE9SI.  — app.js
-//  Logique inspirée du backend Se9si (username + PIN à 4 chiffres,
-//  questions {name, question, opened}), portée en client-only sur
-//  Firestore (pas de serveur Express/Mongo à héberger ici).
+//  Pseudo + code à 6 chiffres, anonyme, sur Firebase/Firestore.
 // ═══════════════════════════════════════════
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc,
   collection, addDoc, getDocs, query, orderBy, serverTimestamp, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// NOTE: même projet Firebase que ton site précédent (mêmes clés).
-// Comme il n'y a plus de Firebase Auth par email, il faut adapter les
-// règles Firestore, par ex :
-//   match /users/{username} {
-//     allow read: if true;
-//     allow create: if request.auth != null && !exists(/databases/$(database)/documents/users/$(username));
-//     allow update: if request.auth != null;
-//     match /questions/{qid} {
-//       allow read: if true;
-//       allow create: if true;
-//       allow update: if request.auth != null;
-//     }
-//   }
-//   match /announcements/{id} { allow read: if true; allow write: if request.auth != null; }
+// ⚠️ Même projet Firebase que ton site précédent (mêmes clés).
 const firebaseConfig = {
   apiKey: "AIzaSyASaooIcRrY2mwZiI3j5VwjHmmzY8XLIag",
   authDomain: "webnote-63e2b.firebaseapp.com",
@@ -35,8 +20,9 @@ const firebaseConfig = {
   appId: "1:756128668649:web:da1ac2ec48f661d1688978"
 };
 
-// Pseudos considérés admin (ajoute le tien ici)
-const ADMIN_USERNAMES = ["admin"];
+// Le pseudo "anonymous" est le compte admin (code : 909018)
+const ADMIN_USERNAMES = ["anonymous"];
+const PIN_LENGTH = 6;
 
 const fireApp = initializeApp(firebaseConfig);
 const auth    = getAuth(fireApp);
@@ -46,9 +32,10 @@ let currentUsername = "";
 let isAdmin = false;
 let allQuestions = [];
 let currentFilter = "all";
+let isGridView = true;
 let qrGenerated = false, qrVisible = false;
 let bootHidden = false;
-let pendingShareText = "";
+let authReady = false;
 
 const urlParams  = new URLSearchParams(window.location.search);
 const targetUser = urlParams.get("to") || urlParams.get("user");
@@ -66,61 +53,69 @@ $("theme-toggle")?.addEventListener("click", () => {
 });
 function updateThemeIcon(t){ const i=$("theme-ico"); if(i) i.textContent = t==="dark" ? "☀️" : "🌙"; }
 
-// ── BOOT SKELETON ──
-function hideBoot(){
-  if (bootHidden) return; bootHidden = true;
-  const el = $("boot"); if (el) { el.classList.add("boot-hide"); setTimeout(()=>el.remove(),450); }
+// ── DATETIME ──
+function updateDatetime(){
+  const now=new Date();
+  const date=now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+  const time=now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  ["auth-datetime","ask-datetime"].forEach(id=>{ const el=$(id); if(el){ el.style.whiteSpace="pre-line"; el.textContent=date+"\n"+time; } });
 }
-setTimeout(hideBoot, 4000);
+updateDatetime(); setInterval(updateDatetime,30000);
+
+// ── BOOT SKELETON ──
+function hideBoot(){ if(bootHidden) return; bootHidden=true; const el=$("boot"); if(el){ el.classList.add("boot-hide"); setTimeout(()=>el.remove(),450); } }
+setTimeout(hideBoot, 5000);
 
 // ── PAGES ──
-const pages = {
-  landing:$("page-landing"), auth:$("page-auth"), dashboard:$("page-dashboard"),
-  feed:$("page-feed"), admin:$("page-admin"), ask:$("page-ask")
-};
+const pages = { landing:$("page-landing"), auth:$("page-auth"), dashboard:$("page-dashboard"), community:$("page-community"), admin:$("page-admin"), ask:$("page-ask") };
 function showPage(name){
   Object.values(pages).forEach(p=>{ if(p){ p.style.display="none"; p.classList.remove("active"); } });
-  const page = pages[name]; if(!page) return;
+  const page=pages[name]; if(!page) return;
   page.style.display="flex"; void page.offsetWidth; page.classList.add("active");
   window.scrollTo(0,0);
   document.querySelectorAll(".nav-tab,.mob-btn").forEach(b=>b.classList.toggle("active", b.dataset.page===name));
 }
 document.querySelectorAll(".nav-tab,.mob-btn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
-    const t = btn.dataset.page;
     if(!currentUsername) return;
+    const t=btn.dataset.page;
     if(t==="admin" && !isAdmin) return;
     showPage(t);
     if(t==="dashboard") fetchQuestions();
-    if(t==="feed") loadFeed();
-    if(t==="admin") loadAdminFeed();
+    if(t==="community") loadCommunity();
+    if(t==="admin") loadAdminPanel();
   });
 });
-$("landing-about-btn")?.addEventListener("click", ()=>{
-  document.querySelector(".mock-window")?.scrollIntoView({behavior:"smooth"});
-});
 
-// ── CRYPTO HELPERS (hash du PIN — "basique mais suffisant", comme l'original) ──
+// ── CRYPTO ──
 async function hashPin(pin, username){
-  const enc = new TextEncoder().encode("se9si::" + username + "::" + pin);
-  const buf = await crypto.subtle.digest("SHA-256", enc);
+  const enc=new TextEncoder().encode("se9si::"+username+"::"+pin);
+  const buf=await crypto.subtle.digest("SHA-256", enc);
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 
-// ── INIT: sign in anonymously (pour satisfaire les règles Firestore), puis routing ──
+// ── INIT ──
 (async function boot(){
-  try { await signInAnonymously(auth); } catch(e){ console.error("anon auth:", e); }
+  try{
+    await new Promise((resolve,reject)=>{
+      onAuthStateChanged(auth, user=>{ if(user){ authReady=true; resolve(); } }, reject);
+      signInAnonymously(auth).catch(reject);
+    });
+  }catch(e){
+    console.error("Auth anonyme impossible :", e);
+    showToast("⚠️ Connexion au serveur impossible. Vérifie ta connexion.");
+    hideBoot();
+    return;
+  }
 
-  if (targetUser) { await loadAskPage(targetUser); hideBoot(); return; }
+  if(targetUser){ await loadAskPage(targetUser); hideBoot(); return; }
 
   const saved = localStorage.getItem("s9-username");
-  if (saved) {
-    const snap = await getDoc(doc(db,"users",saved));
-    if (snap.exists()) {
-      await enterDashboard(saved);
-      hideBoot();
-      return;
-    }
+  if(saved){
+    try{
+      const snap = await getDoc(doc(db,"users",saved));
+      if(snap.exists()){ await enterDashboard(saved); hideBoot(); return; }
+    }catch(e){ console.error(e); }
     localStorage.removeItem("s9-username");
   }
   showPage("landing");
@@ -132,29 +127,38 @@ $("start-btn")?.addEventListener("click", ()=>showPage("auth"));
 $("login-btn-landing")?.addEventListener("click", ()=>showPage("auth"));
 $("nav-login-btn")?.addEventListener("click", ()=>showPage("auth"));
 
-// ── PIN INPUT UX (auto-advance / backspace) ──
+// ── PIN INPUT (6 boîtes, auto-avance) ──
 const pinBoxes = Array.from(document.querySelectorAll(".pin-box"));
 pinBoxes.forEach((box,i)=>{
   box.addEventListener("input", ()=>{
     box.value = box.value.replace(/[^0-9]/g,"").slice(0,1);
     if(box.value && pinBoxes[i+1]) pinBoxes[i+1].focus();
   });
-  box.addEventListener("keydown", (e)=>{
+  box.addEventListener("keydown", e=>{
     if(e.key==="Backspace" && !box.value && pinBoxes[i-1]) pinBoxes[i-1].focus();
+  });
+  box.addEventListener("paste", e=>{
+    const text=(e.clipboardData||window.clipboardData).getData("text").replace(/[^0-9]/g,"");
+    if(!text) return;
+    e.preventDefault();
+    text.slice(0,PIN_LENGTH).split("").forEach((ch,idx)=>{ if(pinBoxes[idx]) pinBoxes[idx].value=ch; });
+    const last = Math.min(text.length,PIN_LENGTH)-1;
+    if(pinBoxes[last]) pinBoxes[last].focus();
   });
 });
 function getPin(){ return pinBoxes.map(b=>b.value).join(""); }
 function clearPin(){ pinBoxes.forEach(b=>b.value=""); pinBoxes[0]?.focus(); }
 
-// ── LOGIN / REGISTER UNIFIÉ (comme Se9si: 1 seul formulaire) ──
+// ── LOGIN / SIGNUP UNIFIÉ ──
 $("auth-submit")?.addEventListener("click", async ()=>{
-  const username = $("auth-username").value.trim().toLowerCase();
+  const username = $("auth-username").value.trim().toLowerCase().replace(/\s+/g,"");
   const pin = getPin();
   const err = $("auth-error"); err.classList.add("hidden");
 
-  if(username.includes(" ")) return showErr(err,"Pas d'espace dans le pseudo.");
-  if(username.length<5) return showErr(err,"Pseudo trop court (min. 5 caractères).");
-  if(pin.length!==4) return showErr(err,"Le code doit faire 4 chiffres.");
+  if(!authReady) return showErr(err,"Connexion au serveur en cours… réessaie dans une seconde.");
+  if(!/^[a-z0-9_.]+$/i.test(username)) return showErr(err,"Le pseudo ne peut contenir que lettres, chiffres, _ et .");
+  if(username.length<3) return showErr(err,"Pseudo trop court (min. 3 caractères).");
+  if(pin.length!==PIN_LENGTH) return showErr(err,"Le code doit faire "+PIN_LENGTH+" chiffres.");
 
   const btn=$("auth-submit"); btn.disabled=true; btn.querySelector("span").textContent="Vérification…";
   try{
@@ -163,10 +167,10 @@ $("auth-submit")?.addEventListener("click", async ()=>{
     const pinHash = await hashPin(pin, username);
 
     if(!snap.exists()){
-      // SIGNUP — création auto, comme le backend Se9si
+      // SIGNUP — création auto, pseudo garanti unique (ID de doc = pseudo)
       await setDoc(ref, { username, pinHash, createdAt: serverTimestamp() });
       await addDoc(collection(db,"users",username,"questions"), {
-        name: "Se9si 👋", question: "Salut ! Tu recevras toutes tes questions ici. Bonne chance 🚨",
+        name:"Se9si 👋", question:"Salut ! Tu recevras toutes tes questions ici. Bonne chance 🚨",
         opened:false, createdAt: serverTimestamp()
       });
       await enterDashboard(username);
@@ -183,7 +187,13 @@ $("auth-submit")?.addEventListener("click", async ()=>{
   }catch(e){
     console.error(e);
     btn.disabled=false; btn.querySelector("span").textContent="Continuer";
-    showErr(err,"Erreur. Réessaie.");
+    if(e.code==="permission-denied"){
+      showErr(err,"Accès refusé par le serveur. Les règles Firestore doivent être mises à jour (voir console).");
+    } else if(e.code==="unavailable"){
+      showErr(err,"Serveur injoignable. Vérifie ta connexion internet.");
+    } else {
+      showErr(err,"Erreur. Réessaie.");
+    }
   }
 });
 
@@ -219,11 +229,12 @@ $("logout-btn")?.addEventListener("click", ()=>{
   $("nav-user")?.classList.add("hidden");
   $("nav-tabs").style.display="none";
   $("mobile-nav")?.classList.add("hidden");
+  document.querySelectorAll(".admin-only").forEach(el=>el.classList.add("hidden"));
   showPage("landing");
   showToast("👋 Déconnecté");
 });
 
-// ── DASHBOARD ACTIONS (wired once per login) ──
+// ── DASHBOARD ACTIONS ──
 function wireDashboardActions(link){
   replaceEl("copy-link-btn", b=>b.addEventListener("click", ()=>{
     navigator.clipboard.writeText(link).then(()=>showToast("✅ Lien copié !"));
@@ -234,34 +245,37 @@ function wireDashboardActions(link){
   replaceEl("share-img", b=>b.addEventListener("click", ()=>openShareModal(
     "Pose-moi n'importe quelle question 👀", link
   )));
-  replaceEl("qr-toggle", b=>b.addEventListener("click", toggleQR));
-  replaceEl("qr-dl", b=>b.addEventListener("click", downloadQR));
+  replaceEl("qr-toggle-btn", b=>b.addEventListener("click", toggleQR));
+  replaceEl("qr-dl-btn", b=>b.addEventListener("click", downloadQR));
   replaceEl("refresh-btn", b=>b.addEventListener("click", async ()=>{
-    b.style.transition="transform .5s"; b.style.transform="rotate(360deg)";
-    setTimeout(()=>{b.style.transform="";b.style.transition="";},500);
     await fetchQuestions(); showToast("✅ Actualisé !");
   }));
+  replaceEl("export-btn", b=>b.addEventListener("click", exportQuestions));
   replaceEl("filter-all", b=>b.addEventListener("click", ()=>setFilter("all")));
   replaceEl("filter-unread", b=>b.addEventListener("click", ()=>setFilter("unread")));
-  const si = $("search-input"); if(si) si.addEventListener("input", e=>renderQuestions(e.target.value.toLowerCase().trim()));
+  replaceEl("view-grid", b=>b.addEventListener("click", ()=>setView(true)));
+  replaceEl("view-list", b=>b.addEventListener("click", ()=>setView(false)));
+  const si=$("search-input"); if(si) si.addEventListener("input", e=>renderQuestions(e.target.value.toLowerCase().trim()));
 }
 
 function toggleQR(){
   qrVisible=!qrVisible;
   $("qr-wrap")?.classList.toggle("hidden", !qrVisible);
-  const b=$("qr-toggle");
-  if(b) b.textContent = qrVisible ? "✕ Masquer le QR" : "📱 Afficher le QR Code";
+  const b=$("qr-toggle-btn");
+  if(b) b.innerHTML = qrVisible
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Masquer le QR'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14.01" y2="14"/><line x1="18" y1="14" x2="18.01" y2="14"/><line x1="14" y1="18" x2="14.01" y2="18"/><line x1="18" y1="18" x2="18.01" y2="18"/></svg> Afficher le QR Code';
   if(qrVisible) generateQR();
 }
 function generateQR(){
   if(qrGenerated) return;
-  const c=$("qr-el"); if(!c) return; c.innerHTML="";
-  const link = $("share-link").textContent;
-  try{ new QRCode(c,{text:link,width:150,height:150,colorDark:"#171410",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); qrGenerated=true; }
+  const c=$("qr-code-el"); if(!c) return; c.innerHTML="";
+  const link=$("share-link").textContent;
+  try{ new QRCode(c,{text:link,width:160,height:160,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); qrGenerated=true; }
   catch(e){ console.error("QR:",e); }
 }
 function downloadQR(){
-  const canvas=$("qr-el")?.querySelector("canvas"), img=$("qr-el")?.querySelector("img");
+  const canvas=$("qr-code-el")?.querySelector("canvas"), img=$("qr-code-el")?.querySelector("img");
   const src = canvas ? canvas.toDataURL("image/png") : img?.src;
   if(!src){ showToast("Ouvre le QR d'abord !"); return; }
   const a=document.createElement("a"); a.href=src; a.download="se9si-qrcode.png"; a.click();
@@ -270,10 +284,7 @@ function downloadQR(){
 
 // ── SKELETON HELPERS ──
 function setStatsLoading(loading){ document.querySelectorAll(".stat-card").forEach(c=>c.classList.toggle("is-loading", loading)); }
-function setQLoading(loading){
-  $("q-skeleton")?.classList.toggle("hidden", !loading);
-  $("q-list")?.classList.toggle("hidden", loading);
-}
+function setQLoading(loading){ $("q-skeleton")?.classList.toggle("hidden", !loading); $("messages-container")?.classList.toggle("hidden", loading); }
 
 // ── FETCH QUESTIONS ──
 async function fetchQuestions(){
@@ -282,7 +293,7 @@ async function fetchQuestions(){
     const snap = await getDocs(query(collection(db,"users",currentUsername,"questions"), orderBy("createdAt","desc")));
     allQuestions = snap.docs.map(d=>({id:d.id, ...d.data()}));
     updateStats(); buildChart(); renderQuestions();
-  }catch(e){ console.error("fetchQuestions:",e); }
+  }catch(e){ console.error("fetchQuestions:",e); showToast("⚠️ Impossible de charger les questions."); }
   finally{ setStatsLoading(false); setQLoading(false); }
 }
 
@@ -290,7 +301,13 @@ function setFilter(f){
   currentFilter=f;
   document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active"));
   $("filter-"+f)?.classList.add("active");
-  renderQuestions();
+  renderQuestions($("search-input")?.value.toLowerCase().trim()||"");
+}
+function setView(grid){
+  isGridView=grid;
+  $("view-grid")?.classList.toggle("active",grid);
+  $("view-list")?.classList.toggle("active",!grid);
+  $("messages-container")?.classList.toggle("list-view",!grid);
 }
 
 function updateStats(){
@@ -325,31 +342,35 @@ function buildChart(){
 }
 
 function renderQuestions(searchTerm=""){
-  const container=$("q-list"); if(!container) return;
+  const container=$("messages-container"); if(!container) return;
   container.innerHTML="";
   let filtered=[...allQuestions];
   if(currentFilter==="unread") filtered=filtered.filter(q=>!q.opened);
   if(searchTerm) filtered=filtered.filter(q=> (q.question||"").toLowerCase().includes(searchTerm) || (q.name||"").toLowerCase().includes(searchTerm));
 
   if(filtered.length===0){
-    container.innerHTML='<div class="empty-state"><div class="empty-ico">📭</div><p>Aucune question ici.</p></div>';
+    container.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><p>Aucune question ici.</p></div>';
     return;
   }
 
+  const cutoff24 = new Date(Date.now()-86400000);
   filtered.forEach((q,i)=>{
     const card=document.createElement("div");
-    card.className="q-card card fade-up"+(!q.opened?" unread":"");
-    card.style.animationDelay=Math.min(i*0.04,0.4)+"s";
+    card.className="msg-card fade-up"; card.style.animationDelay=Math.min(i*0.04,0.4)+"s";
     const name = q.name || "Anonyme";
+    const isNew = !q.opened;
     card.innerHTML =
-      '<div class="q-name"><span class="q-avatar-mini">'+escHtml(name[0]||"?")+'</span>'+escHtml(name)+'</div>'+
-      '<div class="q-text">'+escHtml(q.question||"")+'</div>'+
-      '<div class="q-foot">'+
-        '<div class="q-time">'+(q.createdAt?formatDate(q.createdAt.toDate()):"À l'instant")+'</div>'+
-        '<div class="q-actions">'+
-          '<button class="q-action" data-act="share" title="Partager"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>'+
-          '<button class="q-action" data-act="copy" title="Copier"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'+
-          '<button class="q-action" data-act="delete" title="Supprimer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg></button>'+
+      '<div class="msg-header">'+
+        '<div class="msg-name"><span class="msg-avatar-mini">'+escHtml(name[0]||"?")+'</span>'+escHtml(name)+'</div>'+
+        (isNew?'<span class="msg-badge new">🆕 Nouveau</span>':'')+
+      '</div>'+
+      '<div class="msg-text">'+escHtml(q.question||"")+'</div>'+
+      '<div class="msg-footer">'+
+        '<div class="msg-time">'+(q.createdAt?formatDate(q.createdAt.toDate()):"À l'instant")+'</div>'+
+        '<div class="msg-actions-row">'+
+          '<button class="msg-action-btn" data-act="share" title="Partager"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>'+
+          '<button class="msg-action-btn" data-act="copy" title="Copier"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'+
+          '<button class="msg-action-btn danger" data-act="delete" title="Supprimer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg></button>'+
         '</div>'+
       '</div>';
 
@@ -359,10 +380,12 @@ function renderQuestions(searchTerm=""){
     card.querySelector('[data-act="delete"]').addEventListener("click", async e=>{
       e.stopPropagation();
       if(!confirm("Supprimer cette question ?")) return;
-      await deleteDoc(doc(db,"users",currentUsername,"questions",q.id));
-      allQuestions = allQuestions.filter(x=>x.id!==q.id);
-      updateStats(); buildChart(); renderQuestions(searchTerm);
-      showToast("🗑️ Supprimée.");
+      try{
+        await deleteDoc(doc(db,"users",currentUsername,"questions",q.id));
+        allQuestions = allQuestions.filter(x=>x.id!==q.id);
+        updateStats(); buildChart(); renderQuestions(searchTerm);
+        showToast("🗑️ Supprimée.");
+      }catch(err){ console.error(err); showToast("⚠️ Erreur lors de la suppression."); }
     });
     container.appendChild(card);
   });
@@ -374,70 +397,169 @@ async function markOpened(id){
   qItem.opened = true;
   try{ await updateDoc(doc(db,"users",currentUsername,"questions",id), {opened:true}); }catch(e){ console.error(e); }
   updateStats();
-  document.querySelectorAll(".q-card.unread").forEach(el=>{}); // visual already updated on next render
   renderQuestions($("search-input")?.value.toLowerCase().trim()||"");
 }
 
-// ── ANNOUNCEMENTS FEED (public) ──
-async function loadFeed(){
-  $("feed-skeleton")?.classList.remove("hidden");
-  $("feed-list")?.classList.add("hidden");
+function exportQuestions(){
+  if(!allQuestions.length){ showToast("⚠️ Aucune question à exporter !"); return; }
+  const sorted=[...allQuestions].sort((a,b)=>(a.createdAt?.toMillis()||0)-(b.createdAt?.toMillis()||0));
+  const lines=["Se9si — Questions anonymes","Exporté : "+new Date().toLocaleString("fr-FR"),"Total : "+sorted.length+" question(s)","─".repeat(36),""];
+  sorted.forEach((q,i)=>{ lines.push("["+(i+1)+"] "+(q.createdAt?q.createdAt.toDate().toLocaleString("fr-FR"):"—")+" — "+(q.name||"Anonyme")); lines.push('"'+q.question+'"'); lines.push(""); });
+  const blob=new Blob([lines.join("\n")],{type:"text/plain;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="se9si-"+new Date().toISOString().slice(0,10)+".txt"; a.click(); URL.revokeObjectURL(a.href);
+  showToast("📄 Export téléchargé !");
+}
+
+// ── COMMUNITY (annonces + suggestions) ──
+async function loadCommunity(){ await Promise.all([loadAnnouncements(), loadFeatureRequests()]); }
+
+async function loadAnnouncements(){
+  const list=$("announcements-list"); if(!list) return;
+  $("feed-skeleton")?.classList.remove("hidden"); list.classList.add("hidden");
   try{
     const snap = await getDocs(query(collection(db,"announcements"), orderBy("createdAt","desc")));
-    const list = $("feed-list");
-    if(snap.empty){ list.innerHTML='<div class="empty-state"><div class="empty-ico">📭</div><p>Aucune annonce pour l\'instant.</p></div>'; }
+    if(snap.empty){ list.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><p>Aucune annonce pour l\'instant.</p></div>'; }
     else{
       list.innerHTML="";
       snap.forEach(d=>{
         const data=d.data();
         const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) : "";
-        const item=document.createElement("div"); item.className="ann-feed-item card fade-up";
-        item.innerHTML = '<div class="ann-item-head"><div class="ann-item-title"><span class="ann-emoji">'+(data.emoji||"📢")+'</span>'+escHtml(data.title)+'</div><div class="ann-item-date">'+date+'</div></div><div style="font-size:.86rem;color:var(--ink-soft);line-height:1.6">'+escHtml(data.body)+'</div>';
-        list.appendChild(item);
+        const card=document.createElement("div"); card.className="ann-card glass fade-up";
+        card.innerHTML='<div class="ann-header"><div class="ann-emoji">'+(data.emoji||"📢")+'</div><div class="ann-meta"><div class="ann-title">'+escHtml(data.title)+'</div><div class="ann-date">'+date+'</div></div></div><div class="ann-body">'+escHtml(data.body)+'</div>';
+        list.appendChild(card);
       });
     }
   }catch(e){ console.error(e); }
-  finally{ $("feed-skeleton")?.classList.add("hidden"); $("feed-list")?.classList.remove("hidden"); }
+  finally{ $("feed-skeleton")?.classList.add("hidden"); list.classList.remove("hidden"); }
+}
+
+function votedFeatures(){ try{ return JSON.parse(localStorage.getItem("s9-voted-features")||"[]"); }catch(e){ return []; } }
+function addVotedFeature(id){ const v=votedFeatures(); if(!v.includes(id)){ v.push(id); localStorage.setItem("s9-voted-features", JSON.stringify(v)); } }
+
+async function loadFeatureRequests(){
+  const list=$("features-list"); if(!list) return;
+  try{
+    const snap = await getDocs(query(collection(db,"features"), orderBy("votes","desc")));
+    list.innerHTML="";
+    if(snap.empty){ list.innerHTML='<div class="empty-state" style="padding:26px 0"><div class="empty-icon">💡</div><p>Sois le premier !</p></div>'; return; }
+    const voted = votedFeatures();
+    snap.forEach(d=>{
+      const data=d.data(); const hasVoted = voted.includes(d.id);
+      const item=document.createElement("div"); item.className="feature-item";
+      const badgesHtml = data.approved ? '<span class="feature-badge approved">✅ Approuvé</span>' : '<span class="feature-badge pending">En attente</span>';
+      const replyHtml = data.adminReply ? '<div class="feature-reply"><span class="feature-reply-lbl">Réponse Se9si</span>'+escHtml(data.adminReply)+'</div>' : "";
+      item.innerHTML =
+        '<div class="feature-votes"><button class="vote-btn '+(hasVoted?"voted":"")+'" style="width:32px;height:32px;border-radius:9px;background:var(--surface);border:1.5px solid var(--bd2);cursor:pointer;font-size:.82rem">▲</button><div class="vote-count" style="text-align:center;font-size:.74rem;font-weight:800;color:var(--accent);margin-top:3px">'+(data.votes||0)+'</div></div>'+
+        '<div class="feature-info"><div class="feature-text">'+escHtml(data.text)+'</div><div class="feature-badges">'+badgesHtml+'</div>'+replyHtml+'</div>';
+      item.querySelector(".vote-btn").addEventListener("click", ()=>voteFeature(d.id, hasVoted, data.votes||0));
+      list.appendChild(item);
+    });
+  }catch(e){ console.error(e); }
+}
+
+replaceEl("feature-submit-btn", btn=>btn?.addEventListener("click", async ()=>{
+  const inp=$("feature-input"); if(!inp) return;
+  const text=inp.value.trim();
+  if(!text||text.length<5) return showToast("⚠️ Trop court !");
+  if(!currentUsername) return showToast("Connecte-toi d'abord !");
+  btn.querySelector("span").textContent="Envoi…"; btn.disabled=true;
+  try{
+    await addDoc(collection(db,"features"), {text, votes:0, approved:false, adminReply:null, authorUsername:currentUsername, createdAt:serverTimestamp()});
+    inp.value=""; showToast("💡 Suggestion envoyée !"); loadFeatureRequests();
+  }catch(e){ console.error(e); showToast("⚠️ Erreur."); }
+  btn.querySelector("span").textContent="Proposer"; btn.disabled=false;
+}));
+
+async function voteFeature(featureId, hasVoted, currentVotes){
+  if(hasVoted){ showToast("Tu as déjà voté !"); return; }
+  try{
+    await updateDoc(doc(db,"features",featureId), {votes: currentVotes+1});
+    addVotedFeature(featureId);
+    loadFeatureRequests();
+  }catch(e){ console.error(e); showToast("⚠️ Erreur."); }
 }
 
 // ── ADMIN ──
-replaceEl("ann-submit", btn=>btn?.addEventListener("click", async ()=>{
-  const title=$("ann-title").value.trim(), body=$("ann-body").value.trim();
-  if(!title||!body) return showToast("⚠️ Titre + message requis.");
-  btn.disabled=true; btn.querySelector("span").textContent="Publication…";
-  try{
-    await addDoc(collection(db,"announcements"), {title, body, emoji:"📢", author:currentUsername, createdAt:serverTimestamp()});
-    $("ann-title").value=""; $("ann-body").value="";
-    showToast("📢 Publié !");
-    loadAdminFeed();
-  }catch(e){ console.error(e); showToast("Erreur."); }
-  btn.disabled=false; btn.querySelector("span").textContent="Publier";
-}));
+async function loadAdminPanel(){
+  if(!isAdmin) return;
+  await Promise.all([loadAdminAnnouncements(), loadAdminFeedback()]);
+  document.querySelectorAll(".admin-tab").forEach(tab=>{
+    tab.onclick = ()=>{
+      document.querySelectorAll(".admin-tab").forEach(t=>t.classList.remove("active"));
+      document.querySelectorAll(".admin-panel").forEach(p=>p.classList.remove("active"));
+      tab.classList.add("active"); $("atab-"+tab.dataset.atab)?.classList.add("active");
+    };
+  });
+  document.querySelectorAll(".emoji-opt").forEach(opt=>{
+    opt.onclick = ()=>{ document.querySelectorAll(".emoji-opt").forEach(o=>o.classList.remove("active")); opt.classList.add("active"); };
+  });
+  replaceEl("ann-submit", btn=>btn?.addEventListener("click", async ()=>{
+    const title=$("ann-title").value.trim(), body=$("ann-body").value.trim();
+    const emoji = document.querySelector(".emoji-opt.active")?.dataset.emoji || "📢";
+    if(!title||!body) return showToast("⚠️ Titre + message requis.");
+    btn.disabled=true; btn.querySelector("span").textContent="Publication…";
+    try{
+      await addDoc(collection(db,"announcements"), {title, body, emoji, author:currentUsername, createdAt:serverTimestamp()});
+      $("ann-title").value=""; $("ann-body").value="";
+      showToast("📢 Publié !"); loadAdminAnnouncements();
+    }catch(e){ console.error(e); showToast("⚠️ Erreur."); }
+    btn.disabled=false; btn.querySelector("span").textContent="Publier l'annonce";
+  }));
+}
 
-async function loadAdminFeed(){
-  const list=$("admin-ann-list"); if(!list) return;
+async function loadAdminAnnouncements(){
+  const list=$("admin-announcements-list"); if(!list) return;
   const snap = await getDocs(query(collection(db,"announcements"), orderBy("createdAt","desc")));
   list.innerHTML="";
-  if(snap.empty){ list.innerHTML='<p style="color:var(--ink-faint);font-size:.82rem">Aucune annonce.</p>'; return; }
+  if(snap.empty){ list.innerHTML='<p style="color:var(--tx3);font-size:.8rem">Aucune annonce.</p>'; return; }
   snap.forEach(d=>{
     const data=d.data();
     const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR") : "";
-    const item=document.createElement("div"); item.className="ann-item card";
-    item.innerHTML = '<div class="ann-item-head"><div><div class="ann-item-title">'+(data.emoji||"📢")+" "+escHtml(data.title)+'</div><div class="ann-item-date">'+date+'</div></div><button class="admin-del">🗑️</button></div>';
-    item.querySelector(".admin-del").addEventListener("click", async ()=>{
-      if(!confirm("Supprimer ?")) return;
-      await deleteDoc(doc(db,"announcements",d.id));
-      showToast("🗑️ Supprimé."); loadAdminFeed();
-    });
+    const item=document.createElement("div"); item.className="admin-item";
+    item.innerHTML='<div class="admin-item-header"><div><div class="admin-item-text">'+(data.emoji||"📢")+" "+escHtml(data.title)+'</div><div class="admin-item-meta">'+date+'</div></div></div><div class="admin-item-actions"><button class="admin-action delete">🗑️ Supprimer</button></div>';
+    item.querySelector(".delete").addEventListener("click", async ()=>{ if(!confirm("Supprimer ?")) return; await deleteDoc(doc(db,"announcements",d.id)); showToast("🗑️ Supprimé."); loadAdminAnnouncements(); });
     list.appendChild(item);
   });
 }
 
-// ── ASK PAGE (public — pas besoin de compte) ──
+async function loadAdminFeedback(){
+  const list=$("admin-feedback-list"); if(!list) return;
+  const snap = await getDocs(query(collection(db,"features"), orderBy("votes","desc")));
+  list.innerHTML="";
+  const pending = snap.docs.filter(d=>!d.data().approved).length;
+  const badge=$("feedback-count"); if(badge) badge.textContent=pending;
+  const navBadge=$("admin-badge"); if(navBadge){ navBadge.textContent=pending; navBadge.style.display = pending>0 ? "" : "none"; }
+  if(snap.empty){ list.innerHTML='<div class="empty-state" style="padding:26px 0"><div class="empty-icon">💡</div><p>Aucune suggestion.</p></div>'; return; }
+  snap.forEach(d=>{
+    const data=d.data();
+    const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR") : "";
+    const replyHtml = data.adminReply ? '<div class="feature-reply"><span class="feature-reply-lbl">Réponse publiée</span>'+escHtml(data.adminReply)+'</div>' : "";
+    const item=document.createElement("div"); item.className="admin-item";
+    item.innerHTML =
+      '<div class="admin-item-header"><div><div class="admin-item-text">'+escHtml(data.text)+'</div><div class="admin-item-meta">'+(data.votes||0)+' vote(s) · '+date+(data.approved?" · ✅":"")+'</div></div></div>'+replyHtml+
+      '<div class="admin-item-actions"><button class="admin-action approve">'+(data.approved?"❌ Retirer":"✅ Approuver")+'</button><button class="admin-action reply">✏️ Répondre</button><button class="admin-action delete">🗑️</button></div>'+
+      '<div class="admin-reply-form hidden" id="rf-'+d.id+'"><div class="input-wrap textarea-wrap"><textarea placeholder="Réponse publique…" rows="3"></textarea></div><button class="btn-primary" style="font-size:.78rem;padding:8px 15px;margin-top:4px;align-self:flex-end">Publier</button></div>';
+    item.querySelector(".approve").addEventListener("click", async ()=>{ await updateDoc(doc(db,"features",d.id), {approved: !data.approved}); showToast(data.approved?"Retrait.":"✅ Approuvé !"); loadAdminFeedback(); });
+    item.querySelector(".reply").addEventListener("click", ()=>$("rf-"+d.id)?.classList.toggle("hidden"));
+    item.querySelector(".btn-primary").addEventListener("click", async ()=>{
+      const ta=$("rf-"+d.id)?.querySelector("textarea"); const reply=ta?.value.trim();
+      if(!reply) return showToast("Écris une réponse !");
+      await updateDoc(doc(db,"features",d.id), {adminReply:reply}); showToast("✏️ Réponse publiée !"); loadAdminFeedback();
+    });
+    item.querySelector(".delete").addEventListener("click", async ()=>{ if(!confirm("Supprimer ?")) return; await deleteDoc(doc(db,"features",d.id)); showToast("🗑️ Supprimé."); loadAdminFeedback(); });
+    list.appendChild(item);
+  });
+}
+
+// ── ASK PAGE (public, sans compte) ──
 async function loadAskPage(username){
   showPage("ask");
   $("nav-login-btn")?.classList.remove("hidden");
-  const snap = await getDoc(doc(db,"users",username));
+  username = username.trim().toLowerCase();
+  let snap;
+  try{ snap = await getDoc(doc(db,"users",username)); }
+  catch(e){ console.error(e); $("ask-username").textContent="erreur de chargement"; $("ask-submit").disabled=true; return; }
+
   if(!snap.exists()){
     $("ask-username").textContent="introuvable";
     $("ask-submit").disabled=true;
@@ -471,17 +593,16 @@ async function loadAskPage(username){
 }
 
 // ════════════════════════════════════════
-//  SHARE — canvas, brandé Se9si (pas d'image externe requise)
+//  SHARE — canvas, brandé Se9si
 // ════════════════════════════════════════
 let shrBlob=null;
 
 function openShareModal(text, link){
-  pendingShareText = text;
   shrBlob=null;
   $("shr-overlay")?.classList.remove("hidden");
-  $("shr-loader")?.classList.remove("hidden");
+  $("shr-preview-loader")?.classList.remove("hidden");
   setTimeout(()=>{
-    drawShareCard(text, link, $("shr-canvas"), blob=>{ shrBlob=blob; $("shr-loader")?.classList.add("hidden"); });
+    drawShareCard(text, link, $("shr-canvas"), blob=>{ shrBlob=blob; $("shr-preview-loader")?.classList.add("hidden"); });
   }, 120);
 }
 function closeShareModal(){ $("shr-overlay")?.classList.add("hidden"); shrBlob=null; }
@@ -493,42 +614,42 @@ function drawShareCard(text, link, canvas, callback){
   const W=1080, H=1350;
   canvas.width=W; canvas.height=H;
   const ctx=canvas.getContext("2d");
-
   const dark = document.documentElement.getAttribute("data-theme")==="dark";
-  const bgCol = dark ? "#14120E" : "#FAF5EC";
-  const inkCol = dark ? "#F5F0E6" : "#171410";
-  const accentCol = "#FF5A36";
 
-  ctx.fillStyle=bgCol; ctx.fillRect(0,0,W,H);
-  // dot grid
-  ctx.fillStyle = dark ? "rgba(245,240,230,.05)" : "rgba(23,20,16,.06)";
-  for(let y=40;y<H;y+=34){ for(let x=40;x<W;x+=34){ ctx.beginPath(); ctx.arc(x,y,2,0,Math.PI*2); ctx.fill(); } }
+  const g=ctx.createLinearGradient(0,0,W,H);
+  if(dark){ g.addColorStop(0,"#07071a"); g.addColorStop(.5,"#0f0d20"); g.addColorStop(1,"#12091a"); }
+  else{ g.addColorStop(0,"#dde8ff"); g.addColorStop(.5,"#ede9ff"); g.addColorStop(1,"#fce4ec"); }
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
 
-  const pad=64, cx=pad, cy=pad*2.2, cw=W-pad*2, ch=H-pad*4.6, r=40;
-  ctx.fillStyle = dark ? "#211E18" : "#FFFFFF";
-  rrect(ctx,cx,cy,cw,ch,r); ctx.fill();
-  ctx.lineWidth=6; ctx.strokeStyle=inkCol; rrect(ctx,cx,cy,cw,ch,r); ctx.stroke();
-  // shadow block behind (neubrutalist)
-  ctx.save(); ctx.globalCompositeOperation="destination-over";
-  ctx.fillStyle=accentCol; rrect(ctx,cx+14,cy+14,cw,ch,r); ctx.fill();
-  ctx.restore();
+  const pad=64, cx=pad, cy=pad*2.2, cw=W-pad*2, ch=H-pad*4.6, r=44;
+  rrect(ctx,cx,cy,cw,ch,r);
+  ctx.fillStyle = dark ? "rgba(255,255,255,.06)" : "rgba(255,255,255,.62)";
+  ctx.fill();
+  ctx.lineWidth=1.5; ctx.strokeStyle = dark ? "rgba(255,255,255,.12)" : "rgba(255,255,255,.9)"; ctx.stroke();
 
-  // brand row
-  ctx.fillStyle=accentCol; rrect(ctx,cx+50,cy+56,64,64,16); ctx.fill();
-  ctx.lineWidth=4; ctx.strokeStyle=inkCol; rrect(ctx,cx+50,cy+56,64,64,16); ctx.stroke();
-  ctx.font="700 34px 'Space Grotesk',Arial,sans-serif"; ctx.fillStyle=inkCol; ctx.textBaseline="middle";
-  ctx.fillText("🔒",cx+70,cy+90);
-  ctx.font="700 46px 'Space Grotesk',Arial,sans-serif"; ctx.fillText("se9si.",cx+132,cy+92);
+  const tg=ctx.createLinearGradient(cx,cy,cx+cw,cy);
+  tg.addColorStop(0,"rgba(92,110,248,0)"); tg.addColorStop(.3,"rgba(92,110,248,.9)"); tg.addColorStop(.7,"rgba(192,132,252,.9)"); tg.addColorStop(1,"rgba(92,110,248,0)");
+  ctx.strokeStyle=tg; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(cx+r,cy); ctx.lineTo(cx+cw-r,cy); ctx.stroke();
+
+  // logo
+  const lx=cx+50, ly=cy+68;
+  const lg=ctx.createLinearGradient(lx,ly-28,lx+56,ly+28);
+  lg.addColorStop(0,"#5c6ef8"); lg.addColorStop(1,"#c084fc");
+  rrect(ctx,lx,ly-28,56,56,14); ctx.fillStyle=lg; ctx.fill();
+  const inkCol = dark ? "#f0f0ff" : "#1a1a2e";
+  ctx.font="700 42px Georgia,serif"; ctx.fillStyle=inkCol; ctx.textBaseline="middle";
+  ctx.fillText("se9si.",lx+72,ly);
 
   // giant quote
-  ctx.font="bold 180px Georgia,serif"; ctx.fillStyle=accentCol; ctx.globalAlpha=.25;
-  ctx.textBaseline="top"; ctx.fillText("\u201C",cx+40,cy+150); ctx.globalAlpha=1;
+  ctx.font="bold 170px Georgia,serif"; ctx.fillStyle="rgba(92,110,248,.22)"; ctx.textBaseline="top";
+  ctx.fillText("\u201C",cx+42,cy+150);
 
   // text
-  ctx.font="600 50px Arial,sans-serif"; ctx.fillStyle=inkCol; ctx.textBaseline="top";
-  const msgX=cx+56, msgY=cy+300, msgW=cw-112, lineH=72;
+  ctx.font="500 48px Arial,sans-serif"; ctx.fillStyle=inkCol; ctx.textBaseline="top";
+  const msgX=cx+56, msgY=cy+295, msgW=cw-112, lineH=70;
   const lines=wrapText(ctx, text, msgW);
-  const maxL=Math.floor((ch-460)/lineH);
+  const maxL=Math.floor((ch-450)/lineH);
   let show=lines.slice(0,maxL);
   if(lines.length>maxL && show.length>0){
     let last=show[show.length-1];
@@ -537,16 +658,15 @@ function drawShareCard(text, link, canvas, callback){
   }
   show.forEach((line,i)=>ctx.fillText(line,msgX,msgY+i*lineH));
 
-  // divider
-  const divY=cy+ch-180;
-  ctx.strokeStyle = dark ? "rgba(245,240,230,.18)" : "rgba(23,20,16,.14)";
-  ctx.lineWidth=2;
+  const divY=cy+ch-175;
+  ctx.strokeStyle = dark ? "rgba(255,255,255,.1)" : "rgba(26,26,46,.12)";
+  ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.moveTo(cx+56,divY); ctx.lineTo(cx+cw-56,divY); ctx.stroke();
 
-  const fy=divY+40;
-  ctx.font="800 26px Arial,sans-serif"; ctx.fillStyle=accentCol; ctx.textBaseline="top";
+  const fy=divY+42;
+  ctx.font="800 26px Arial,sans-serif"; ctx.fillStyle="#5c6ef8"; ctx.textBaseline="top";
   ctx.fillText("QUESTION ANONYME",cx+56,fy);
-  ctx.font="600 24px Arial,sans-serif"; ctx.fillStyle = dark ? "rgba(245,240,230,.55)" : "rgba(23,20,16,.5)";
+  ctx.font="600 24px Arial,sans-serif"; ctx.fillStyle = dark ? "rgba(240,240,255,.5)" : "rgba(26,26,46,.45)";
   ctx.fillText(link || "se9si.", cx+56, fy+40);
 
   canvas.toBlob(b=>{ if(callback) callback(b); }, "image/jpeg", 0.94);
@@ -571,14 +691,14 @@ async function getBlob(){
   for(let i=0;i<40;i++){ await new Promise(r=>setTimeout(r,100)); if(shrBlob) return shrBlob; }
   return null;
 }
-$("shr-dl")?.addEventListener("click", async ()=>{
+$("shr-dl-btn")?.addEventListener("click", async ()=>{
   const blob=await getBlob(); if(!blob){ showToast("⚠️ Patiente encore !"); return; }
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a"); a.href=url; a.download="se9si-question.jpg"; a.click();
   setTimeout(()=>URL.revokeObjectURL(url),2000);
   showToast("✅ Image enregistrée !");
 });
-$("shr-copy")?.addEventListener("click", async ()=>{
+$("shr-copy-btn")?.addEventListener("click", async ()=>{
   const blob=await getBlob(); if(!blob){ showToast("⚠️ Patiente !"); return; }
   try{
     if(navigator.clipboard?.write && window.ClipboardItem){
@@ -595,7 +715,7 @@ $("shr-copy")?.addEventListener("click", async ()=>{
 // ════════════════════════════════════════
 //  HELPERS
 // ════════════════════════════════════════
-function showToast(msg,duration=2600){
+function showToast(msg,duration=2800){
   const t=$("toast"); if(!t) return;
   t.textContent=msg; t.classList.remove("hidden");
   requestAnimationFrame(()=>t.classList.add("show"));
@@ -608,6 +728,7 @@ function showErr(el,msg){ if(!el) return; el.textContent=msg; el.classList.remov
 function escHtml(str){ return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function formatDate(date){
   const now=new Date(); const diff=Math.floor((now.getTime()-date.getTime())/1000);
+  if(diff<0) return "À l'instant";
   if(diff<60) return "À l'instant";
   if(diff<3600) return "Il y a "+Math.floor(diff/60)+" min";
   if(diff<86400) return "Il y a "+Math.floor(diff/3600)+"h";
