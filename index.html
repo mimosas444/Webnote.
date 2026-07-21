@@ -92,12 +92,14 @@
       <h2 class="auth-title">Ton espace</h2>
       <p class="auth-sub">Pseudo connu ? Tu te connectes. Nouveau pseudo ? Ton compte est créé automatiquement.</p>
 
+      <div id="auth-mode-banner" class="auth-mode-banner hidden"></div>
+
       <div id="auth-error" class="auth-error hidden"></div>
 
       <div class="field">
         <label>Pseudo</label>
         <input type="text" id="auth-username" placeholder="ex: sarah_22" autocomplete="username" maxlength="20"/>
-        <span class="field-hint">Min. 5 caractères, sans espace.</span>
+        <span class="field-hint" id="auth-username-status">Min. 5 caractères, sans espace — lettres, chiffres, _ uniquement.</span>
       </div>
 
       <div class="field">
