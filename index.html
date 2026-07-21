@@ -27,9 +27,9 @@
 <nav id="navbar">
   <div class="brand">se9si<span class="dot">.</span></div>
   <div class="nav-tabs" id="nav-tabs" style="display:none">
-    <button class="nav-tab active" data-page="dashboard">📬 Questions</button>
+    <button class="nav-tab active" data-page="dashboard">📬 Questions <span class="nav-badge hidden" id="dash-badge">0</span></button>
     <button class="nav-tab" data-page="feed">📣 Annonces</button>
-    <button class="nav-tab admin-only hidden" data-page="admin">👑 Admin <span class="nav-badge" id="admin-badge" style="display:none">0</span></button>
+    <button class="nav-tab admin-only hidden" data-page="admin">👑 Admin</button>
   </div>
   <div class="nav-actions">
     <button class="btn-icon" id="theme-toggle"><span id="theme-ico">🌙</span></button>
@@ -46,7 +46,7 @@
 
 <!-- MOBILE NAV -->
 <div class="mobile-nav hidden" id="mobile-nav">
-  <button class="mob-btn active" data-page="dashboard">📬<span>Questions</span></button>
+  <button class="mob-btn active" data-page="dashboard">📬<span>Questions</span><span class="nav-badge hidden" id="dash-badge-mob">0</span></button>
   <button class="mob-btn" data-page="feed">📣<span>Annonces</span></button>
   <button class="mob-btn admin-only hidden" data-page="admin">👑<span>Admin</span></button>
 </div>
@@ -101,12 +101,14 @@
       </div>
 
       <div class="field">
-        <label>Code à 4 chiffres</label>
+        <label>Code à 6 chiffres</label>
         <div class="pin-row">
           <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="0"/>
           <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="1"/>
           <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="2"/>
           <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="3"/>
+          <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="4"/>
+          <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="5"/>
         </div>
         <span class="field-hint">Retiens-le : c'est ton mot de passe.</span>
       </div>
@@ -160,10 +162,13 @@
       <div class="chart" id="act-chart"></div>
     </div>
 
+    <button class="btn btn-ghost" id="export-btn" style="justify-content:center">📄 Exporter mes questions (.txt)</button>
+
     <div class="toolbar">
       <div class="pills">
         <button class="pill active" id="filter-all">Toutes</button>
         <button class="pill" id="filter-unread">Non lues</button>
+        <button class="pill" id="filter-starred">⭐ Favoris</button>
       </div>
       <div class="search-box">
         <svg class="search-ico" width="13" height="13" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M14.5 14.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
