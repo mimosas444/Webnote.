@@ -1,250 +1,433 @@
 <!DOCTYPE html>
 <html lang="fr" data-theme="light">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>WebNote — Pose ta question anonymement</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Webnote — Messages Anonymes</title>
 
-<meta property="og:type" content="website"/>
-<meta property="og:site_name" content="WebNote"/>
-<meta property="og:title" content="WebNote — Reçois des questions anonymes"/>
-<meta property="og:description" content="Un lien, des questions anonymes, zéro filtre."/>
-<meta name="twitter:card" content="summary_large_image"/>
+  <!-- Open Graph -->
+  <meta property="og:type"         content="website"/>
+  <meta property="og:site_name"    content="Webnote"/>
+  <meta property="og:type"         content="website"/>
+  <meta property="og:site_name"    content="Webnote"/>
+  <meta property="og:title"        content="Webnote. Messages anonymes"/>
+  <meta property="og:description"  content="Reçois des messages anonymes de tes amis. 100% anonyme et gratuit."/>
+  <meta property="og:image"        content="https://i.postimg.cc/5tVjYPqP/image-1775360096561.jpg"/>
+  <meta property="og:image:width"  content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:url"          content="https://mimosas444.github.io/Webnote./"/>
+  <meta name="twitter:card"        content="summary_large_image"/>
+  <meta name="twitter:title"       content="Webnote. Messages anonymes"/>
+  <meta name="twitter:description" content="Reçois des messages anonymes. 100% anonyme et gratuit."/>
+  <meta name="twitter:image"       content="https://i.postimg.cc/5tVjYPqP/image-1775360096561.jpg"/>
 
-<link rel="stylesheet" href="style.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 </head>
 <body>
 
-<div id="boot" class="boot"><div class="brand">webnote<span class="dot">.</span></div><div class="boot-bar"><div class="boot-bar-fill"></div></div></div>
+<!-- ══ BG BLOBS (global) ══ -->
+<div class="bg-blobs" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="blob b4"></div>
+</div>
 
-<div class="bg-grid" aria-hidden="true"></div>
-<div class="bg-blob blob1" aria-hidden="true"></div>
-<div class="bg-blob blob2" aria-hidden="true"></div>
-
-<!-- NAVBAR -->
+<!-- ══ NAVBAR ══ -->
 <nav id="navbar">
-  <div class="brand">webnote<span class="dot">.</span></div>
-  <div class="nav-tabs" id="nav-tabs" style="display:none">
-    <button class="nav-tab active" data-page="dashboard">📬 Questions <span class="nav-badge hidden" id="dash-badge">0</span></button>
-    <button class="nav-tab" data-page="feed">📣 Annonces</button>
-    <button class="nav-tab admin-only hidden" data-page="admin">👑 Admin</button>
+  <div class="nav-logo">webnote<span class="dot">.</span></div>
+  <div class="nav-center" id="nav-tabs" style="display:none">
+    <button class="nav-tab active" data-page="dashboard">
+      <svg viewBox="0 0 20 20" fill="none" width="14"><path d="M3 10L10 3l7 7M5 8.5V17h4v-4h2v4h4V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Messages</span>
+    </button>
+    <button class="nav-tab" data-page="community">
+      <svg viewBox="0 0 20 20" fill="none" width="14"><path d="M17 8.5c0 3.6-3.1 6.5-7 6.5a7.8 7.8 0 01-3-.6L3 15.5l.8-3.5A6.3 6.3 0 013 8.5C3 4.9 6.1 2 10 2s7 2.9 7 6.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Communauté</span>
+    </button>
+    <button class="nav-tab admin-only hidden" data-page="admin">
+      <svg viewBox="0 0 20 20" fill="none" width="14"><path d="M10 2l1.5 4.5H16l-3.5 2.5 1.5 4.5L10 11l-4 2.5 1.5-4.5L4 6.5h4.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Admin</span>
+      <span class="nav-badge" id="admin-badge" style="display:none">0</span>
+    </button>
   </div>
   <div class="nav-actions">
-    <button class="btn-icon" id="theme-toggle"><span id="theme-ico">🌙</span></button>
+    <button class="theme-toggle" id="themeToggle"><span id="theme-ico">🌙</span></button>
     <button class="btn-ghost" id="nav-login-btn">Connexion</button>
+    <button class="btn-primary" id="nav-signup-btn">S'inscrire</button>
     <div id="nav-user" class="nav-user hidden">
-      <div class="avatar" id="nav-avatar">?</div>
-      <span class="nav-uname" id="nav-uname"></span>
-      <button class="btn-icon" id="logout-btn" title="Déconnexion">
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M7 17H4a1 1 0 01-1-1V4a1 1 0 011-1h3M13 14l4-4-4-4M17 10H7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="nav-avatar" id="nav-avatar-letter">?</div>
+      <span id="nav-username" class="nav-uname"></span>
+      <button class="btn-icon-sm" id="nav-logout-btn" title="Déconnexion">
+        <svg viewBox="0 0 20 20" fill="none" width="14"><path d="M7 17H4a1 1 0 01-1-1V4a1 1 0 011-1h3M13 14l4-4-4-4M17 10H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
   </div>
 </nav>
 
-<!-- MOBILE NAV -->
+<!-- ══ MOBILE BOTTOM NAV ══ -->
 <div class="mobile-nav hidden" id="mobile-nav">
-  <button class="mob-btn active" data-page="dashboard">📬<span>Questions</span><span class="nav-badge hidden" id="dash-badge-mob">0</span></button>
-  <button class="mob-btn" data-page="feed">📣<span>Annonces</span></button>
-  <button class="mob-btn admin-only hidden" data-page="admin">👑<span>Admin</span></button>
+  <button class="mob-btn active" data-page="dashboard">
+    <svg viewBox="0 0 20 20" fill="none" width="18"><path d="M3 10L10 3l7 7M5 8.5V17h4v-4h2v4h4V8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Messages</span>
+  </button>
+  <button class="mob-btn" data-page="community">
+    <svg viewBox="0 0 20 20" fill="none" width="18"><path d="M17 8.5c0 3.6-3.1 6.5-7 6.5a7.8 7.8 0 01-3-.6L3 15.5l.8-3.5A6.3 6.3 0 013 8.5C3 4.9 6.1 2 10 2s7 2.9 7 6.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Communauté</span>
+  </button>
+  <button class="mob-btn admin-only hidden" data-page="admin">
+    <svg viewBox="0 0 20 20" fill="none" width="18"><path d="M10 2l1.5 4.5H16l-3.5 2.5 1.5 4.5L10 11l-4 2.5 1.5-4.5L4 6.5h4.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Admin</span>
+  </button>
 </div>
 
-<!-- ══ LANDING ══ -->
+<!-- ══════════════════════════════════════
+     LANDING PAGE
+══════════════════════════════════════ -->
 <div id="page-landing" class="page active">
-  <div class="container">
+  <div class="landing-inner">
+
+    <!-- Hero -->
     <div class="hero">
-      <div class="hero-tag"><span class="dot-live"></span>100% anonyme</div>
-      <h1>Pose-moi <em>n'importe quelle</em> question.</h1>
-      <p>Un lien. Des questions anonymes. Aucune inscription requise pour écrire.</p>
+      <div class="hero-pill">
+        <span class="hero-pill-dot"></span>
+        100% Anonyme
+      </div>
+      <h1 class="hero-title">Qu'est-ce que<br/>les gens pensent<br/><em>de toi ?</em></h1>
+      <p class="hero-sub">Partage ton lien. Reçois des messages anonymes.</p>
       <div class="hero-btns">
-        <button class="btn btn-primary" id="start-btn">Créer mon lien →</button>
-        <button class="btn btn-ghost" id="login-btn-landing">J'ai déjà un compte</button>
+        <button class="btn-primary btn-lg pulse-btn" id="landing-start-btn">
+          Créer mon compte
+        </button>
+        <button class="btn-glass-lg" id="landing-login-btn">
+          Connexion
+        </button>
       </div>
     </div>
 
-    <div class="mock-window card">
-      <div class="mock-bubble">😳 <b>Anonyme</b> — "T'as un crush en ce moment ?"</div>
-      <div class="mock-bubble">🔥 <b>Anonyme</b> — "Franchement t'es la personne la plus drôle que je connaisse"</div>
-      <div class="mock-bubble">👀 <b>Anonyme</b> — "Pourquoi t'as unfollow tout le monde ?"</div>
+    <!-- How it works — 3 steps clean -->
+    <div class="how-row">
+      <div class="how-step glass">
+        <div class="how-num">1</div>
+        <div class="how-text">Crée ton compte</div>
+      </div>
+      <div class="how-arrow">→</div>
+      <div class="how-step glass">
+        <div class="how-num">2</div>
+        <div class="how-text">Partage ton lien</div>
+      </div>
+      <div class="how-arrow">→</div>
+      <div class="how-step glass">
+        <div class="how-num">3</div>
+        <div class="how-text">Lis tes messages</div>
+      </div>
     </div>
 
-    <div class="landing-cards">
-      <div class="l-card card"><div class="l-ico">🎭</div><div class="l-title">Anonymat réel</div><div class="l-sub">Aucun compte requis pour poser une question.</div></div>
-      <div class="l-card card"><div class="l-ico">🖼️</div><div class="l-title">Partage en story</div><div class="l-sub">Exporte une image prête pour Insta/Snap.</div></div>
-      <div class="l-card card"><div class="l-ico">📱</div><div class="l-title">QR Code</div><div class="l-sub">Génère ton QR en un clic.</div></div>
-      <div class="l-card card"><div class="l-ico">⚡</div><div class="l-title">Ultra simple</div><div class="l-sub">Pseudo + code à 4 chiffres. Rien d'autre.</div></div>
+    <!-- Feature cards — épuré -->
+    <div class="features-grid">
+      <div class="feat-card glass">
+        <div class="feat-ico-wrap">🎭</div>
+        <div class="feat-card-title">Anonymat total</div>
+        <div class="feat-card-sub">Personne ne sait qui t'écrit.</div>
+      </div>
+      <div class="feat-card glass">
+        <div class="feat-ico-wrap">🔗</div>
+        <div class="feat-card-title">Lien unique</div>
+        <div class="feat-card-sub">Un lien. Partage-le partout.</div>
+      </div>
+      <div class="feat-card glass">
+        <div class="feat-ico-wrap">📱</div>
+        <div class="feat-card-title">QR Code</div>
+        <div class="feat-card-sub">Génère ton QR en un clic.</div>
+      </div>
+      <div class="feat-card glass">
+        <div class="feat-ico-wrap">🖼️</div>
+        <div class="feat-card-title">Partage en image</div>
+        <div class="feat-card-sub">Exporte tes messages en story.</div>
+      </div>
     </div>
 
-    <div class="landing-foot">
-      © 2026 WebNote — projet indépendant, gratuit, sans pub.
-      <br/><button id="landing-about-btn">Comment ça marche →</button>
-    </div>
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <div class="footer-logo">webnote<span class="dot">.</span></div>
+      <p class="footer-copy">© 2026 Webnote — Tous droits réservés</p>
+    </footer>
   </div>
 </div>
 
-<!-- ══ AUTH (login-or-register unifié, comme WebNote) ══ -->
+<!-- ══════════════════════════════════════
+     AUTH PAGE — Popup glassmorphism
+══════════════════════════════════════ -->
 <div id="page-auth" class="page">
-  <div class="auth-wrap">
-    <div class="auth-card card">
-      <div class="auth-brand"><div class="avatar">🔒</div><span class="brand">webnote<span class="dot">.</span></span></div>
-      <h2 class="auth-title">Ton espace</h2>
-      <p class="auth-sub">Pseudo connu ? Tu te connectes. Nouveau pseudo ? Ton compte est créé automatiquement.</p>
 
-      <div id="auth-mode-banner" class="auth-mode-banner hidden"></div>
+  <!-- Background datetime (haut à droite, hors popup) -->
+  <div class="auth-bg-info">
+    <div class="auth-bg-logo">webnote<span class="dot">.</span></div>
+    <div class="auth-bg-dt" id="auth-datetime"></div>
+  </div>
 
-      <div id="auth-error" class="auth-error hidden"></div>
+  <!-- Background floating notes -->
+  <div class="auth-bg-notes" aria-hidden="true">
+    <div class="auth-fn glass-note auth-fn1">"enfin j'ose le dire 🤍"</div>
+    <div class="auth-fn glass-note auth-fn2">"tu mérites tout ✨"</div>
+    <div class="auth-fn glass-note auth-fn3">"je t'admire en secret 🫶"</div>
+  </div>
 
-      <div class="field">
-        <label>Pseudo</label>
-        <input type="text" id="auth-username" placeholder="ex: sarah_22" autocomplete="username" maxlength="20"/>
-        <span class="field-hint" id="auth-username-status">Min. 5 caractères, sans espace — lettres, chiffres, _ uniquement.</span>
-      </div>
+  <!-- Popup centered -->
+  <div class="auth-popup-wrap">
+    <div class="auth-popup glass-popup">
 
-      <div class="field">
-        <label>Code à 6 chiffres</label>
-        <div class="pin-row">
-          <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="0"/>
-          <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="1"/>
-          <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="2"/>
-          <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="3"/>
-          <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="4"/>
-          <input class="pin-box" type="tel" inputmode="numeric" maxlength="1" data-i="5"/>
+      <!-- Popup logo only (no datetime here) -->
+      <div class="popup-logo-row">
+        <div class="popup-logo-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg>
         </div>
-        <span class="field-hint">Retiens-le : c'est ton mot de passe.</span>
+        <span class="popup-logo-text">webnote<span class="dot">.</span></span>
       </div>
 
-      <button class="btn btn-primary btn-block" id="auth-submit"><span>Continuer</span></button>
-      <p class="auth-note">En continuant tu acceptes de recevoir des questions anonymes de n'importe qui disposant de ton lien.</p>
+      <h2 class="popup-title">Bienvenue 👋</h2>
+      <p class="popup-sub">Connecte-toi ou crée ton compte gratuitement</p>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login">Connexion</button>
+        <button class="auth-tab" id="tab-signup">Inscription</button>
+        <div class="auth-tab-slider" id="tab-slider"></div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="form-login" class="auth-form">
+        <div class="field">
+          <label>Email</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 20 20" fill="none"><path d="M2.5 5.5l7.5 5 7.5-5M2.5 5.5h15v10h-15z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input type="email" id="login-email" placeholder="ton@email.com" autocomplete="email"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Mot de passe</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="9" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 9V6a3 3 0 016 0v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
+            <button class="eye-btn" type="button" data-target="login-password">
+              <svg class="eye-open" viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="10" rx="7" ry="4.5" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="10" r="2" fill="currentColor"/></svg>
+              <svg class="eye-closed hidden" viewBox="0 0 20 20" fill="none"><path d="M2 2l16 16M8.5 8.6A3 3 0 0013 13M5.3 5.4C3.6 6.6 2.3 8.2 2 10c1 4 4.5 6 8 6a9 9 0 004.2-1.1M9 4.1C9.7 4 10 4c3.5 0 7 2 8 6-.3 1-.8 2-1.5 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="login-error" class="error-msg hidden"></div>
+        <button class="btn-primary btn-full" id="login-submit"><span>Se connecter</span></button>
+        <p class="auth-switch">Pas de compte ? <button class="auth-switch-btn" id="switch-to-signup">S'inscrire →</button></p>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="form-signup" class="auth-form hidden">
+        <div class="field">
+          <label>Nom d'utilisateur</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input type="text" id="signup-username" placeholder="ton_pseudo" autocomplete="username"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 20 20" fill="none"><path d="M2.5 5.5l7.5 5 7.5-5M2.5 5.5h15v10h-15z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input type="email" id="signup-email" placeholder="ton@email.com" autocomplete="email"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Mot de passe</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 20 20" fill="none"><rect x="3" y="9" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 9V6a3 3 0 016 0v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <input type="password" id="signup-password" placeholder="Minimum 6 caractères" autocomplete="new-password"/>
+            <button class="eye-btn" type="button" data-target="signup-password">
+              <svg class="eye-open" viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="10" rx="7" ry="4.5" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="10" r="2" fill="currentColor"/></svg>
+              <svg class="eye-closed hidden" viewBox="0 0 20 20" fill="none"><path d="M2 2l16 16M8.5 8.6A3 3 0 0013 13M5.3 5.4C3.6 6.6 2.3 8.2 2 10c1 4 4.5 6 8 6a9 9 0 004.2-1.1M9 4.1C9.7 4 10 4c3.5 0 7 2 8 6-.3 1-.8 2-1.5 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="pwd-strength-wrap">
+            <div class="strength-bars"><div class="sbar" id="sbar1"></div><div class="sbar" id="sbar2"></div><div class="sbar" id="sbar3"></div><div class="sbar" id="sbar4"></div></div>
+            <span class="strength-label" id="strength-label"></span>
+          </div>
+        </div>
+        <div id="signup-error" class="error-msg hidden"></div>
+        <button class="btn-primary btn-full" id="signup-submit"><span>Créer mon compte</span></button>
+        <p class="auth-switch">Déjà un compte ? <button class="auth-switch-btn" id="switch-to-login">Se connecter →</button></p>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ══ DASHBOARD ══ -->
+<!-- ══════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════ -->
 <div id="page-dashboard" class="page">
-  <div class="container">
-    <div class="dash-head">
-      <div class="dash-head-l">
-        <div class="avatar dash-avatar" id="dash-avatar">?</div>
-        <div><h2 class="dash-title">Salut, <span id="dash-username">…</span> 👋</h2><p class="dash-sub" id="dash-count">Chargement…</p></div>
+  <div class="page-container">
+    <div class="dash-topbar">
+      <div class="dash-header-info">
+        <div class="dash-avatar-big" id="dash-avatar">?</div>
+        <div>
+          <h2 class="dash-title">Bonjour, <span id="dash-username-title">…</span> 👋</h2>
+          <p class="dash-sub" id="dash-count">Chargement…</p>
+        </div>
       </div>
-      <button class="btn-icon" id="refresh-btn" title="Actualiser">
-        <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M4 10a6 6 0 1010.7-3.7M4 10V6M4 10H8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <button class="btn-icon spin-on-click" id="refresh-btn" title="Actualiser">
+        <svg viewBox="0 0 20 20" fill="none" width="17"><path d="M4 10a6 6 0 1010.7-3.7M4 10V6M4 10H8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
 
     <div class="stats-row">
-      <div class="stat-card card"><span class="stat-em">💬</span><div class="stat-num c1" id="stat-total">0</div><div class="stat-label">Total</div></div>
-      <div class="stat-card card"><span class="stat-em">🆕</span><div class="stat-num c2" id="stat-unread">0</div><div class="stat-label">Non lus</div></div>
-      <div class="stat-card card"><span class="stat-em">📅</span><div class="stat-num c3" id="stat-today">0</div><div class="stat-label">Aujourd'hui</div></div>
+      <div class="stat-card glass ripple"><span class="stat-em">💬</span><div class="stat-num c1" id="stat-total">0</div><div class="stat-label">Total reçus</div></div>
+      <div class="stat-card glass ripple"><span class="stat-em">📅</span><div class="stat-num c2" id="stat-today">0</div><div class="stat-label">Aujourd'hui</div></div>
+      <div class="stat-card glass ripple"><span class="stat-em">🔥</span><div class="stat-num c3" id="stat-week">0</div><div class="stat-label">Cette semaine</div></div>
     </div>
 
-    <div class="share-card card">
-      <div class="share-top">
-        <div style="flex:1;min-width:0">
-          <div class="share-label">✦ Ton lien</div>
-          <div class="share-link" id="share-link">chargement…</div>
+    <div class="share-card glass">
+      <div class="share-card-inner">
+        <div class="share-info">
+          <div class="share-label">✦ Ton lien unique</div>
+          <div class="share-link-text" id="share-link">chargement…</div>
         </div>
-        <button class="btn btn-ghost" id="copy-link-btn" style="padding:8px 14px;font-size:.78rem"><span id="copy-link-label">Copier</span></button>
+        <button class="btn-copy" id="copy-link-btn">
+          <svg viewBox="0 0 20 20" fill="none" width="14"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3 13V5a2 2 0 012-2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Copier
+        </button>
       </div>
       <div class="share-btns">
-        <button class="s-btn wa" id="share-wa">WhatsApp</button>
-        <button class="s-btn tw" id="share-tw">X / Twitter</button>
-        <button class="s-btn img" id="share-img">🖼️ Image à partager</button>
+        <button class="share-btn wa" id="share-wa"><svg viewBox="0 0 24 24" fill="currentColor" width="14"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.306A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>WhatsApp</button>
+        <button class="share-btn tw" id="share-tw"><svg viewBox="0 0 24 24" fill="currentColor" width="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Twitter</button>
+        <button class="share-btn ig" id="share-ig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>Instagram</button>
+        <button class="share-btn snap" id="share-snap"><svg viewBox="0 0 24 24" fill="currentColor" width="14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.46 13.68c-.1.15-.24.22-.4.22-.08 0-.16-.02-.24-.05-.58-.26-1.1-.4-1.62-.4-.37 0-.72.07-1.09.21-.56.2-1.08.51-1.6.51s-1.04-.31-1.6-.51c-.37-.14-.72-.21-1.09-.21-.52 0-1.04.14-1.62.4-.08.03-.16.05-.24.05-.16 0-.3-.07-.4-.22-.14-.2-.1-.47.1-.61.87-.59 1.41-1.52 1.52-2.59.02-.16.03-.32.03-.49 0-1.38-.56-2.65-1.56-3.58-.14-.13-.18-.34-.1-.52.08-.18.26-.3.46-.3h.04c.26 0 .52.1.72.28.38.33.82.5 1.28.5.32 0 .64-.08.94-.24.5-.27 1.04-.41 1.62-.41.58 0 1.12.14 1.62.41.3.16.62.24.94.24.46 0 .9-.17 1.28-.5.2-.18.46-.28.72-.28h.04c.2 0 .38.12.46.3.08.18.04.39-.1.52-1 .93-1.56 2.2-1.56 3.58 0 .17.01.33.03.49.11 1.07.65 2 1.52 2.59.2.14.24.41.1.61z"/></svg>Snapchat</button>
       </div>
-      <button class="btn btn-ghost qr-toggle" id="qr-toggle">📱 Afficher le QR Code</button>
+      <button class="qr-toggle-btn" id="qr-toggle-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14.01" y2="14"/><line x1="18" y1="14" x2="18.01" y2="14"/><line x1="14" y1="18" x2="14.01" y2="18"/><line x1="18" y1="18" x2="18.01" y2="18"/></svg>
+        Afficher le QR Code
+      </button>
       <div class="qr-wrap hidden" id="qr-wrap">
-        <div class="qr-box"><div id="qr-el"></div></div>
-        <button class="btn btn-ghost" id="qr-dl" style="font-size:.78rem;padding:7px 14px">Télécharger le QR</button>
+        <div class="qr-box"><div id="qr-code-el"></div><div class="qr-logo-overlay"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg></div></div>
+        <div class="qr-info"><div class="qr-title">Scanner pour envoyer un message</div><div class="qr-sub">Fonctionne sans compte</div></div>
+        <button class="qr-dl-btn" id="qr-dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger</button>
       </div>
     </div>
 
-    <div class="act-card card">
-      <div class="act-head"><span>Activité — 7 jours</span><span id="act-total">0</span></div>
+    <div class="activity-card glass">
+      <div class="act-head"><div class="act-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Activité — 7 derniers jours</div><div class="act-total">Total : <span id="act-total">0</span></div></div>
       <div class="chart" id="act-chart"></div>
+      <div class="act-legend"><div class="act-dot"></div>Messages par jour</div>
     </div>
 
-    <button class="btn btn-ghost" id="export-btn" style="justify-content:center">📄 Exporter mes questions (.txt)</button>
+    <div class="export-card glass" id="export-btn">
+      <div class="exp-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="8 13 12 17 16 13"/><line x1="12" y1="17" x2="12" y2="9"/></svg></div>
+      <div class="exp-info"><div class="exp-title">Exporter mes messages</div><div class="exp-sub">Télécharger un fichier .txt</div></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" class="exp-arrow"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </div>
 
     <div class="toolbar">
-      <div class="pills">
-        <button class="pill active" id="filter-all">Toutes</button>
-        <button class="pill" id="filter-unread">Non lues</button>
-        <button class="pill" id="filter-starred">⭐ Favoris</button>
+      <div class="filter-pills">
+        <button class="pill active" id="filter-all">Tous</button>
+        <button class="pill" id="filter-today">Aujourd'hui</button>
+        <button class="pill" id="filter-week">Cette semaine</button>
+        <button class="pill" id="filter-unread">Nouveaux</button>
       </div>
-      <div class="search-box">
-        <svg class="search-ico" width="13" height="13" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M14.5 14.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        <input type="text" id="search-input" placeholder="Rechercher…"/>
+      <div class="toolbar-right">
+        <div class="input-wrap search-inline"><svg class="input-icon" viewBox="0 0 20 20" fill="none" width="14"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M14.5 14.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input type="text" id="search-input" placeholder="Rechercher…"/></div>
+        <div class="view-toggle">
+          <button class="view-btn active" id="view-grid"><svg viewBox="0 0 20 20" fill="none" width="14"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/></svg></button>
+          <button class="view-btn" id="view-list"><svg viewBox="0 0 20 20" fill="none" width="14"><path d="M4 6h12M4 10h12M4 14h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+        </div>
       </div>
     </div>
 
-    <div id="q-skeleton" class="q-list hidden">
-      <div class="q-card card"><div class="skel-line w30"></div><div class="skel-line w95"></div><div class="skel-line w60"></div><div class="skel-foot"><div class="skel-line w30" style="width:60px"></div><div class="skel-line" style="width:40px"></div></div></div>
-      <div class="q-card card"><div class="skel-line w40"></div><div class="skel-line w80"></div><div class="skel-foot"><div class="skel-line w30" style="width:60px"></div><div class="skel-line" style="width:40px"></div></div></div>
-    </div>
-
-    <div id="q-list" class="q-list">
-      <div class="empty-state" id="empty-state"><div class="empty-ico">📭</div><p>Aucune question pour l'instant.<br/>Partage ton lien pour commencer !</p></div>
+    <div id="messages-container" class="messages-grid">
+      <div class="empty-state" id="empty-state"><div class="empty-icon">✉️</div><p>Aucun message pour l'instant.<br/>Partage ton lien pour commencer !</p></div>
     </div>
   </div>
 </div>
 
-<!-- ══ ANNOUNCEMENTS FEED ══ -->
-<div id="page-feed" class="page">
-  <div class="container">
-    <h2 class="dash-title" style="margin-bottom:2px">Annonces</h2>
-    <p class="dash-sub" style="margin-bottom:6px">Ce qui se passe du côté de WebNote.</p>
-    <div id="feed-skeleton" class="q-list hidden">
-      <div class="ann-feed-item card"><div class="skel-line w30"></div><div class="skel-line w90"></div></div>
-    </div>
-    <div id="feed-list" class="q-list">
-      <div class="empty-state"><div class="empty-ico">📭</div><p>Aucune annonce pour l'instant.</p></div>
+<!-- ══ COMMUNITY ══ -->
+<div id="page-community" class="page">
+  <div class="page-container">
+    <div class="section-header"><h2 class="section-title">Communauté</h2><p class="section-sub">Communiqués, sondages et suggestions</p></div>
+    <div class="community-section"><div class="sec-label">📢 Communiqués officiels</div><div id="announcements-list"><div class="empty-state"><div class="empty-icon">📭</div><p>Aucun communiqué pour l'instant.</p></div></div></div>
+    <div class="community-section"><div class="sec-label">📊 Sondages actifs</div><div id="polls-list"><div class="empty-state"><div class="empty-icon">📊</div><p>Aucun sondage pour l'instant.</p></div></div></div>
+    <div class="community-section">
+      <div class="sec-label">💡 Aide-nous à améliorer Webnote</div>
+      <div class="feature-submit glass">
+        <p class="feature-submit-label">Propose une fonctionnalité</p>
+        <div class="input-wrap"><svg class="input-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M10 7v3M10 13h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><input type="text" id="feature-input" placeholder="Ex: Mode nuit amélioré, réactions…" maxlength="120"/></div>
+        <button class="btn-primary" id="feature-submit-btn"><span>Proposer</span></button>
+      </div>
+      <div id="features-list" class="features-list"></div>
     </div>
   </div>
 </div>
 
 <!-- ══ ADMIN ══ -->
 <div id="page-admin" class="page admin-only">
-  <div class="container">
-    <div style="display:flex;align-items:center;gap:10px"><span class="admin-crown">👑</span><h2 class="dash-title">Panel Admin</h2></div>
-    <div class="admin-form card">
-      <div style="font-weight:800;font-size:.9rem">Nouvelle annonce</div>
-      <input type="text" id="ann-title" placeholder="Titre"/>
-      <textarea id="ann-body" placeholder="Message…" rows="3"></textarea>
-      <button class="btn btn-primary" id="ann-submit"><span>Publier</span></button>
+  <div class="page-container">
+    <div class="section-header"><div class="admin-badge-header"><div class="admin-crown">👑</div><div><h2 class="section-title">Panel Admin</h2><p class="section-sub">Gestion de la communauté Webnote</p></div></div></div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-atab="announcements">📢 Communiqués</button>
+      <button class="admin-tab" data-atab="polls">📊 Sondages</button>
+      <button class="admin-tab" data-atab="feedback">💡 Feedback <span class="admin-count" id="feedback-count">0</span></button>
     </div>
-    <div id="admin-ann-list" class="q-list"></div>
+    <div class="admin-panel active" id="atab-announcements">
+      <div class="admin-form glass">
+        <div class="admin-form-title">Nouveau communiqué</div>
+        <div class="field"><label>Titre</label><div class="input-wrap"><input type="text" id="ann-title" placeholder="Ex: Nouvelle fonctionnalité !"/></div></div>
+        <div class="field"><label>Message</label><div class="input-wrap textarea-wrap"><textarea id="ann-body" placeholder="Détails du communiqué…" rows="4"></textarea></div></div>
+        <div class="field"><label>Emoji</label><div class="emoji-picker"><button class="emoji-opt active" data-emoji="📢">📢</button><button class="emoji-opt" data-emoji="🚀">🚀</button><button class="emoji-opt" data-emoji="✨">✨</button><button class="emoji-opt" data-emoji="🔧">🔧</button><button class="emoji-opt" data-emoji="⚠️">⚠️</button><button class="emoji-opt" data-emoji="🎉">🎉</button></div></div>
+        <button class="btn-primary" id="ann-submit"><span>Publier le communiqué</span></button>
+      </div>
+      <div class="sec-label" style="margin-top:18px">Communiqués publiés</div>
+      <div id="admin-announcements-list"></div>
+    </div>
+    <div class="admin-panel" id="atab-polls">
+      <div class="admin-form glass">
+        <div class="admin-form-title">Nouveau sondage</div>
+        <div class="field"><label>Question</label><div class="input-wrap"><input type="text" id="poll-question" placeholder="Ex: Quelle fonctionnalité en premier ?"/></div></div>
+        <div class="field"><label>Options (une par ligne, min 2)</label><div class="input-wrap textarea-wrap"><textarea id="poll-options" placeholder="Option A&#10;Option B&#10;Option C" rows="4"></textarea></div></div>
+        <button class="btn-primary" id="poll-submit"><span>Créer le sondage</span></button>
+      </div>
+      <div class="sec-label" style="margin-top:18px">Sondages</div>
+      <div id="admin-polls-list"></div>
+    </div>
+    <div class="admin-panel" id="atab-feedback">
+      <div class="admin-info glass"><svg viewBox="0 0 20 20" fill="none" width="16"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M10 7v3M10 13h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Approuve, réponds ou archive les suggestions.</div>
+      <div id="admin-feedback-list"></div>
+    </div>
   </div>
 </div>
 
-<!-- ══ ASK PAGE (public) ══ -->
-<div id="page-ask" class="page">
-  <div class="ask-wrap">
-    <div class="ask-card card">
-      <div class="avatar ask-avatar" id="ask-avatar">?</div>
-      <h2 class="ask-title">Une question pour <b id="ask-username">…</b> ?</h2>
-      <p class="ask-hint">🤍 Ton identité restera secrète, sauf si tu choisis de la partager.</p>
-
-      <div class="ask-form" id="ask-form">
-        <div class="field" style="margin-bottom:0">
-          <label>Ton nom (optionnel)</label>
-          <input type="text" id="ask-name" placeholder="Anonyme" maxlength="30"/>
-        </div>
-        <div class="field" style="margin-bottom:0">
-          <label>Ta question</label>
-          <textarea id="ask-question" placeholder="Écris ta question ici…" maxlength="400"></textarea>
-          <div class="char-count"><span id="ask-charcount">0</span>/400</div>
-        </div>
-        <div id="ask-error" class="auth-error hidden"></div>
-        <button class="btn btn-primary btn-block" id="ask-submit"><span>Envoyer anonymement 🤍</span></button>
+<!-- ══ SEND PAGE ══ -->
+<div id="page-send" class="page">
+  <div class="auth-bg-info">
+    <div class="auth-bg-logo">webnote<span class="dot">.</span></div>
+    <div class="auth-bg-dt" id="send-datetime"></div>
+  </div>
+  <div class="auth-bg-notes" aria-hidden="true">
+    <div class="auth-fn glass-note auth-fn1">"dis-lui ce que tu ressens 💭"</div>
+    <div class="auth-fn glass-note auth-fn2">"reste anonyme, sois honnête 🫶"</div>
+    <div class="auth-fn glass-note auth-fn3">"personne ne saura que c'est toi 🤫"</div>
+  </div>
+  <div class="auth-popup-wrap">
+    <div class="auth-popup glass-popup" style="max-width:460px;text-align:center">
+      <div class="popup-logo-row" style="justify-content:center;margin-bottom:18px">
+        <div class="popup-logo-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg></div>
+        <span class="popup-logo-text">webnote<span class="dot">.</span></span>
       </div>
-
-      <div class="ask-success hidden" id="ask-success">
-        <div class="ico">✅</div>
-        <p>Question envoyée ! Reste anonyme 😌</p>
-        <a href="index.html">Créer mon propre lien →</a>
-      </div>
+      <div class="send-avatar" id="send-avatar">?</div>
+      <h2 class="send-title">Message pour<br/><span id="send-username-display">…</span></h2>
+      <p class="send-hint">🤍 Ton identité ne sera jamais révélée</p>
+      <div class="input-wrap textarea-wrap"><textarea id="send-message" placeholder="Écris ce que tu penses vraiment…" maxlength="500" style="text-align:left"></textarea></div>
+      <div class="char-count"><span id="char-count">0</span>/500</div>
+      <div id="send-error" class="error-msg hidden"></div>
+      <button class="btn-primary btn-full" id="send-submit"><span>Envoyer anonymement 🤍</span></button>
+      <div id="send-success" class="success-msg hidden"><div class="success-icon">✅</div><p>Message envoyé ! Reste anonyme 😌</p><a href="index.html" class="back-link">Créer mon propre compte →</a></div>
+      <div class="send-popup-footer">Pas encore de compte ? <a href="index.html" class="send-popup-cta">Rejoindre Webnote →</a></div>
     </div>
   </div>
 </div>
@@ -252,21 +435,33 @@
 <!-- TOAST -->
 <div id="toast" class="toast hidden"></div>
 
-<!-- SHARE IMAGE MODAL -->
+<!-- ══ SHARE MESSAGE MODAL ══ -->
 <div class="shr-overlay hidden" id="shr-overlay">
   <div class="shr-modal">
     <button class="shr-close" id="shr-close">✕</button>
-    <div class="shr-preview">
-      <canvas id="shr-canvas" class="shr-canvas"></canvas>
-      <div class="shr-loader hidden" id="shr-loader"><div class="shr-spin"></div><span>Génération…</span></div>
+    <!-- Canvas preview -->
+    <div class="shr-preview-wrap">
+      <canvas id="shr-canvas" class="shr-canvas-preview"></canvas>
+      <div class="shr-preview-loader hidden" id="shr-preview-loader">
+        <div class="shr-spinner"></div>
+        <span>Génération…</span>
+      </div>
     </div>
-    <div class="shr-actions">
-      <button class="btn btn-primary" id="shr-dl">Enregistrer</button>
-      <button class="btn btn-ghost" id="shr-copy">Copier</button>
+    <!-- Buttons -->
+    <div class="shr-actions" id="shr-actions">
+      <button class="shr-btn shr-dl" id="shr-dl-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Enregistrer l'image
+      </button>
+      <button class="shr-btn shr-copy" id="shr-copy-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copier l'image
+      </button>
     </div>
+    <p class="shr-tip">💡 Enregistre l'image → partage en Story ou Status</p>
   </div>
 </div>
 
 <script type="module" src="app.js"></script>
 </body>
-</html>
+                </html>
