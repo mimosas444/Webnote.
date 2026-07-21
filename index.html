@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Se9si. — Pose ta question anonymement</title>
+<title>WebNote — Pose ta question anonymement</title>
 
 <meta property="og:type" content="website"/>
-<meta property="og:site_name" content="Se9si."/>
-<meta property="og:title" content="Se9si. — Reçois des questions anonymes"/>
+<meta property="og:site_name" content="WebNote"/>
+<meta property="og:title" content="WebNote — Reçois des questions anonymes"/>
 <meta property="og:description" content="Un lien, des questions anonymes, zéro filtre."/>
 <meta name="twitter:card" content="summary_large_image"/>
 
@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<div id="boot" class="boot"><div class="brand">se9si<span class="dot">.</span></div><div class="boot-bar"><div class="boot-bar-fill"></div></div></div>
+<div id="boot" class="boot"><div class="brand">webnote<span class="dot">.</span></div><div class="boot-bar"><div class="boot-bar-fill"></div></div></div>
 
 <div class="bg-grid" aria-hidden="true"></div>
 <div class="bg-blob blob1" aria-hidden="true"></div>
@@ -25,7 +25,7 @@
 
 <!-- NAVBAR -->
 <nav id="navbar">
-  <div class="brand">se9si<span class="dot">.</span></div>
+  <div class="brand">webnote<span class="dot">.</span></div>
   <div class="nav-tabs" id="nav-tabs" style="display:none">
     <button class="nav-tab active" data-page="dashboard">📬 Questions <span class="nav-badge hidden" id="dash-badge">0</span></button>
     <button class="nav-tab" data-page="feed">📣 Annonces</button>
@@ -78,17 +78,17 @@
     </div>
 
     <div class="landing-foot">
-      © 2026 Se9si. — projet indépendant, gratuit, sans pub.
+      © 2026 WebNote — projet indépendant, gratuit, sans pub.
       <br/><button id="landing-about-btn">Comment ça marche →</button>
     </div>
   </div>
 </div>
 
-<!-- ══ AUTH (login-or-register unifié, comme Se9si) ══ -->
+<!-- ══ AUTH (login-or-register unifié, comme WebNote) ══ -->
 <div id="page-auth" class="page">
   <div class="auth-wrap">
     <div class="auth-card card">
-      <div class="auth-brand"><div class="avatar">🔒</div><span class="brand">se9si<span class="dot">.</span></span></div>
+      <div class="auth-brand"><div class="avatar">🔒</div><span class="brand">webnote<span class="dot">.</span></span></div>
       <h2 class="auth-title">Ton espace</h2>
       <p class="auth-sub">Pseudo connu ? Tu te connectes. Nouveau pseudo ? Ton compte est créé automatiquement.</p>
 
@@ -146,10 +146,11 @@
           <div class="share-label">✦ Ton lien</div>
           <div class="share-link" id="share-link">chargement…</div>
         </div>
-        <button class="btn btn-ghost" id="copy-link-btn" style="padding:8px 14px;font-size:.78rem">Copier</button>
+        <button class="btn btn-ghost" id="copy-link-btn" style="padding:8px 14px;font-size:.78rem"><span id="copy-link-label">Copier</span></button>
       </div>
       <div class="share-btns">
         <button class="s-btn wa" id="share-wa">WhatsApp</button>
+        <button class="s-btn tw" id="share-tw">X / Twitter</button>
         <button class="s-btn img" id="share-img">🖼️ Image à partager</button>
       </div>
       <button class="btn btn-ghost qr-toggle" id="qr-toggle">📱 Afficher le QR Code</button>
@@ -193,7 +194,7 @@
 <div id="page-feed" class="page">
   <div class="container">
     <h2 class="dash-title" style="margin-bottom:2px">Annonces</h2>
-    <p class="dash-sub" style="margin-bottom:6px">Ce qui se passe du côté de Se9si.</p>
+    <p class="dash-sub" style="margin-bottom:6px">Ce qui se passe du côté de WebNote.</p>
     <div id="feed-skeleton" class="q-list hidden">
       <div class="ann-feed-item card"><div class="skel-line w30"></div><div class="skel-line w90"></div></div>
     </div>
