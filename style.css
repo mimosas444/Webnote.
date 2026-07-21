@@ -153,6 +153,12 @@ h1,h2,h3,.brand,.num{font-family:'Space Grotesk',sans-serif}
 .q-reply-form button{align-self:flex-end}
 
 .auth-error{background:var(--err-bg);border:2px solid var(--err);color:var(--err);border-radius:12px;padding:10px 13px;font-size:.82rem;font-weight:600;margin-bottom:14px}
+.field-hint.ok{color:var(--ok);font-weight:700}
+.field-hint.info{color:var(--accent3);font-weight:700}
+.field-hint.err{color:var(--err);font-weight:700}
+.auth-mode-banner{display:flex;align-items:center;gap:8px;border-radius:12px;padding:9px 13px;font-size:.8rem;font-weight:700;margin-bottom:14px;border:2px solid var(--border)}
+.auth-mode-banner.signup{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+.auth-mode-banner.login{background:rgba(61,139,255,.1);color:var(--accent3);border-color:var(--accent3)}
 .auth-note{font-size:.72rem;color:var(--ink-faint);text-align:center;margin-top:16px;line-height:1.6}
 
 /* ════════ DASHBOARD ════════ */
