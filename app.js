@@ -96,7 +96,7 @@ $("landing-about-btn")?.addEventListener("click", ()=>{
 });
 
 if (targetUser) {
-  loadAskPage(targetUser).then(hideBoot);
+  loadAskPage(targetUser).catch(e=>console.error("askPage:",e)).finally(hideBoot);
 } else {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -116,9 +116,17 @@ if (targetUser) {
   });
 }
 
-$("start-btn")?.addEventListener("click", ()=>showPage("auth"));
-$("login-btn-landing")?.addEventListener("click", ()=>showPage("auth"));
-$("nav-login-btn")?.addEventListener("click", ()=>showPage("auth"));
+function openAuthPage(){
+  $("auth-username").value="";
+  clearPin();
+  $("auth-error")?.classList.add("hidden");
+  $("auth-mode-banner")?.classList.add("hidden");
+  resetStatus();
+  showPage("auth");
+}
+$("start-btn")?.addEventListener("click", openAuthPage);
+$("login-btn-landing")?.addEventListener("click", openAuthPage);
+$("nav-login-btn")?.addEventListener("click", openAuthPage);
 
 const pinBoxes = Array.from(document.querySelectorAll(".pin-box"));
 pinBoxes.forEach((box,i)=>{
@@ -139,6 +147,50 @@ pinBoxes.forEach((box,i)=>{
 function getPin(){ return pinBoxes.map(b=>b.value).join(""); }
 function clearPin(){ pinBoxes.forEach(b=>b.value=""); pinBoxes[0]?.focus(); }
 
+// ── VÉRIF PSEUDO EN DIRECT (rend l'écran connexion/inscription plus clair) ──
+let usernameCheckTimer=null, knownUsernameState=null; // null | "free" | "taken"
+$("auth-username")?.addEventListener("input", ()=>{
+  const status = $("auth-username-status");
+  const banner = $("auth-mode-banner");
+  const raw = $("auth-username").value.trim().toLowerCase();
+  knownUsernameState = null;
+  banner?.classList.add("hidden");
+  clearTimeout(usernameCheckTimer);
+
+  if(!raw){ resetStatus(); return; }
+  if(raw.includes(" ")){ setStatus("Pas d'espace dans le pseudo.","err"); return; }
+  if(raw.length<5){ setStatus("Min. 5 caractères, sans espace — lettres, chiffres, _ uniquement.",""); return; }
+  if(!/^[a-z0-9_]+$/.test(raw)){ setStatus("Lettres, chiffres et _ uniquement.","err"); return; }
+
+  setStatus("Vérification…","");
+  usernameCheckTimer = setTimeout(async ()=>{
+    try{
+      const snap = await getDoc(doc(db,"users",raw));
+      if(snap.exists()){
+        knownUsernameState="taken";
+        setStatus("👋 Ce pseudo existe déjà — entre ton code pour te connecter.","info");
+        showBanner("login","👋 Connexion à un compte existant");
+      } else {
+        knownUsernameState="free";
+        setStatus("✅ Pseudo disponible — un compte sera créé à la validation.","ok");
+        showBanner("signup","✨ Création d'un nouveau compte");
+      }
+    }catch(e){
+      console.error("check pseudo:",e);
+      setStatus("Min. 5 caractères, sans espace — lettres, chiffres, _ uniquement.","");
+    }
+  }, 450);
+});
+function setStatus(msg,cls){
+  const el=$("auth-username-status"); if(!el) return;
+  el.textContent=msg; el.className="field-hint"+(cls?" "+cls:"");
+}
+function resetStatus(){ setStatus("Min. 5 caractères, sans espace — lettres, chiffres, _ uniquement.",""); }
+function showBanner(kind,msg){
+  const b=$("auth-mode-banner"); if(!b) return;
+  b.textContent=msg; b.className="auth-mode-banner "+kind; b.classList.remove("hidden");
+}
+
 $("auth-submit")?.addEventListener("click", async ()=>{
   const username = $("auth-username").value.trim().toLowerCase();
   const pin = getPin();
@@ -149,7 +201,8 @@ $("auth-submit")?.addEventListener("click", async ()=>{
   if(!/^[a-z0-9_]+$/.test(username)) return showErr(err,"Lettres, chiffres et _ uniquement.");
   if(pin.length!==6) return showErr(err,"Le code doit faire 6 chiffres.");
 
-  const btn=$("auth-submit"); btn.disabled=true; btn.querySelector("span").textContent="Vérification…";
+  const btn=$("auth-submit"); btn.disabled=true;
+  btn.querySelector("span").textContent = knownUsernameState==="taken" ? "Connexion…" : "Création du compte…";
   const syntheticEmail = username + EMAIL_DOMAIN;
 
   try{
@@ -468,16 +521,25 @@ async function loadAdminFeed(){
 async function loadAskPage(username){
   showPage("ask");
   $("nav-login-btn")?.classList.remove("hidden");
-  const uname = username.trim().toLowerCase();
-  const snap = await getDoc(doc(db,"users",uname));
-  if(!snap.exists()){
-    $("ask-username").textContent="introuvable";
+  const uname = (username||"").trim().toLowerCase();
+
+  if(!uname){
+    $("ask-username").textContent="lien invalide";
     if($("ask-submit")) $("ask-submit").disabled=true;
     return;
   }
-  const userData = snap.data();
-  $("ask-username").textContent = "@"+userData.username;
-  $("ask-avatar").textContent = userData.username[0].toUpperCase();
+
+  // On affiche tout de suite le pseudo depuis l'URL — n'attend pas Firestore,
+  // donc la page ne reste jamais bloquée sur "…" même si la lecture échoue.
+  $("ask-username").textContent = "@"+uname;
+  $("ask-avatar").textContent = uname[0].toUpperCase();
+
+  // Vérif d'existence best-effort, juste pour prévenir en cas de faute de frappe.
+  // Ne bloque JAMAIS l'envoi : la sous-collection questions accepte l'écriture
+  // même si ce lookup échoue ou est lent (cf. tes rules : create est ouvert).
+  getDoc(doc(db,"users",uname)).then(snap=>{
+    if(!snap.exists()) showToast("⚠️ Pseudo introuvable pour l'instant — vérifie le lien avant d'envoyer.");
+  }).catch(e=>console.error("lookup pseudo:",e));
 
   $("ask-question")?.addEventListener("input", ()=>{ $("ask-charcount").textContent = $("ask-question").value.length; });
 
@@ -496,9 +558,9 @@ async function loadAskPage(username){
       $("ask-form")?.classList.add("hidden");
       $("ask-success")?.classList.remove("hidden");
     }catch(e){
-      console.error(e);
+      console.error("envoi question:",e);
       btn.disabled=false; btn.querySelector("span").textContent="Envoyer anonymement 🤍";
-      showErr($("ask-error"),"Erreur. Réessaie.");
+      showErr($("ask-error"),"Erreur d'envoi. Vérifie ta connexion et réessaie.");
     }
   });
 }
