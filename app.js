@@ -1,6 +1,8 @@
 // ═══════════════════════════════════════════
-//  SE9SI.  — app.js  v3
-//  Aligné sur tes règles Firestore réelles :
+//  WEBNOTE  — app.js  v4
+//  (le domaine email interne "@se9si.local" est gardé tel quel pour ne
+//  pas invalider les comptes déjà créés — invisible pour l'utilisateur)
+// ═══════════════════════════════════════════
 //   - users/{username}  (doc ID = pseudo, pas un uid)
 //     create: auth != null && le doc n'existe pas encore (unicité atomique)
 //     update: auth != null
@@ -213,7 +215,7 @@ $("auth-submit")?.addEventListener("click", async ()=>{
       const cred = await createUserWithEmailAndPassword(auth, syntheticEmail, pin);
       await setDoc(userRef, { username, uid:cred.user.uid, createdAt:serverTimestamp() });
       await addDoc(collection(db,"users",username,"questions"), {
-        name:"Se9si 👋",
+        name:"WebNote 👋",
         message:"Salut ! Tu recevras toutes tes questions ici. Bonne chance 🚨",
         opened:false, createdAt: serverTimestamp()
       });
@@ -266,10 +268,20 @@ $("logout-btn")?.addEventListener("click", async ()=>{
 
 function wireDashboardActions(link){
   replaceEl("copy-link-btn", b=>b.addEventListener("click", ()=>{
-    navigator.clipboard.writeText(link).then(()=>showToast("✅ Lien copié !"));
+    navigator.clipboard.writeText(link).then(()=>{
+      showToast("✅ Lien copié !");
+      const lbl=b.querySelector("#copy-link-label")||b;
+      const prev=lbl.textContent;
+      lbl.textContent="✓ Copié";
+      b.disabled=true;
+      setTimeout(()=>{ lbl.textContent=prev; b.disabled=false; },1800);
+    });
   }));
   replaceEl("share-wa", b=>b.addEventListener("click", ()=>{
     window.open("https://wa.me/?text="+encodeURIComponent("Pose-moi une question anonyme 👀 "+link),"_blank");
+  }));
+  replaceEl("share-tw", b=>b.addEventListener("click", ()=>{
+    window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent("Pose-moi une question anonyme 👀 "+link),"_blank");
   }));
   replaceEl("share-img", b=>b.addEventListener("click", ()=>openShareModal(
     "Pose-moi n'importe quelle question 👀", link
@@ -299,21 +311,21 @@ function generateQR(){
   if(qrGenerated) return;
   const c=$("qr-el"); if(!c) return; c.innerHTML="";
   const link = $("share-link").textContent;
-  try{ new QRCode(c,{text:link,width:150,height:150,colorDark:"#171410",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); qrGenerated=true; }
+  try{ new QRCode(c,{text:link,width:150,height:150,colorDark:"#161327",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); qrGenerated=true; }
   catch(e){ console.error("QR:",e); }
 }
 function downloadQR(){
   const canvas=$("qr-el")?.querySelector("canvas"), img=$("qr-el")?.querySelector("img");
   const src = canvas ? canvas.toDataURL("image/png") : img?.src;
   if(!src){ showToast("Ouvre le QR d'abord !"); return; }
-  const a=document.createElement("a"); a.href=src; a.download="se9si-qrcode.png"; a.click();
+  const a=document.createElement("a"); a.href=src; a.download="webnote-qrcode.png"; a.click();
   showToast("📱 QR téléchargé !");
 }
 
 function exportQuestions(){
   if(!allQuestions.length){ showToast("⚠️ Rien à exporter !"); return; }
   const sorted=[...allQuestions].sort((a,b)=>(a.createdAt?.toMillis()||0)-(b.createdAt?.toMillis()||0));
-  const lines=["Se9si. — Questions anonymes","Exporté : "+new Date().toLocaleString("fr-FR"),"Total : "+sorted.length,"─".repeat(36),""];
+  const lines=["WebNote — Questions anonymes","Exporté : "+new Date().toLocaleString("fr-FR"),"Total : "+sorted.length,"─".repeat(36),""];
   sorted.forEach((q,i)=>{
     lines.push("["+(i+1)+"] "+(q.name||"Anonyme")+" — "+(q.createdAt?q.createdAt.toDate().toLocaleString("fr-FR"):"—"));
     lines.push('"'+q.message+'"');
@@ -321,7 +333,7 @@ function exportQuestions(){
     lines.push("");
   });
   const blob=new Blob([lines.join("\n")],{type:"text/plain;charset=utf-8"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="se9si-"+new Date().toISOString().slice(0,10)+".txt"; a.click(); URL.revokeObjectURL(a.href);
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="webnote-"+new Date().toISOString().slice(0,10)+".txt"; a.click(); URL.revokeObjectURL(a.href);
   showToast("📄 Export téléchargé !");
 }
 
@@ -560,7 +572,8 @@ async function loadAskPage(username){
     }catch(e){
       console.error("envoi question:",e);
       btn.disabled=false; btn.querySelector("span").textContent="Envoyer anonymement 🤍";
-      showErr($("ask-error"),"Erreur d'envoi. Vérifie ta connexion et réessaie.");
+      const code = e?.code || "erreur-inconnue";
+      showErr($("ask-error"), "Erreur d'envoi (" + code + "). Vérifie ta connexion et réessaie — si ça persiste, préviens la personne qui gère ce site.");
     }
   });
 }
@@ -586,16 +599,16 @@ function drawShareCard(text, link, canvas, callback){
   const ctx=canvas.getContext("2d");
 
   const dark = document.documentElement.getAttribute("data-theme")==="dark";
-  const bgCol = dark ? "#14120E" : "#FAF5EC";
-  const inkCol = dark ? "#F5F0E6" : "#171410";
-  const accentCol = "#FF5A36";
+  const bgCol = dark ? "#100E1E" : "#F3F1FC";
+  const inkCol = dark ? "#F0EEFB" : "#161327";
+  const accentCol = "#6D5DFC";
 
   ctx.fillStyle=bgCol; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle = dark ? "rgba(245,240,230,.05)" : "rgba(23,20,16,.06)";
+  ctx.fillStyle = dark ? "rgba(240,238,251,.05)" : "rgba(22,19,39,.06)";
   for(let y=40;y<H;y+=34){ for(let x=40;x<W;x+=34){ ctx.beginPath(); ctx.arc(x,y,2,0,Math.PI*2); ctx.fill(); } }
 
   const pad=64, cx=pad, cy=pad*2.2, cw=W-pad*2, ch=H-pad*4.6, r=40;
-  ctx.fillStyle = dark ? "#211E18" : "#FFFFFF";
+  ctx.fillStyle = dark ? "#1C1935" : "#FFFFFF";
   rrect(ctx,cx,cy,cw,ch,r); ctx.fill();
   ctx.lineWidth=6; ctx.strokeStyle=inkCol; rrect(ctx,cx,cy,cw,ch,r); ctx.stroke();
   ctx.save(); ctx.globalCompositeOperation="destination-over";
@@ -606,7 +619,7 @@ function drawShareCard(text, link, canvas, callback){
   ctx.lineWidth=4; ctx.strokeStyle=inkCol; rrect(ctx,cx+50,cy+56,64,64,16); ctx.stroke();
   ctx.font="700 34px 'Space Grotesk',Arial,sans-serif"; ctx.fillStyle=inkCol; ctx.textBaseline="middle";
   ctx.fillText("🔒",cx+70,cy+90);
-  ctx.font="700 46px 'Space Grotesk',Arial,sans-serif"; ctx.fillText("se9si.",cx+132,cy+92);
+  ctx.font="700 46px 'Space Grotesk',Arial,sans-serif"; ctx.fillText("webnote.",cx+132,cy+92);
 
   ctx.font="bold 180px Georgia,serif"; ctx.fillStyle=accentCol; ctx.globalAlpha=.25;
   ctx.textBaseline="top"; ctx.fillText("\u201C",cx+40,cy+150); ctx.globalAlpha=1;
@@ -624,15 +637,15 @@ function drawShareCard(text, link, canvas, callback){
   show.forEach((line,i)=>ctx.fillText(line,msgX,msgY+i*lineH));
 
   const divY=cy+ch-180;
-  ctx.strokeStyle = dark ? "rgba(245,240,230,.18)" : "rgba(23,20,16,.14)";
+  ctx.strokeStyle = dark ? "rgba(240,238,251,.18)" : "rgba(22,19,39,.14)";
   ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(cx+56,divY); ctx.lineTo(cx+cw-56,divY); ctx.stroke();
 
   const fy=divY+40;
   ctx.font="800 26px Arial,sans-serif"; ctx.fillStyle=accentCol; ctx.textBaseline="top";
   ctx.fillText("QUESTION ANONYME",cx+56,fy);
-  ctx.font="600 24px Arial,sans-serif"; ctx.fillStyle = dark ? "rgba(245,240,230,.55)" : "rgba(23,20,16,.5)";
-  ctx.fillText(link || "se9si.", cx+56, fy+40);
+  ctx.font="600 24px Arial,sans-serif"; ctx.fillStyle = dark ? "rgba(240,238,251,.55)" : "rgba(22,19,39,.5)";
+  ctx.fillText(link || "webnote.", cx+56, fy+40);
 
   canvas.toBlob(b=>{ if(callback) callback(b); }, "image/jpeg", 0.94);
 }
@@ -659,7 +672,7 @@ async function getBlob(){
 $("shr-dl")?.addEventListener("click", async ()=>{
   const blob=await getBlob(); if(!blob){ showToast("⚠️ Patiente encore !"); return; }
   const url=URL.createObjectURL(blob);
-  const a=document.createElement("a"); a.href=url; a.download="se9si-question.jpg"; a.click();
+  const a=document.createElement("a"); a.href=url; a.download="webnote-question.jpg"; a.click();
   setTimeout(()=>URL.revokeObjectURL(url),2000);
   showToast("✅ Image enregistrée !");
 });
@@ -672,7 +685,7 @@ $("shr-copy")?.addEventListener("click", async ()=>{
     }
   }catch(e){}
   const url=URL.createObjectURL(blob);
-  const a=document.createElement("a"); a.href=url; a.download="se9si-question.jpg"; a.click();
+  const a=document.createElement("a"); a.href=url; a.download="webnote-question.jpg"; a.click();
   setTimeout(()=>URL.revokeObjectURL(url),2000);
   showToast("✅ Image enregistrée !");
 });
@@ -696,3 +709,4 @@ function formatDate(date){
   if(diff<604800){ const d=Math.floor(diff/86400); return "Il y a "+d+" jour"+(d>1?"s":""); }
   return date.toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
 }
+
