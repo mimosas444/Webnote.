@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-//  WEBNOTE — app.js  v4
+//  WEBNOTE — app.js  v5
 // ═══════════════════════════════════════════
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -83,6 +83,16 @@ updateDatetime();
 setInterval(updateDatetime, 30000);
 
 // ════════════════════════════════════════
+//  BOOT SPLASH — avoid flashing landing→dashboard
+// ════════════════════════════════════════
+function hideBootSplash() {
+  const el = $("boot-splash");
+  if (!el || el.classList.contains("hide")) return;
+  el.classList.add("hide");
+  setTimeout(() => el.remove(), 450);
+}
+
+// ════════════════════════════════════════
 //  PAGES
 // ════════════════════════════════════════
 const pages = {
@@ -117,7 +127,7 @@ document.querySelectorAll(".nav-tab, .mob-btn").forEach(btn => {
 //  AUTH STATE
 // ════════════════════════════════════════
 onAuthStateChanged(auth, async (user) => {
-  if (targetUser) { await loadSendPage(targetUser); return; }
+  if (targetUser) { await loadSendPage(targetUser); hideBootSplash(); return; }
 
   if (user) {
     currentUser = user;
@@ -140,8 +150,9 @@ onAuthStateChanged(auth, async (user) => {
     $("dash-avatar").textContent = currentUsername[0].toUpperCase();
 
     resetDashboard();
-    await loadDashboard();
     showPage("dashboard");
+    hideBootSplash();
+    await loadDashboard();
     resetAuthBtns();
   } else {
     currentUser = null; currentUsername = ""; isAdmin = false; allMessages = [];
@@ -151,6 +162,7 @@ onAuthStateChanged(auth, async (user) => {
     if ($("nav-tabs")) $("nav-tabs").style.display = "none";
     $("mobile-nav")?.classList.add("hidden");
     showPage("landing");
+    hideBootSplash();
   }
 });
 
@@ -268,7 +280,14 @@ $("nav-logout-btn")?.addEventListener("click", () => signOut(auth));
 // ════════════════════════════════════════
 //  DASHBOARD
 // ════════════════════════════════════════
+function setDashboardLoading(loading) {
+  $("dash-skeleton")?.classList.toggle("hidden", !loading);
+  $("dash-content")?.classList.toggle("hidden", loading);
+}
+
 async function loadDashboard() {
+  setDashboardLoading(true);
+
   const base = window.location.origin + window.location.pathname;
   currentShareLink = `${base}?user=${encodeURIComponent(currentUsername)}`;
   if ($("share-link")) $("share-link").textContent = currentShareLink;
@@ -292,7 +311,9 @@ async function loadDashboard() {
   replaceEl("view-list", b => b.addEventListener("click", () => setView(false)));
   const si = $("search-input");
   if (si) si.addEventListener("input", e => renderMessages(e.target.value.toLowerCase().trim()));
+
   await fetchMessages();
+  setDashboardLoading(false);
 }
 
 // ── QR ──
@@ -415,17 +436,14 @@ function renderMessages(searchTerm = "") {
           <!-- Save image directly -->
           <button class="msg-action-btn msg-save-btn" title="Enregistrer comme image">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Enregistrer
           </button>
           <!-- Open share modal -->
           <button class="msg-action-btn msg-share-btn" title="Partager">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            Partager
           </button>
           <!-- Copy text -->
           <button class="msg-action-btn msg-copy-btn" title="Copier le texte">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Copier
           </button>
         </div>
       </div>
@@ -437,7 +455,8 @@ function renderMessages(searchTerm = "") {
     // Save → generate & download silently
     card.querySelector(".msg-save-btn").addEventListener("click", async (e) => {
       const btn = e.currentTarget;
-      btn.textContent = "⏳";
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `<div class="mini-spinner"></div>`;
       btn.disabled = true;
       const url = await buildImageUrl(msg.message);
       if (url) {
@@ -447,7 +466,7 @@ function renderMessages(searchTerm = "") {
       } else {
         showToast("⚠️ Erreur, fais une capture !");
       }
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Enregistrer`;
+      btn.innerHTML = originalHTML;
       btn.disabled = false;
     });
 
@@ -685,21 +704,39 @@ async function loadAdminFeedback() {
 }
 
 // ════════════════════════════════════════
-//  SEND PAGE
+//  SEND PAGE — avec skeleton fluide
 // ════════════════════════════════════════
 async function loadSendPage(username) {
   showPage("send");
   $("nav-login-btn")?.classList.remove("hidden");
   $("nav-signup-btn")?.classList.remove("hidden");
-  const q = query(collection(db,"users"), where("username","==",username));
-  const snap = await getDocs(q);
-  if (snap.empty) {
-    if ($("send-username-display")) $("send-username-display").textContent = "introuvable";
-    if ($("send-submit")) $("send-submit").disabled = true; return;
+
+  // état initial : skeleton visible, contenu caché
+  $("send-skeleton")?.classList.remove("hidden");
+  $("send-content")?.classList.add("hidden");
+  $("send-notfound")?.classList.add("hidden");
+
+  let rd = null;
+  try {
+    const q = query(collection(db,"users"), where("username","==",username));
+    const snap = await getDocs(q);
+    if (!snap.empty) rd = snap.docs[0].data();
+  } catch (e) { console.error("loadSendPage:", e); }
+
+  // petite latence minimale pour éviter un flash de skeleton trop rapide (perçu comme un bug)
+  await new Promise(r => setTimeout(r, 250));
+
+  $("send-skeleton")?.classList.add("hidden");
+
+  if (!rd) {
+    $("send-notfound")?.classList.remove("hidden");
+    return;
   }
-  const rd = snap.docs[0].data();
+
+  $("send-content")?.classList.remove("hidden");
   if ($("send-username-display")) $("send-username-display").textContent = `@${rd.username}`;
   if ($("send-avatar")) $("send-avatar").textContent = rd.username[0].toUpperCase();
+
   $("send-message")?.addEventListener("input", () => { if ($("char-count")) $("char-count").textContent = $("send-message").value.length; });
   $("send-submit")?.addEventListener("click", async () => {
     const msg = $("send-message")?.value.trim();
@@ -954,4 +991,3 @@ async function handleCopyImage() {
 $("shr-dl-btn")?.addEventListener("click", handleDownload);
 $("shr-wa-btn")?.addEventListener("click", handleWhatsApp);
 $("shr-copy-btn")?.addEventListener("click", handleCopyImage);
-
