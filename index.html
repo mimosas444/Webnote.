@@ -8,8 +8,6 @@
   <!-- Open Graph -->
   <meta property="og:type"         content="website"/>
   <meta property="og:site_name"    content="Webnote"/>
-  <meta property="og:type"         content="website"/>
-  <meta property="og:site_name"    content="Webnote"/>
   <meta property="og:title"        content="Webnote. Messages anonymes"/>
   <meta property="og:description"  content="Reçois des messages anonymes de tes amis. 100% anonyme et gratuit."/>
   <meta property="og:image"        content="https://i.postimg.cc/5tVjYPqP/image-1775360096561.jpg"/>
@@ -22,7 +20,9 @@
   <meta name="twitter:image"       content="https://i.postimg.cc/5tVjYPqP/image-1775360096561.jpg"/>
 
   <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 </head>
@@ -34,6 +34,12 @@
   <div class="blob b2"></div>
   <div class="blob b3"></div>
   <div class="blob b4"></div>
+</div>
+
+<!-- ══ BOOT SPLASH (shown until we know auth state) ══ -->
+<div id="boot-splash">
+  <div class="boot-mark">webnote<span class="dot">.</span></div>
+  <div class="boot-bar"><div class="boot-bar-fill"></div></div>
 </div>
 
 <!-- ══ NAVBAR ══ -->
@@ -85,7 +91,7 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     LANDING PAGE
+     LANDING PAGE — simplifiée, façon ngl
 ══════════════════════════════════════ -->
 <div id="page-landing" class="page active">
   <div class="landing-inner">
@@ -94,7 +100,7 @@
     <div class="hero">
       <div class="hero-pill">
         <span class="hero-pill-dot"></span>
-        100% Anonyme
+        100% Anonyme · Gratuit
       </div>
       <h1 class="hero-title">Qu'est-ce que<br/>les gens pensent<br/><em>de toi ?</em></h1>
       <p class="hero-sub">Partage ton lien. Reçois des messages anonymes.</p>
@@ -108,7 +114,7 @@
       </div>
     </div>
 
-    <!-- How it works — 3 steps clean -->
+    <!-- How it works — 3 steps, minimal -->
     <div class="how-row">
       <div class="how-step glass">
         <div class="how-num">1</div>
@@ -123,30 +129,6 @@
       <div class="how-step glass">
         <div class="how-num">3</div>
         <div class="how-text">Lis tes messages</div>
-      </div>
-    </div>
-
-    <!-- Feature cards — épuré -->
-    <div class="features-grid">
-      <div class="feat-card glass">
-        <div class="feat-ico-wrap">🎭</div>
-        <div class="feat-card-title">Anonymat total</div>
-        <div class="feat-card-sub">Personne ne sait qui t'écrit.</div>
-      </div>
-      <div class="feat-card glass">
-        <div class="feat-ico-wrap">🔗</div>
-        <div class="feat-card-title">Lien unique</div>
-        <div class="feat-card-sub">Un lien. Partage-le partout.</div>
-      </div>
-      <div class="feat-card glass">
-        <div class="feat-ico-wrap">📱</div>
-        <div class="feat-card-title">QR Code</div>
-        <div class="feat-card-sub">Génère ton QR en un clic.</div>
-      </div>
-      <div class="feat-card glass">
-        <div class="feat-ico-wrap">🖼️</div>
-        <div class="feat-card-title">Partage en image</div>
-        <div class="feat-card-sub">Exporte tes messages en story.</div>
       </div>
     </div>
 
@@ -267,82 +249,109 @@
 ══════════════════════════════════════ -->
 <div id="page-dashboard" class="page">
   <div class="page-container">
-    <div class="dash-topbar">
-      <div class="dash-header-info">
-        <div class="dash-avatar-big" id="dash-avatar">?</div>
-        <div>
-          <h2 class="dash-title">Bonjour, <span id="dash-username-title">…</span> 👋</h2>
-          <p class="dash-sub" id="dash-count">Chargement…</p>
+
+    <!-- Skeleton shown while loading -->
+    <div id="dash-skeleton" class="dash-skeleton hidden">
+      <div class="skel-topbar">
+        <div class="skel skel-circle-lg"></div>
+        <div class="skel-lines">
+          <div class="skel skel-line" style="width:55%;height:16px"></div>
+          <div class="skel skel-line" style="width:35%;height:11px;margin-top:8px"></div>
         </div>
       </div>
-      <button class="btn-icon spin-on-click" id="refresh-btn" title="Actualiser">
-        <svg viewBox="0 0 20 20" fill="none" width="17"><path d="M4 10a6 6 0 1010.7-3.7M4 10V6M4 10H8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <div class="skel-stats-row">
+        <div class="skel skel-stat"></div>
+        <div class="skel skel-stat"></div>
+        <div class="skel skel-stat"></div>
+      </div>
+      <div class="skel skel-block" style="height:120px"></div>
+      <div class="skel skel-block" style="height:90px"></div>
+      <div class="skel-msg-grid">
+        <div class="skel skel-msg"></div>
+        <div class="skel skel-msg"></div>
+        <div class="skel skel-msg"></div>
+        <div class="skel skel-msg"></div>
+      </div>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-card glass ripple"><span class="stat-em">💬</span><div class="stat-num c1" id="stat-total">0</div><div class="stat-label">Total reçus</div></div>
-      <div class="stat-card glass ripple"><span class="stat-em">📅</span><div class="stat-num c2" id="stat-today">0</div><div class="stat-label">Aujourd'hui</div></div>
-      <div class="stat-card glass ripple"><span class="stat-em">🔥</span><div class="stat-num c3" id="stat-week">0</div><div class="stat-label">Cette semaine</div></div>
-    </div>
-
-    <div class="share-card glass">
-      <div class="share-card-inner">
-        <div class="share-info">
-          <div class="share-label">✦ Ton lien unique</div>
-          <div class="share-link-text" id="share-link">chargement…</div>
+    <div id="dash-content" class="dash-content">
+      <div class="dash-topbar">
+        <div class="dash-header-info">
+          <div class="dash-avatar-big" id="dash-avatar">?</div>
+          <div>
+            <h2 class="dash-title">Bonjour, <span id="dash-username-title">…</span> 👋</h2>
+            <p class="dash-sub" id="dash-count">Chargement…</p>
+          </div>
         </div>
-        <button class="btn-copy" id="copy-link-btn">
-          <svg viewBox="0 0 20 20" fill="none" width="14"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3 13V5a2 2 0 012-2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Copier
+        <button class="btn-icon spin-on-click" id="refresh-btn" title="Actualiser">
+          <svg viewBox="0 0 20 20" fill="none" width="17"><path d="M4 10a6 6 0 1010.7-3.7M4 10V6M4 10H8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
-      <div class="share-btns">
-        <button class="share-btn wa" id="share-wa"><svg viewBox="0 0 24 24" fill="currentColor" width="14"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.306A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>WhatsApp</button>
-        <button class="share-btn tw" id="share-tw"><svg viewBox="0 0 24 24" fill="currentColor" width="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Twitter</button>
-        <button class="share-btn ig" id="share-ig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>Instagram</button>
-        <button class="share-btn snap" id="share-snap"><svg viewBox="0 0 24 24" fill="currentColor" width="14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.46 13.68c-.1.15-.24.22-.4.22-.08 0-.16-.02-.24-.05-.58-.26-1.1-.4-1.62-.4-.37 0-.72.07-1.09.21-.56.2-1.08.51-1.6.51s-1.04-.31-1.6-.51c-.37-.14-.72-.21-1.09-.21-.52 0-1.04.14-1.62.4-.08.03-.16.05-.24.05-.16 0-.3-.07-.4-.22-.14-.2-.1-.47.1-.61.87-.59 1.41-1.52 1.52-2.59.02-.16.03-.32.03-.49 0-1.38-.56-2.65-1.56-3.58-.14-.13-.18-.34-.1-.52.08-.18.26-.3.46-.3h.04c.26 0 .52.1.72.28.38.33.82.5 1.28.5.32 0 .64-.08.94-.24.5-.27 1.04-.41 1.62-.41.58 0 1.12.14 1.62.41.3.16.62.24.94.24.46 0 .9-.17 1.28-.5.2-.18.46-.28.72-.28h.04c.2 0 .38.12.46.3.08.18.04.39-.1.52-1 .93-1.56 2.2-1.56 3.58 0 .17.01.33.03.49.11 1.07.65 2 1.52 2.59.2.14.24.41.1.61z"/></svg>Snapchat</button>
-      </div>
-      <button class="qr-toggle-btn" id="qr-toggle-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14.01" y2="14"/><line x1="18" y1="14" x2="18.01" y2="14"/><line x1="14" y1="18" x2="14.01" y2="18"/><line x1="18" y1="18" x2="18.01" y2="18"/></svg>
-        Afficher le QR Code
-      </button>
-      <div class="qr-wrap hidden" id="qr-wrap">
-        <div class="qr-box"><div id="qr-code-el"></div><div class="qr-logo-overlay"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg></div></div>
-        <div class="qr-info"><div class="qr-title">Scanner pour envoyer un message</div><div class="qr-sub">Fonctionne sans compte</div></div>
-        <button class="qr-dl-btn" id="qr-dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger</button>
-      </div>
-    </div>
 
-    <div class="activity-card glass">
-      <div class="act-head"><div class="act-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Activité — 7 derniers jours</div><div class="act-total">Total : <span id="act-total">0</span></div></div>
-      <div class="chart" id="act-chart"></div>
-      <div class="act-legend"><div class="act-dot"></div>Messages par jour</div>
-    </div>
-
-    <div class="export-card glass" id="export-btn">
-      <div class="exp-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="8 13 12 17 16 13"/><line x1="12" y1="17" x2="12" y2="9"/></svg></div>
-      <div class="exp-info"><div class="exp-title">Exporter mes messages</div><div class="exp-sub">Télécharger un fichier .txt</div></div>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" class="exp-arrow"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-    </div>
-
-    <div class="toolbar">
-      <div class="filter-pills">
-        <button class="pill active" id="filter-all">Tous</button>
-        <button class="pill" id="filter-today">Aujourd'hui</button>
-        <button class="pill" id="filter-week">Cette semaine</button>
-        <button class="pill" id="filter-unread">Nouveaux</button>
+      <div class="stats-row">
+        <div class="stat-card glass ripple"><span class="stat-em">💬</span><div class="stat-num c1" id="stat-total">0</div><div class="stat-label">Total reçus</div></div>
+        <div class="stat-card glass ripple"><span class="stat-em">📅</span><div class="stat-num c2" id="stat-today">0</div><div class="stat-label">Aujourd'hui</div></div>
+        <div class="stat-card glass ripple"><span class="stat-em">🔥</span><div class="stat-num c3" id="stat-week">0</div><div class="stat-label">Cette semaine</div></div>
       </div>
-      <div class="toolbar-right">
-        <div class="input-wrap search-inline"><svg class="input-icon" viewBox="0 0 20 20" fill="none" width="14"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M14.5 14.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input type="text" id="search-input" placeholder="Rechercher…"/></div>
-        <div class="view-toggle">
-          <button class="view-btn active" id="view-grid"><svg viewBox="0 0 20 20" fill="none" width="14"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/></svg></button>
-          <button class="view-btn" id="view-list"><svg viewBox="0 0 20 20" fill="none" width="14"><path d="M4 6h12M4 10h12M4 14h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+
+      <div class="share-card glass">
+        <div class="share-card-inner">
+          <div class="share-info">
+            <div class="share-label">✦ Ton lien unique</div>
+            <div class="share-link-text" id="share-link">chargement…</div>
+          </div>
+          <button class="btn-copy" id="copy-link-btn">
+            <svg viewBox="0 0 20 20" fill="none" width="14"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3 13V5a2 2 0 012-2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Copier
+          </button>
+        </div>
+        <div class="share-btns">
+          <button class="share-btn wa" id="share-wa"><svg viewBox="0 0 24 24" fill="currentColor" width="14"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.306A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>WhatsApp</button>
+          <button class="share-btn tw" id="share-tw"><svg viewBox="0 0 24 24" fill="currentColor" width="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Twitter</button>
+          <button class="share-btn ig" id="share-ig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>Instagram</button>
+          <button class="share-btn snap" id="share-snap"><svg viewBox="0 0 24 24" fill="currentColor" width="14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.46 13.68c-.1.15-.24.22-.4.22-.08 0-.16-.02-.24-.05-.58-.26-1.1-.4-1.62-.4-.37 0-.72.07-1.09.21-.56.2-1.08.51-1.6.51s-1.04-.31-1.6-.51c-.37-.14-.72-.21-1.09-.21-.52 0-1.04.14-1.62.4-.08.03-.16.05-.24.05-.16 0-.3-.07-.4-.22-.14-.2-.1-.47.1-.61.87-.59 1.41-1.52 1.52-2.59.02-.16.03-.32.03-.49 0-1.38-.56-2.65-1.56-3.58-.14-.13-.18-.34-.1-.52.08-.18.26-.3.46-.3h.04c.26 0 .52.1.72.28.38.33.82.5 1.28.5.32 0 .64-.08.94-.24.5-.27 1.04-.41 1.62-.41.58 0 1.12.14 1.62.41.3.16.62.24.94.24.46 0 .9-.17 1.28-.5.2-.18.46-.28.72-.28h.04c.2 0 .38.12.46.3.08.18.04.39-.1.52-1 .93-1.56 2.2-1.56 3.58 0 .17.01.33.03.49.11 1.07.65 2 1.52 2.59.2.14.24.41.1.61z"/></svg>Snapchat</button>
+        </div>
+        <button class="qr-toggle-btn" id="qr-toggle-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14.01" y2="14"/><line x1="18" y1="14" x2="18.01" y2="14"/><line x1="14" y1="18" x2="14.01" y2="18"/><line x1="18" y1="18" x2="18.01" y2="18"/></svg>
+          Afficher le QR Code
+        </button>
+        <div class="qr-wrap hidden" id="qr-wrap">
+          <div class="qr-box"><div id="qr-code-el"></div><div class="qr-logo-overlay"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg></div></div>
+          <div class="qr-info"><div class="qr-title">Scanner pour envoyer un message</div><div class="qr-sub">Fonctionne sans compte</div></div>
+          <button class="qr-dl-btn" id="qr-dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger</button>
         </div>
       </div>
-    </div>
 
-    <div id="messages-container" class="messages-grid">
-      <div class="empty-state" id="empty-state"><div class="empty-icon">✉️</div><p>Aucun message pour l'instant.<br/>Partage ton lien pour commencer !</p></div>
+      <div class="activity-card glass">
+        <div class="act-head"><div class="act-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Activité — 7 derniers jours</div><div class="act-total">Total : <span id="act-total">0</span></div></div>
+        <div class="chart" id="act-chart"></div>
+        <div class="act-legend"><div class="act-dot"></div>Messages par jour</div>
+      </div>
+
+      <div class="export-card glass" id="export-btn">
+        <div class="exp-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="8 13 12 17 16 13"/><line x1="12" y1="17" x2="12" y2="9"/></svg></div>
+        <div class="exp-info"><div class="exp-title">Exporter mes messages</div><div class="exp-sub">Télécharger un fichier .txt</div></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" class="exp-arrow"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </div>
+
+      <div class="toolbar">
+        <div class="filter-pills">
+          <button class="pill active" id="filter-all">Tous</button>
+          <button class="pill" id="filter-today">Aujourd'hui</button>
+          <button class="pill" id="filter-week">Cette semaine</button>
+          <button class="pill" id="filter-unread">Nouveaux</button>
+        </div>
+        <div class="toolbar-right">
+          <div class="input-wrap search-inline"><svg class="input-icon" viewBox="0 0 20 20" fill="none" width="14"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M14.5 14.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input type="text" id="search-input" placeholder="Rechercher…"/></div>
+          <div class="view-toggle">
+            <button class="view-btn active" id="view-grid"><svg viewBox="0 0 20 20" fill="none" width="14"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/></svg></button>
+            <button class="view-btn" id="view-list"><svg viewBox="0 0 20 20" fill="none" width="14"><path d="M4 6h12M4 10h12M4 14h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <div id="messages-container" class="messages-grid">
+        <div class="empty-state" id="empty-state"><div class="empty-icon">✉️</div><p>Aucun message pour l'instant.<br/>Partage ton lien pour commencer !</p></div>
+      </div>
     </div>
   </div>
 </div>
@@ -415,19 +424,37 @@
   </div>
   <div class="auth-popup-wrap">
     <div class="auth-popup glass-popup" style="max-width:460px;text-align:center">
-      <div class="popup-logo-row" style="justify-content:center;margin-bottom:18px">
-        <div class="popup-logo-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg></div>
-        <span class="popup-logo-text">webnote<span class="dot">.</span></span>
+
+      <!-- Skeleton while we fetch the recipient -->
+      <div id="send-skeleton" class="send-skeleton">
+        <div class="skel skel-circle-lg" style="margin:0 auto 18px"></div>
+        <div class="skel skel-line" style="width:70%;height:18px;margin:0 auto 8px"></div>
+        <div class="skel skel-line" style="width:45%;height:12px;margin:0 auto 22px"></div>
+        <div class="skel skel-block" style="height:100px;border-radius:14px"></div>
+        <div class="skel skel-line" style="width:100%;height:44px;margin-top:16px;border-radius:50px"></div>
       </div>
-      <div class="send-avatar" id="send-avatar">?</div>
-      <h2 class="send-title">Message pour<br/><span id="send-username-display">…</span></h2>
-      <p class="send-hint">🤍 Ton identité ne sera jamais révélée</p>
-      <div class="input-wrap textarea-wrap"><textarea id="send-message" placeholder="Écris ce que tu penses vraiment…" maxlength="500" style="text-align:left"></textarea></div>
-      <div class="char-count"><span id="char-count">0</span>/500</div>
-      <div id="send-error" class="error-msg hidden"></div>
-      <button class="btn-primary btn-full" id="send-submit"><span>Envoyer anonymement 🤍</span></button>
-      <div id="send-success" class="success-msg hidden"><div class="success-icon">✅</div><p>Message envoyé ! Reste anonyme 😌</p><a href="index.html" class="back-link">Créer mon propre compte →</a></div>
-      <div class="send-popup-footer">Pas encore de compte ? <a href="index.html" class="send-popup-cta">Rejoindre Webnote →</a></div>
+
+      <div id="send-content" class="send-content hidden">
+        <div class="popup-logo-row" style="justify-content:center;margin-bottom:18px">
+          <div class="popup-logo-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg></div>
+          <span class="popup-logo-text">webnote<span class="dot">.</span></span>
+        </div>
+        <div class="send-avatar" id="send-avatar">?</div>
+        <h2 class="send-title">Message pour<br/><span id="send-username-display">…</span></h2>
+        <p class="send-hint">🤍 Ton identité ne sera jamais révélée</p>
+        <div class="input-wrap textarea-wrap"><textarea id="send-message" placeholder="Écris ce que tu penses vraiment…" maxlength="500" style="text-align:left"></textarea></div>
+        <div class="char-count"><span id="char-count">0</span>/500</div>
+        <div id="send-error" class="error-msg hidden"></div>
+        <button class="btn-primary btn-full" id="send-submit"><span>Envoyer anonymement 🤍</span></button>
+        <div id="send-success" class="success-msg hidden"><div class="success-icon">✅</div><p>Message envoyé ! Reste anonyme 😌</p><a href="index.html" class="back-link">Créer mon propre compte →</a></div>
+        <div class="send-popup-footer">Pas encore de compte ? <a href="index.html" class="send-popup-cta">Rejoindre Webnote →</a></div>
+      </div>
+
+      <div id="send-notfound" class="hidden" style="text-align:center;padding:20px 0">
+        <div style="font-size:2.2rem;margin-bottom:10px">🔍</div>
+        <p style="color:var(--tx2);font-size:.9rem">Cet utilisateur est introuvable.</p>
+        <a href="index.html" class="back-link">← Retour à l'accueil</a>
+      </div>
     </div>
   </div>
 </div>
@@ -464,4 +491,4 @@
 
 <script type="module" src="app.js"></script>
 </body>
-                                                      </html>
+</html>
