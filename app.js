@@ -890,14 +890,17 @@ async function buildImageUrl(message) {
 
 async function generateShareImage() {
   const card = $("shr-card");
-  if (!card || typeof html2canvas === "undefined") return;
+  if (!card) { showToast("⚠️ Erreur de génération !"); return; }
+  if (typeof html2canvas === "undefined") { showToast("⚠️ Bibliothèque d'image non chargée, réessaie."); return; }
 
-  // Show spinner in actions area, NOT on the card
+  const loader = $("shr-preview-loader");
+  loader?.classList.remove("hidden");
+
+  // Show spinner in actions area too
   const actionsEl = $("shr-overlay")?.querySelector(".shr-actions");
   const origHTML  = actionsEl ? actionsEl.innerHTML : "";
   if (actionsEl) actionsEl.innerHTML = `<div style="color:rgba(255,255,255,.6);font-size:.8rem;display:flex;align-items:center;gap:8px;justify-content:center;width:100%;padding:8px 0"><div class="shr-spinner"></div>Génération de l'image…</div>`;
 
-  // Remove any old spinner on card just in case
   card.querySelectorAll(".shr-generating").forEach(el => el.remove());
 
   try {
@@ -909,6 +912,16 @@ async function generateShareImage() {
       logging: false,
       imageTimeout: 10000,
     });
+
+    // Draw the result into the visible preview canvas
+    const previewCanvas = $("shr-canvas");
+    if (previewCanvas) {
+      previewCanvas.width  = canvas.width;
+      previewCanvas.height = canvas.height;
+      const ctx = previewCanvas.getContext("2d");
+      ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+      ctx.drawImage(canvas, 0, 0);
+    }
 
     await new Promise(resolve => {
       canvas.toBlob(blob => {
@@ -923,7 +936,7 @@ async function generateShareImage() {
     console.error("html2canvas:", e);
     showToast("⚠️ Erreur de génération !");
   } finally {
-    // Always restore action buttons
+    loader?.classList.add("hidden");
     if (actionsEl) actionsEl.innerHTML = origHTML;
     rebindModalButtons();
   }
