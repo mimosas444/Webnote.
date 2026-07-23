@@ -42,6 +42,9 @@ let qrVisible       = false;
 let isAdmin         = false;
 let selectedEmoji   = "📢";
 
+// ── Fuseau horaire de l'appareil (utilisé partout pour éviter tout décalage) ──
+const DEVICE_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 const urlParams  = new URLSearchParams(window.location.search);
 const targetUser = urlParams.get("user");
 
@@ -71,8 +74,8 @@ function updateThemeIcon(t) {
 // ════════════════════════════════════════
 function updateDatetime() {
   const now  = new Date();
-  const date = now.toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" });
-  const time = now.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" });
+  const date = now.toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long", timeZone: DEVICE_TZ });
+  const time = now.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit", timeZone: DEVICE_TZ });
   const str  = `${date}\n${time}`;
   ["auth-datetime","send-datetime"].forEach(id => {
     const el = $(id);
@@ -302,8 +305,10 @@ async function loadDashboard() {
   replaceEl("qr-toggle-btn", b => b.addEventListener("click", toggleQR));
   replaceEl("qr-dl-btn",     b => b.addEventListener("click", downloadQR));
   replaceEl("refresh-btn", b => b.addEventListener("click", async () => {
-    b.classList.add("spin-on-click"); setTimeout(() => b.classList.remove("spin-on-click"), 500);
-    await fetchMessages(); showToast("✅ Actualisé !");
+    b.classList.add("loading"); b.disabled = true;
+    await fetchMessages();
+    b.classList.remove("loading"); b.disabled = false;
+    showToast("✅ Actualisé !");
   }));
   replaceEl("export-btn", b => b.addEventListener("click", exportMessages));
   ["all","today","week","unread"].forEach(f => replaceEl(`filter-${f}`, b => b.addEventListener("click", () => setFilter(f))));
@@ -384,7 +389,7 @@ function animateCount(el, target) {
 function buildChart() {
   const chart = $("act-chart"); if (!chart) return;
   const days = [];
-  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push({ key: d.toDateString(), lbl: d.toLocaleDateString("fr-FR",{weekday:"short"}).slice(0,3), count: 0 }); }
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push({ key: d.toDateString(), lbl: d.toLocaleDateString("fr-FR",{weekday:"short",timeZone:DEVICE_TZ}).slice(0,3), count: 0 }); }
   allMessages.forEach(m => { if (!m.createdAt) return; const day = days.find(d => d.key === m.createdAt.toDate().toDateString()); if (day) day.count++; });
   const total = days.reduce((a,d) => a + d.count, 0);
   const at = $("act-total"); if (at) at.textContent = total;
@@ -482,8 +487,8 @@ function renderMessages(searchTerm = "") {
 function exportMessages() {
   if (!allMessages.length) { showToast("⚠️ Aucun message à exporter !"); return; }
   const sorted = [...allMessages].sort((a,b) => (a.createdAt?.toMillis()||0) - (b.createdAt?.toMillis()||0));
-  const lines = ["╔══════════════════════════════════╗","║  Webnote — Messages anonymes     ║","╚══════════════════════════════════╝",`Exporté : ${new Date().toLocaleString("fr-FR")}`,`Total : ${sorted.length} message(s)`,"─".repeat(36),""];
-  sorted.forEach((m,i) => { lines.push(`[${i+1}] ${m.createdAt ? m.createdAt.toDate().toLocaleString("fr-FR") : "—"}`); lines.push(`"${m.message}"`); if (m.adminReply) lines.push(`→ Réponse : ${m.adminReply}`); lines.push(""); });
+  const lines = ["╔══════════════════════════════════╗","║  Webnote — Messages anonymes     ║","╚══════════════════════════════════╝",`Exporté : ${new Date().toLocaleString("fr-FR",{timeZone:DEVICE_TZ})}`,`Total : ${sorted.length} message(s)`,"─".repeat(36),""];
+  sorted.forEach((m,i) => { lines.push(`[${i+1}] ${m.createdAt ? m.createdAt.toDate().toLocaleString("fr-FR",{timeZone:DEVICE_TZ}) : "—"}`); lines.push(`"${m.message}"`); if (m.adminReply) lines.push(`→ Réponse : ${m.adminReply}`); lines.push(""); });
   const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `webnote-${new Date().toISOString().slice(0,10)}.txt`; a.click(); URL.revokeObjectURL(a.href);
   showToast("📄 Export téléchargé !");
@@ -506,7 +511,7 @@ async function loadAnnouncements() {
     snap.forEach(d => {
       const data = d.data();
       const card = document.createElement("div"); card.className = "ann-card";
-      const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}) : "";
+      const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric",timeZone:DEVICE_TZ}) : "";
       card.innerHTML = `<div class="ann-header"><div class="ann-emoji">${data.emoji||"📢"}</div><div class="ann-meta"><div class="ann-title">${escHtml(data.title)}</div><div class="ann-date">${date}</div></div></div><div class="ann-body">${escHtml(data.body)}</div>`;
       list.appendChild(card);
     });
@@ -657,7 +662,7 @@ async function loadAdminAnnouncements() {
   snap.forEach(d => {
     const data = d.data();
     const item = document.createElement("div"); item.className = "admin-item";
-    const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR") : "";
+    const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{timeZone:DEVICE_TZ}) : "";
     item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">${data.emoji||"📢"} ${escHtml(data.title)}</div><div class="admin-item-meta">${date}</div></div></div><div class="admin-item-actions"><button class="admin-action delete" data-id="${d.id}">🗑️ Supprimer</button></div>`;
     item.querySelector(".delete").addEventListener("click", async () => { if (!confirm("Supprimer ?")) return; await deleteDoc(doc(db,"announcements",d.id)); showToast("🗑️ Supprimé."); loadAdminAnnouncements(); });
     list.appendChild(item);
@@ -672,7 +677,7 @@ async function loadAdminPolls() {
   snap.forEach(d => {
     const data = d.data();
     const total = (data.options||[]).reduce((a,o) => a+(o.votes||0), 0);
-    const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR") : "";
+    const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{timeZone:DEVICE_TZ}) : "";
     const item = document.createElement("div"); item.className = "admin-item";
     item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">${escHtml(data.question)}</div><div class="admin-item-meta">${total} vote(s) · ${date} · ${data.active?"✅ Actif":"⏸ Inactif"}</div></div></div><div class="admin-item-actions"><button class="admin-action approve" data-id="${d.id}">${data.active?"⏸ Désactiver":"▶️ Activer"}</button><button class="admin-action delete" data-id="${d.id}">🗑️ Supprimer</button></div>`;
     item.querySelector(".approve").addEventListener("click", async () => { await updateDoc(doc(db,"polls",d.id), { active: !data.active }); showToast(data.active?"Sondage désactivé.":"✅ Sondage activé !"); loadAdminPolls(); });
@@ -691,7 +696,7 @@ async function loadAdminFeedback() {
   if (snap.empty) { list.innerHTML = '<div class="empty-state" style="padding:26px 0"><div class="empty-icon">💡</div><p>Aucune suggestion.</p></div>'; return; }
   snap.forEach(d => {
     const data = d.data();
-    const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR") : "";
+    const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{timeZone:DEVICE_TZ}) : "";
     const replyHtml = data.adminReply ? `<div class="feature-reply"><span class="feature-reply-lbl">Réponse publiée</span>${escHtml(data.adminReply)}</div>` : "";
     const item = document.createElement("div"); item.className = "admin-item";
     item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">${escHtml(data.text)}</div><div class="admin-item-meta">${data.votes||0} vote(s) · ${date}${data.approved?" · ✅ Approuvé":""}</div></div></div>${replyHtml}<div class="admin-item-actions"><button class="admin-action approve">${data.approved?"❌ Retirer":"✅ Approuver"}</button><button class="admin-action reply">✏️ Répondre</button><button class="admin-action delete">🗑️ Supprimer</button></div><div class="admin-reply-form hidden" id="rf-${d.id}"><div class="input-wrap textarea-wrap"><textarea placeholder="Réponse publique…" rows="3"></textarea></div><button class="btn-primary" style="font-size:.78rem;padding:8px 15px;margin-top:4px;align-self:flex-end">Publier</button></div>`;
@@ -799,7 +804,8 @@ function formatDate(date) {
   // More than a week — show local date
   return date.toLocaleDateString("fr-FR", {
     day: "numeric", month: "short",
-    hour: "2-digit", minute: "2-digit"
+    hour: "2-digit", minute: "2-digit",
+    timeZone: DEVICE_TZ
   });
 }
 
