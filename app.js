@@ -41,7 +41,10 @@ $("themeToggle")?.addEventListener("click", () => {
   localStorage.setItem("wn-theme", next);
   updateThemeIcon(next);
 });
-function updateThemeIcon(t) { const ico = $("theme-ico"); if (ico) ico.textContent = t === "dark" ? "☀️" : "🌙"; }
+function updateThemeIcon(t) {
+  $("ico-moon")?.classList.toggle("hidden", t === "dark");
+  $("ico-sun")?.classList.toggle("hidden", t !== "dark");
+}
 
 function hideBootSplash() {
   const el = $("boot-splash"); if (!el || el.classList.contains("hide")) return;
