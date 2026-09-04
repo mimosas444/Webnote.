@@ -36,7 +36,10 @@ $("themeToggle")?.addEventListener("click", () => {
   updateThemeIcon(next);
   if (qrVisible) { qrGenerated = false; generateQR(); }
 });
-function updateThemeIcon(t){ const ico=$("theme-ico"); if(ico) ico.textContent = t==="dark"?"☀️":"🌙"; }
+function updateThemeIcon(t){
+  $("ico-moon")?.classList.toggle("hidden", t==="dark");
+  $("ico-sun")?.classList.toggle("hidden", t!=="dark");
+}
 
 function hideBootSplash(){ const el=$("boot-splash"); if(!el||el.classList.contains("hide"))return; el.classList.add("hide"); setTimeout(()=>el.remove(),450); }
 
@@ -187,7 +190,7 @@ function renderMessages(searchTerm=""){
   filtered.forEach((msg,i)=>{
     const card = document.createElement("div"); card.className="msg-card"; card.style.animationDelay=`${i*0.04}s`;
     const isNew = msg.createdAt && msg.createdAt.toDate()>=cutoff24;
-    const badges = `${isNew?'<span class="msg-badge new">🆕 Nouveau</span>':""}${msg.approved?'<span class="msg-badge approved">✅ Approuvé</span>':""}`;
+    const badges = `${isNew?'<span class="msg-badge new">Nouveau</span>':""}${msg.approved?'<span class="msg-badge approved">Approuvé</span>':""}`;
     const replyHtml = msg.adminReply ? `<div class="msg-reply"><span class="msg-reply-lbl">Réponse de l'équipe</span>${escHtml(msg.adminReply)}</div>` : "";
     card.innerHTML = `
       <div class="msg-header">${badges}</div>
@@ -239,7 +242,7 @@ async function loadPolls(){
   const list = $("polls-list"); if(!list) return;
   try {
     const snap = await getDocs(query(collection(db,"polls"), where("active","==",true), orderBy("createdAt","desc")));
-    if (snap.empty) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>Aucun sondage actif.</p></div>'; return; }
+    if (snap.empty) { list.innerHTML = '<div class="empty-state"><div class="empty-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><p>Aucun sondage actif.</p></div>'; return; }
     list.innerHTML = "";
     snap.forEach(d=>list.appendChild(buildPollCard(d.id, d.data())));
   } catch(e){ console.error(e); }
@@ -275,12 +278,12 @@ async function loadFeatureRequests(){
   try {
     const snap = await getDocs(query(collection(db,"features"), orderBy("votes","desc")));
     list.innerHTML = "";
-    if (snap.empty) { list.innerHTML = '<div class="empty-state" style="padding:26px 0"><div class="empty-icon">💡</div><p>Sois le premier à proposer !</p></div>'; return; }
+    if (snap.empty) { list.innerHTML = '<div class="empty-state" style="padding:26px 0"><div class="empty-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M15 2A6 6 0 0 0 9 8c0 2 1 3 2 4.5.5.8.8 1.5.9 2.5h2.2c.1-1 .4-1.7.9-2.5C16 11 17 10 17 8a6 6 0 0 0-2-6"/></svg></div><p>Sois le premier à proposer !</p></div>'; return; }
     snap.forEach(d=>{
       const data = d.data();
       const hasVoted = currentUser && (data.voters||[]).includes(currentUser.uid);
       const item = document.createElement("div"); item.className="feature-item";
-      const badgesHtml = data.approved ? '<span class="feature-badge approved">✅ Approuvé</span>' : '<span class="feature-badge pending">En attente</span>';
+      const badgesHtml = data.approved ? '<span class="feature-badge approved">Approuvé</span>' : '<span class="feature-badge pending">En attente</span>';
       const replyHtml = data.adminReply ? `<div class="feature-reply"><span class="feature-reply-lbl">Réponse Webnote</span>${escHtml(data.adminReply)}</div>` : "";
       item.innerHTML = `<div class="feature-votes"><button class="vote-btn ${hasVoted?"voted":""}">▲</button><div class="vote-count">${data.votes||0}</div></div><div class="feature-info"><div class="feature-text">${escHtml(data.text)}</div><div class="feature-meta">${data.createdAt?formatDate(data.createdAt.toDate()):""}</div><div class="feature-badges">${badgesHtml}</div>${replyHtml}</div>`;
       item.querySelector(".vote-btn").addEventListener("click", ()=>voteFeature(d.id, hasVoted, data.votes||0));
@@ -352,7 +355,7 @@ async function loadAdminAnnouncements(){
     const data = d.data();
     const item = document.createElement("div"); item.className="admin-item";
     const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{timeZone:DEVICE_TZ}) : "";
-    item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">${data.emoji||"📢"} ${escHtml(data.title)}</div><div class="admin-item-meta">${date}</div></div></div><div class="admin-item-actions"><button class="admin-action delete">🗑️ Supprimer</button></div>`;
+    item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">${data.emoji||"📢"} ${escHtml(data.title)}</div><div class="admin-item-meta">${date}</div></div></div><div class="admin-item-actions"><button class="admin-action delete">Supprimer</button></div>`;
     item.querySelector(".delete").onclick = async () => { if(!confirm("Supprimer ?")) return; await deleteDoc(doc(db,"announcements",d.id)); showToast("🗑️ Supprimé."); loadAdminAnnouncements(); };
     list.appendChild(item);
   });
@@ -367,7 +370,7 @@ async function loadAdminPolls(){
     const total = (data.options||[]).reduce((a,o)=>a+(o.votes||0),0);
     const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{timeZone:DEVICE_TZ}) : "";
     const item = document.createElement("div"); item.className="admin-item";
-    item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">${escHtml(data.question)}</div><div class="admin-item-meta">${total} vote(s) · ${date} · ${data.active?"✅ Actif":"⏸ Inactif"}</div></div></div><div class="admin-item-actions"><button class="admin-action approve">${data.active?"⏸ Désactiver":"▶️ Activer"}</button><button class="admin-action delete">🗑️ Supprimer</button></div>`;
+    item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">${escHtml(data.question)}</div><div class="admin-item-meta">${total} vote(s) · ${date} · ${data.active?"✅ Actif":"⏸ Inactif"}</div></div></div><div class="admin-item-actions"><button class="admin-action approve">${data.active?"Désactiver":"Activer"}</button><button class="admin-action delete">Supprimer</button></div>`;
     item.querySelector(".approve").onclick = async () => { await updateDoc(doc(db,"polls",d.id), { active: !data.active }); showToast(data.active?"Sondage désactivé.":"✅ Sondage activé !"); loadAdminPolls(); };
     item.querySelector(".delete").onclick = async () => { if(!confirm("Supprimer ?")) return; await deleteDoc(doc(db,"polls",d.id)); showToast("🗑️ Supprimé."); loadAdminPolls(); };
     list.appendChild(item);
@@ -380,13 +383,13 @@ async function loadAdminFeedback(){
   const pending = snap.docs.filter(d=>!d.data().approved).length;
   const badge = $("feedback-count"); if(badge) badge.textContent = pending;
   const navBadge = $("admin-badge"); if(navBadge){ navBadge.textContent = pending; navBadge.style.display = pending>0?"":"none"; }
-  if (snap.empty) { list.innerHTML = '<div class="empty-state" style="padding:26px 0"><div class="empty-icon">💡</div><p>Aucune suggestion.</p></div>'; return; }
+  if (snap.empty) { list.innerHTML = '<div class="empty-state" style="padding:26px 0"><div class="empty-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M15 2A6 6 0 0 0 9 8c0 2 1 3 2 4.5.5.8.8 1.5.9 2.5h2.2c.1-1 .4-1.7.9-2.5C16 11 17 10 17 8a6 6 0 0 0-2-6"/></svg></div><p>Aucune suggestion.</p></div>'; return; }
   snap.forEach(d=>{
     const data = d.data();
     const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{timeZone:DEVICE_TZ}) : "";
     const replyHtml = data.adminReply ? `<div class="feature-reply"><span class="feature-reply-lbl">Réponse publiée</span>${escHtml(data.adminReply)}</div>` : "";
     const item = document.createElement("div"); item.className="admin-item";
-    item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">${escHtml(data.text)}</div><div class="admin-item-meta">${data.votes||0} vote(s) · ${date}${data.approved?" · ✅ Approuvé":""}</div></div></div>${replyHtml}<div class="admin-item-actions"><button class="admin-action approve">${data.approved?"❌ Retirer":"✅ Approuver"}</button><button class="admin-action reply">✏️ Répondre</button><button class="admin-action delete">🗑️ Supprimer</button></div><div class="admin-reply-form hidden" id="rf-${d.id}"><div class="input-wrap textarea-wrap"><textarea placeholder="Réponse publique…" rows="3"></textarea></div><button class="btn-primary" style="font-size:.78rem;padding:8px 15px;margin-top:4px;align-self:flex-end">Publier</button></div>`;
+    item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">${escHtml(data.text)}</div><div class="admin-item-meta">${data.votes||0} vote(s) · ${date}${data.approved?" · Approuvé":""}</div></div></div>${replyHtml}<div class="admin-item-actions"><button class="admin-action approve">${data.approved?"Retirer":"Approuver"}</button><button class="admin-action reply">Répondre</button><button class="admin-action delete">Supprimer</button></div><div class="admin-reply-form hidden" id="rf-${d.id}"><div class="input-wrap textarea-wrap"><textarea placeholder="Réponse publique…" rows="3"></textarea></div><button class="btn-primary" style="font-size:.78rem;padding:8px 15px;margin-top:4px;align-self:flex-end">Publier</button></div>`;
     item.querySelector(".approve").onclick = async () => { await updateDoc(doc(db,"features",d.id), { approved: !data.approved }); showToast(data.approved?"Retrait effectué.":"✅ Approuvé !"); loadAdminFeedback(); };
     item.querySelector(".reply").onclick = () => $(`rf-${d.id}`)?.classList.toggle("hidden");
     item.querySelector(".btn-primary").onclick = async () => { const ta=$(`rf-${d.id}`)?.querySelector("textarea"); const reply=ta?.value.trim(); if(!reply) return showToast("Écris une réponse !"); await updateDoc(doc(db,"features",d.id), { adminReply: reply }); showToast("✏️ Réponse publiée !"); loadAdminFeedback(); };
