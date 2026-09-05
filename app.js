@@ -41,7 +41,10 @@ $("themeToggle")?.addEventListener("click", () => {
   localStorage.setItem("wn-theme", next);
   updateThemeIcon(next);
 });
-function updateThemeIcon(t) { const ico = $("theme-ico"); if (ico) ico.textContent = t === "dark" ? "☀️" : "🌙"; }
+function updateThemeIcon(t) {
+  $("ico-moon")?.classList.toggle("hidden", t === "dark");
+  $("ico-sun")?.classList.toggle("hidden", t !== "dark");
+}
 
 function hideBootSplash() {
   const el = $("boot-splash"); if (!el || el.classList.contains("hide")) return;
@@ -59,8 +62,8 @@ function showPage(name) {
 onAuthStateChanged(auth, async (user) => {
   if (targetUser) { await loadSendPage(targetUser); hideBootSplash(); return; }
   if (user) {
-    // Connecté → direction le dashboard (chat + messages)
-    window.location.href = "dashboard.html";
+    // Connecté → direction la page "Mes messages" (messages anonymes)
+    window.location.href = "inbox.html";
     return;
   }
   showPage("landing"); hideBootSplash();
@@ -191,4 +194,4 @@ function showErr(el, msg) { if (!el) return; el.textContent = msg; el.classList.
 function fbErr(code) {
   const m = { "auth/email-already-in-use":"Email déjà utilisé.","auth/invalid-email":"Email invalide.","auth/weak-password":"Mot de passe trop faible.","auth/user-not-found":"Aucun compte avec cet email.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-credential":"Email ou mot de passe incorrect.","auth/too-many-requests":"Trop de tentatives. Réessaie plus tard." };
   return m[code] || "Une erreur s'est produite.";
-}
+    }
