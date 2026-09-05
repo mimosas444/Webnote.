@@ -62,8 +62,8 @@ function showPage(name) {
 onAuthStateChanged(auth, async (user) => {
   if (targetUser) { await loadSendPage(targetUser); hideBootSplash(); return; }
   if (user) {
-    // Connecté → direction le dashboard (chat + messages)
-    window.location.href = "dashboard.html";
+    // Connecté → direction la page "Mes messages" (messages anonymes)
+    window.location.href = "inbox.html";
     return;
   }
   showPage("landing"); hideBootSplash();
