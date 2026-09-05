@@ -153,11 +153,13 @@ async function loadSendPage(username) {
   $("send-content")?.classList.add("hidden");
   $("send-notfound")?.classList.add("hidden");
 
+  const cleanUsername = (username || "").trim().toLowerCase();
   let rd = null;
   try {
-    const q = query(collection(db,"users"), where("username","==",username));
+    const q = query(collection(db,"users"), where("username","==",cleanUsername));
     const snap = await getDocs(q);
     if (!snap.empty) rd = snap.docs[0].data();
+    else console.warn("Webnote: aucun utilisateur trouvé pour le pseudo :", cleanUsername);
   } catch (e) { console.error("loadSendPage:", e); }
 
   await new Promise(r => setTimeout(r, 250));
