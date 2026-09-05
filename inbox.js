@@ -74,8 +74,8 @@ onAuthStateChanged(auth, async (user) => {
   $("dash-avatar").textContent = currentUsername[0].toUpperCase();
 
   showPage("dashboard");
-  await loadDashboard();
   hideBootSplash();
+  await loadDashboard();
 });
 
 $("nav-logout-btn")?.addEventListener("click", () => signOut(auth));
