@@ -44,6 +44,8 @@ a{color:inherit}
 #boot-splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:linear-gradient(135deg,var(--bg-a) 0%,var(--bg-b) 55%,var(--bg-c) 100%);transition:opacity .4s ease,visibility .4s ease}
 #boot-splash.hide{opacity:0;visibility:hidden;pointer-events:none}
 .boot-mark{font-family:'Outfit',sans-serif;font-weight:800;font-size:1.4rem;animation:bootPulse 1.4s ease-in-out infinite}
+.boot-logo-img{width:clamp(48px,10vw,64px);height:clamp(48px,10vw,64px);object-fit:contain;border-radius:16px;box-shadow:0 8px 28px rgba(99,102,241,.3);animation:bootPulse 1.4s ease-in-out infinite}
+.nav-logo-ico img,.popup-logo-icon img{width:100%;height:100%;object-fit:contain;border-radius:inherit}
 .boot-bar{width:110px;height:3px;border-radius:99px;background:var(--bd2);overflow:hidden}
 .boot-bar-fill{width:40%;height:100%;background:var(--accent);border-radius:99px;animation:bootSlide 1.1s ease-in-out infinite}
 @keyframes bootPulse{0%,100%{opacity:1}50%{opacity:.5}}
