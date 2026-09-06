@@ -41,10 +41,7 @@ $("themeToggle")?.addEventListener("click", () => {
   localStorage.setItem("wn-theme", next);
   updateThemeIcon(next);
 });
-function updateThemeIcon(t) {
-  $("ico-moon")?.classList.toggle("hidden", t === "dark");
-  $("ico-sun")?.classList.toggle("hidden", t !== "dark");
-}
+function updateThemeIcon(t) { const ico = $("theme-ico"); if (ico) ico.textContent = t === "dark" ? "☀️" : "🌙"; }
 
 function hideBootSplash() {
   const el = $("boot-splash"); if (!el || el.classList.contains("hide")) return;
@@ -62,7 +59,7 @@ function showPage(name) {
 onAuthStateChanged(auth, async (user) => {
   if (targetUser) { await loadSendPage(targetUser); hideBootSplash(); return; }
   if (user) {
-    // Connecté → direction la page "Mes messages" (messages anonymes)
+    // Connecté → direction la page des messages anonymes (pas le chat global)
     window.location.href = "inbox.html";
     return;
   }
@@ -153,13 +150,11 @@ async function loadSendPage(username) {
   $("send-content")?.classList.add("hidden");
   $("send-notfound")?.classList.add("hidden");
 
-  const cleanUsername = (username || "").trim().toLowerCase();
   let rd = null;
   try {
-    const q = query(collection(db,"users"), where("username","==",cleanUsername));
+    const q = query(collection(db,"users"), where("username","==",username));
     const snap = await getDocs(q);
     if (!snap.empty) rd = snap.docs[0].data();
-    else console.warn("Webnote: aucun utilisateur trouvé pour le pseudo :", cleanUsername);
   } catch (e) { console.error("loadSendPage:", e); }
 
   await new Promise(r => setTimeout(r, 250));
@@ -196,4 +191,4 @@ function showErr(el, msg) { if (!el) return; el.textContent = msg; el.classList.
 function fbErr(code) {
   const m = { "auth/email-already-in-use":"Email déjà utilisé.","auth/invalid-email":"Email invalide.","auth/weak-password":"Mot de passe trop faible.","auth/user-not-found":"Aucun compte avec cet email.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-credential":"Email ou mot de passe incorrect.","auth/too-many-requests":"Trop de tentatives. Réessaie plus tard." };
   return m[code] || "Une erreur s'est produite.";
-  }
+}
