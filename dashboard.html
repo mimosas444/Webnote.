@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Webnote — Discussion</title>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -18,6 +19,8 @@ body{background:var(--bg);background-image:radial-gradient(ellipse 80% 40% at 50
 #boot-splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg);transition:opacity .4s,visibility .4s}
 #boot-splash.hide{opacity:0;visibility:hidden;pointer-events:none}
 .boot-mark{font-family:'Outfit',sans-serif;font-weight:800;font-size:1.3rem;animation:bootPulse 1.4s ease-in-out infinite}
+.boot-logo-img{width:56px;height:56px;object-fit:contain;border-radius:16px;box-shadow:0 8px 28px var(--pg);animation:bootPulse 1.4s ease-in-out infinite}
+.logo-ico img{width:100%;height:100%;object-fit:contain;border-radius:inherit}
 @keyframes bootPulse{0%,100%{opacity:1}50%{opacity:.5}}
 
 .hdr{position:relative;z-index:50;height:60px;padding:0 14px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(240,240,248,.8);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-bottom:1px solid var(--bd)}
@@ -200,7 +203,7 @@ body.compact .bbl{padding:7px 12px!important;font-size:.85rem!important}body.com
 </style>
 </head>
 <body>
-<div id="boot-splash"><div class="boot-mark">webnote<span style="color:var(--p)">.</span></div></div>
+<div id="boot-splash"><img src="https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" alt="Webnote" class="boot-logo-img"/><div class="boot-mark">webnote<span style="color:var(--p)">.</span></div></div>
 <div class="menu-ov" id="menuOv" onclick="closeMenu()"></div>
 
 <!-- MENU (minimal : messages anonymes + paramètres) -->
@@ -236,7 +239,7 @@ body.compact .bbl{padding:7px 12px!important;font-size:.85rem!important}body.com
 <header class="hdr">
   <div class="hl">
     <button class="hbtn" onclick="openMenu()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/></svg></button>
-    <a class="logo" href="#"><div class="logo-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg></div><span class="logo-txt">Webnote</span></a>
+    <a class="logo" href="#"><div class="logo-ico"><img src="https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" alt="Webnote"/></div><span class="logo-txt">Webnote</span></a>
     <div class="gi"><div class="gi-name">Discussion Webnote</div><div class="gi-stat"><span class="pulse"></span><span id="onlineCnt">Chargement...</span></div></div>
   </div>
   <div class="hr">
