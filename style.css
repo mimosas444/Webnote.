@@ -113,6 +113,14 @@ a{color:inherit}
 .hero-title em{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-sub{font-size:clamp(.9rem,.4vw+.82rem,1.04rem);color:var(--tx2);max-width:380px;margin:0 auto clamp(28px,4vw,36px)}
 .hero-btns{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.feature-highlights{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;width:100%;max-width:580px;margin:0 auto clamp(22px,3vw,30px)}
+.feature-highlight{display:flex;align-items:center;gap:13px;padding:15px 19px;border-radius:16px;flex:1;min-width:230px;transition:transform .2s}
+.feature-highlight:hover{transform:translateY(-3px)}
+.fh-ico{width:40px;height:40px;border-radius:12px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0}
+.fh-title{font-size:.87rem;font-weight:800;display:flex;align-items:center;gap:7px}
+.fh-sub{font-size:.73rem;color:var(--tx2);margin-top:2px}
+.fh-live{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok);animation:dotPulse 2s infinite;flex-shrink:0}
+@media(max-width:520px){.feature-highlight{min-width:100%}}
 .how-row{display:flex;align-items:stretch;justify-content:center;gap:clamp(8px,2vw,16px);width:100%;max-width:560px}
 .how-step{border-radius:16px;padding:clamp(16px,2.5vw,22px) clamp(12px,2vw,18px);text-align:center;flex:1;min-width:0}
 .how-num{font-family:'Outfit',sans-serif;font-size:clamp(1.3rem,3vw,1.6rem);font-weight:800;color:var(--accent);margin-bottom:6px}
