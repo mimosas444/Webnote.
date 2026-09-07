@@ -93,6 +93,8 @@ svg{display:block}
 .nav-tab{display:flex;align-items:center;gap:6px;background:var(--glass);border:1px solid var(--glass-bd);border-radius:12px;color:var(--tx2);font-size:.78rem;font-weight:700;padding:9px 16px;cursor:pointer;transition:.2s;white-space:nowrap;position:relative;text-decoration:none}
 .nav-tab:hover{color:var(--accent);border-color:var(--bd2);transform:translateY(-1px)}
 .nav-tab.active{background:var(--accent);border-color:transparent;color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.32)}
+.nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:#ec4899;color:#fff;font-size:.6rem;font-weight:800;line-height:1;box-shadow:0 0 0 2px var(--nav-bg)}
+.nav-tab.active .nav-badge{background:#fff;color:var(--accent)}
 .theme-toggle{width:36px;height:36px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-bd);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx2);transition:.2s;flex-shrink:0}
 .theme-toggle:hover{color:var(--accent);transform:rotate(16deg)}
 .theme-toggle svg{width:16px;height:16px}
@@ -198,6 +200,10 @@ svg{display:block}
 .messages-grid.list-view{grid-template-columns:1fr}
 .msg-card{background:var(--card-bg);border:1px solid var(--card-bd);border-radius:20px;padding:clamp(20px,2.6vw,26px);backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);transition:transform .28s cubic-bezier(.23,1,.32,1),box-shadow .28s,border-color .28s;animation:fadeUp .4s ease both;box-shadow:0 4px 20px rgba(70,90,160,.07),inset 0 1px 0 rgba(255,255,255,.3);display:flex;flex-direction:column;gap:14px;min-width:0}
 .msg-card:hover{transform:translateY(-5px);border-color:var(--bd2);box-shadow:0 20px 46px -14px rgba(91,91,246,.3),inset 0 1px 0 rgba(255,255,255,.3)}
+.msg-card.pinned{border-color:rgba(236,72,153,.45);box-shadow:0 4px 24px rgba(236,72,153,.14),inset 0 1px 0 rgba(255,255,255,.3)}
+.msg-card.pinned::before{content:'';position:absolute;top:0;left:20px;right:20px;height:2px;background:linear-gradient(90deg,transparent,#ec4899,var(--accent2),transparent);border-radius:0 0 4px 4px}
+.msg-card{position:relative}
+.msg-badge.pinned{background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.28);color:#ec4899}
 .msg-header{display:flex;gap:8px;flex-wrap:wrap;min-height:22px}
 .msg-badge{font-size:.63rem;font-weight:700;padding:4px 11px;border-radius:99px;display:inline-flex;align-items:center;gap:5px}
 .msg-badge svg{width:11px;height:11px;flex-shrink:0}
@@ -215,6 +221,9 @@ svg{display:block}
 .msg-action-btn{width:32px;height:32px;border-radius:50%;background:var(--surface);border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tx3);transition:.2s}
 .msg-action-btn svg{width:13px;height:13px}
 .msg-action-btn:hover{background:var(--accent-lt);color:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
+.msg-action-btn:active{transform:scale(.9)}
+.msg-action-btn.on{background:var(--accent-lt);color:var(--accent);border-color:var(--accent)}
+.msg-action-btn.on.fav-on{background:rgba(236,72,153,.12);color:#ec4899;border-color:rgba(236,72,153,.4)}
 .empty-state{grid-column:1/-1;text-align:center;padding:clamp(60px,10vh,100px) 24px;color:var(--tx3);display:flex;flex-direction:column;align-items:center;gap:16px}
 .empty-icon{width:clamp(56px,9vw,68px);height:clamp(56px,9vw,68px);border-radius:50%;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;color:var(--accent)}
 .empty-icon svg{width:46%;height:46%}
@@ -351,36 +360,55 @@ svg{display:block}
 @media(min-width:1400px){.page-container{max-width:980px}}
 
 /* ── Share-as-image (html2canvas) modal ── */
-.shr-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.78);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:center;padding:clamp(12px,4vw,24px)}
-.shr-overlay.hidden{display:none!important}
-.shr-modal{display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;max-width:360px;animation:popupIn .4s cubic-bezier(.34,1.56,.64,1) both;position:relative}
-@keyframes popupIn{from{opacity:0;transform:scale(.93) translateY(14px)}to{opacity:1;transform:none}}
-.shr-close{position:absolute;top:-14px;right:-14px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:10}
-.shr-close svg{width:14px;height:14px}
-.shr-preview-wrap{position:relative;width:100%;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-.shr-canvas-preview{width:100%;height:auto;display:block;border-radius:18px}
-.shr-preview-loader{position:absolute;inset:0;background:rgba(10,8,30,.65);display:flex;align-items:center;justify-content:center;gap:10px;border-radius:18px;color:rgba(255,255,255,.7);font-size:.82rem;font-weight:600}
-.shr-actions{display:flex;gap:12px;width:100%;flex-wrap:wrap}
-.shr-btn{flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:12px;padding:13px 10px;font-size:.82rem;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap}
-.shr-btn svg{width:15px;height:15px}
+.msg-expand-image-section{display:flex;flex-direction:column;gap:12px;padding-top:4px}
+.shr-preview-wrap{position:relative;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 14px 34px -8px rgba(20,10,60,.28)}
+.shr-canvas-preview{width:100%;height:auto;display:block;border-radius:16px}
+.shr-preview-loader{position:absolute;inset:0;background:rgba(10,8,30,.55);display:flex;align-items:center;justify-content:center;gap:10px;border-radius:16px;color:rgba(255,255,255,.85);font-size:.8rem;font-weight:600}
+.shr-actions{display:flex;gap:10px;width:100%;flex-wrap:wrap}
+.shr-btn{flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:11px;padding:11px 10px;font-size:.8rem;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap}
+.shr-btn svg{width:14px;height:14px}
 .shr-btn:hover{transform:translateY(-2px)}
-.shr-dl{background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.4)}
-.shr-copy{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;backdrop-filter:blur(10px)}
-.shr-spinner{width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .7s linear infinite;flex-shrink:0}
-.shr-card{position:fixed;left:-9999px;top:0;width:380px;border-radius:22px;overflow:hidden}
+.shr-dl{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(99,102,241,.32)}
+.shr-dl:hover{background:var(--accent-dk)}
+.shr-copy{background:var(--surface);border:1.5px solid var(--bd2);color:var(--tx2)}
+.shr-copy:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-lt)}
+.shr-spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .7s linear infinite;flex-shrink:0}
+.shr-card{position:fixed;left:-9999px;top:0;width:380px;border-radius:26px;overflow:hidden}
 .shr-bg{position:absolute;inset:0;background:linear-gradient(160deg,#3730a3 0%,#6d28d9 45%,#831843 100%);z-index:0}
-.shr-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(10,8,30,.35),rgba(20,15,50,.25) 50%,rgba(15,10,40,.4))}
-.shr-content{position:relative;z-index:1;padding:28px;display:flex;flex-direction:column;gap:14px;min-height:230px}
-.shr-logo-row{display:flex;align-items:center;gap:8px}
-.shr-logo-icon{width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.shr-logo-text{font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:800;color:rgba(255,255,255,.92)}
-.shr-quote{font-family:'Outfit',sans-serif;font-size:3.4rem;line-height:.6;color:rgba(255,255,255,.35);font-weight:800;margin-top:2px}
-.shr-msg-text{font-size:1.08rem;font-weight:600;color:#fff;line-height:1.65;word-break:break-word;text-shadow:0 1px 6px rgba(0,0,0,.25);flex:1}
-.shr-footer{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.18)}
-.shr-anon-label{font-size:.64rem;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1px}
-.shr-url{font-size:.62rem;color:#fff;font-weight:700;max-width:220px;word-break:break-all}
-.shr-icon-badge{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
-.shr-icon-badge svg{width:17px;height:17px}
+.shr-bg::before{content:'';position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);top:-60px;right:-60px}
+.shr-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(10,8,30,.38),rgba(20,15,50,.22) 50%,rgba(15,10,40,.45));box-shadow:inset 0 0 90px rgba(0,0,0,.25)}
+.shr-logo-badge{position:absolute;z-index:2;top:20px;right:20px;width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.shr-logo-badge img{width:100%;height:100%;object-fit:contain;padding:6px}
+.shr-content{position:relative;z-index:1;padding:26px 26px 24px;display:flex;flex-direction:column;gap:12px;min-height:250px}
+.shr-brand-text{font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:800;color:rgba(255,255,255,.85);letter-spacing:.3px;padding-right:44px}
+.shr-brand-text .dot{color:rgba(255,255,255,.5)}
+.shr-quote-ico{width:30px;height:30px;color:rgba(255,255,255,.3);margin-top:2px}
+.shr-msg-text{font-size:1.1rem;font-weight:600;color:#fff;line-height:1.65;word-break:break-word;text-shadow:0 1px 8px rgba(0,0,0,.3);flex:1}
+.shr-footer{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.2)}
+.shr-anon-label{font-size:.64rem;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1.2px}
+.shr-site{display:flex;align-items:center;gap:5px;font-size:.68rem;color:#fff;font-weight:700;margin-top:5px}
+.shr-site svg{width:12px;height:12px;opacity:.85;flex-shrink:0}
+
+/* ── Message expand pop-up ── */
+.msg-expand-overlay{position:fixed;inset:0;z-index:850;background:rgba(10,8,20,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:clamp(14px,4vw,26px)}
+.msg-expand-overlay.hidden{display:none!important}
+@keyframes popupIn{from{opacity:0;transform:scale(.93) translateY(14px)}to{opacity:1;transform:none}}
+.msg-expand-modal{position:relative;width:100%;max-width:460px;max-height:min(600px,86vh);overflow-y:auto;background:var(--card-bg);border:1px solid var(--card-bd);border-radius:24px;padding:clamp(26px,4vw,34px) clamp(22px,4vw,28px) clamp(22px,4vw,26px);box-shadow:0 30px 80px -20px rgba(20,10,60,.45);backdrop-filter:blur(24px) saturate(1.3);-webkit-backdrop-filter:blur(24px) saturate(1.3);animation:popupIn .32s cubic-bezier(.34,1.56,.64,1) both;display:flex;flex-direction:column;gap:18px}
+.msg-expand-close{position:absolute;top:16px;left:16px;width:34px;height:34px;border-radius:50%;background:var(--surface);border:1px solid var(--bd2);color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:2}
+.msg-expand-close:hover{background:var(--err-bg);color:var(--err);border-color:var(--err-bd);transform:rotate(90deg)}
+.msg-expand-close svg{width:14px;height:14px}
+.msg-expand-header{display:flex;gap:8px;flex-wrap:wrap;padding-left:44px;min-height:26px}
+.msg-expand-text{font-size:1.05rem;line-height:1.75;color:var(--tx);word-break:break-word;font-weight:500}
+.msg-expand-meta{display:flex;align-items:center;gap:7px;font-size:.74rem;color:var(--tx3);padding-top:2px;border-top:1px solid var(--bd);padding-top:14px}
+.msg-expand-meta svg{width:12px;height:12px;flex-shrink:0}
+.msg-expand-actions{display:flex;gap:9px;flex-wrap:wrap}
+.msg-expand-action-btn{flex:1;min-width:110px;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--surface);border:1.5px solid var(--bd2);border-radius:12px;padding:11px 14px;font-size:.8rem;font-weight:700;color:var(--tx2);cursor:pointer;transition:.2s}
+.msg-expand-action-btn svg{width:14px;height:14px}
+.msg-expand-action-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-lt);transform:translateY(-1px)}
+.msg-expand-action-btn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-lt)}
+.msg-expand-action-btn.fav-on{border-color:rgba(236,72,153,.4);color:#ec4899;background:rgba(236,72,153,.1)}
+.msg-expand-action-btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+.msg-expand-action-btn.primary:hover{background:var(--accent-dk);color:#fff}
 
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -401,7 +429,7 @@ svg{display:block}
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" data-page="dashboard">
-      <svg viewBox="0 0 20 20" fill="none" width="14"><path d="M3 10L10 3l7 7M5 8.5V17h4v-4h2v4h4V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Messages</span>
+      <svg viewBox="0 0 20 20" fill="none" width="14"><path d="M3 10L10 3l7 7M5 8.5V17h4v-4h2v4h4V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Messages</span><span class="nav-badge hidden" id="nav-badge-new">0</span>
     </button>
     <button class="nav-tab" data-page="community">
       <svg viewBox="0 0 20 20" fill="none" width="14"><path d="M17 8.5c0 3.6-3.1 6.5-7 6.5a7.8 7.8 0 01-3-.6L3 15.5l.8-3.5A6.3 6.3 0 013 8.5C3 4.9 6.1 2 10 2s7 2.9 7 6.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Communauté</span>
@@ -489,6 +517,7 @@ svg{display:block}
           <button class="pill" id="filter-today">Aujourd'hui</button>
           <button class="pill" id="filter-week">Cette semaine</button>
           <button class="pill" id="filter-unread">Nouveaux</button>
+          <button class="pill" id="filter-fav">Favoris</button>
         </div>
         <div class="toolbar-right">
           <div class="input-wrap search-inline"><svg class="input-icon" viewBox="0 0 20 20" fill="none" width="14"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M14.5 14.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input type="text" id="search-input" placeholder="Rechercher…"/></div>
@@ -564,26 +593,46 @@ svg{display:block}
 <!-- Modèle caché pour html2canvas -->
 <div class="shr-card" id="shr-card">
   <div class="shr-bg"></div>
+  <div class="shr-logo-badge"><img src="https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" alt="Webnote"/></div>
   <div class="shr-content">
-    <div class="shr-logo-row"><div class="shr-logo-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/></svg></div><span class="shr-logo-text">webnote<span class="dot">.</span></span></div>
-    <div class="shr-quote">"</div>
+    <div class="shr-brand-text">webnote<span class="dot">.</span></div>
+    <svg class="shr-quote-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 7A4.5 4.5 0 0 0 2 11.5V18h6.5v-6.5H5A3.5 3.5 0 0 1 8.5 8V7H6.5zm11 0A4.5 4.5 0 0 0 13 11.5V18h6.5v-6.5H16A3.5 3.5 0 0 1 19.5 8V7h-2z"/></svg>
     <div class="shr-msg-text" id="shr-msg-text"></div>
-    <div class="shr-footer"><div><span class="shr-anon-label">Message anonyme</span><br/><span class="shr-url">webnote</span></div><div class="shr-icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></div></div>
+    <div class="shr-footer">
+      <div>
+        <span class="shr-anon-label">Message anonyme</span>
+        <div class="shr-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>webnote-gold.vercel.app</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <div id="toast" class="toast hidden"></div>
 
-<div class="shr-overlay hidden" id="shr-overlay">
-  <div class="shr-modal">
-    <button class="shr-close" id="shr-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <div class="shr-preview-wrap">
-      <canvas id="shr-canvas" class="shr-canvas-preview"></canvas>
-      <div class="shr-preview-loader hidden" id="shr-preview-loader"><div class="shr-spinner"></div><span>Génération…</span></div>
+<div class="msg-expand-overlay hidden" id="msg-expand-overlay">
+  <div class="msg-expand-modal">
+    <button class="msg-expand-close" id="msg-expand-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="msg-expand-header" id="msg-expand-header"></div>
+    <div class="msg-expand-text" id="msg-expand-text"></div>
+    <div id="msg-expand-reply-wrap"></div>
+    <div class="msg-expand-meta" id="msg-expand-meta"></div>
+
+    <div class="msg-expand-image-section hidden" id="msg-expand-image-section">
+      <div class="shr-preview-wrap">
+        <canvas id="shr-canvas" class="shr-canvas-preview"></canvas>
+        <div class="shr-preview-loader hidden" id="shr-preview-loader"><div class="shr-spinner"></div><span>Génération…</span></div>
+      </div>
+      <div class="shr-actions">
+        <button class="shr-btn shr-dl" id="shr-dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Enregistrer</button>
+        <button class="shr-btn shr-copy" id="shr-copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+      </div>
     </div>
-    <div class="shr-actions">
-      <button class="shr-btn shr-dl" id="shr-dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Enregistrer</button>
-      <button class="shr-btn shr-copy" id="shr-copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier</button>
+
+    <div class="msg-expand-actions">
+      <button class="msg-expand-action-btn" id="msg-expand-pin-btn"></button>
+      <button class="msg-expand-action-btn" id="msg-expand-fav-btn"></button>
+      <button class="msg-expand-action-btn" id="msg-expand-copy-btn"></button>
+      <button class="msg-expand-action-btn primary" id="msg-expand-share-btn"></button>
     </div>
   </div>
 </div>
@@ -672,7 +721,12 @@ const ICONS = {
   reply: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>',
   sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8 6 18M18 6l1.8-1.8"/></svg>',
   moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
-  vote: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>'
+  vote: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M8.5 3h7l.7 6.2 3 2.3v2H4.8v-2l3-2.3z"/></svg>',
+  heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
+  heartFilled: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
+  expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
 };
 // Maps legacy emoji characters (stored on older announcement docs) to the new icon keys.
 const LEGACY_EMOJI_MAP = { "📢":"megaphone", "🚀":"rocket", "✨":"sparkles", "🔧":"wrench", "⚠️":"alert", "🎉":"party" };
@@ -758,7 +812,7 @@ async function loadDashboard(){
     showToast("Actualisé !");
   });
   $("export-btn")?.addEventListener("click", exportMessages);
-  ["all","today","week","unread"].forEach(f => $(`filter-${f}`)?.addEventListener("click", () => setFilter(f)));
+  ["all","today","week","unread","fav"].forEach(f => $(`filter-${f}`)?.addEventListener("click", () => setFilter(f)));
   $("view-grid")?.addEventListener("click", () => setView(true));
   $("view-list")?.addEventListener("click", () => setView(false));
   $("search-input")?.addEventListener("input", e => renderMessages(e.target.value.toLowerCase().trim()));
@@ -795,8 +849,15 @@ async function fetchMessages(){
     const q = query(collection(db,"messages"), where("recipientId","==",currentUser.uid), orderBy("createdAt","desc"));
     const snap = await getDocs(q);
     allMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    updateStats(); buildChart(); renderMessages();
+    updateStats(); buildChart(); renderMessages(); updateNavBadge();
   } catch(e){ console.error("fetchMessages:", e); }
+}
+function updateNavBadge(){
+  const cutoff24 = new Date(nowMs() - 86400000);
+  const count = allMessages.filter(m => m.createdAt && m.createdAt.toDate() >= cutoff24).length;
+  const badge = $("nav-badge-new"); if (!badge) return;
+  badge.textContent = count > 99 ? "99+" : count;
+  badge.classList.toggle("hidden", count === 0);
 }
 function setFilter(f){ currentFilter = f; document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active")); $(`filter-${f}`)?.classList.add("active"); renderMessages(); }
 function setView(grid){ isGridView = grid; $("view-grid")?.classList.toggle("active",grid); $("view-list")?.classList.toggle("active",!grid); $("messages-container")?.classList.toggle("list-view",!grid); }
@@ -844,13 +905,17 @@ function renderMessages(searchTerm=""){
   if (currentFilter==="today") filtered = filtered.filter(m=>m.createdAt && m.createdAt.toDate()>=today);
   if (currentFilter==="week") filtered = filtered.filter(m=>m.createdAt && m.createdAt.toDate()>=week);
   if (currentFilter==="unread") filtered = filtered.filter(m=>m.createdAt && m.createdAt.toDate()>=cutoff24);
+  if (currentFilter==="fav") filtered = filtered.filter(m=>m.favorite);
   if (searchTerm) filtered = filtered.filter(m=>m.message?.toLowerCase().includes(searchTerm));
   if (filtered.length===0){ const emp=$("empty-state"); if(emp){ emp.classList.remove("hidden"); container.appendChild(emp); } return; }
 
+  // Épinglés toujours en tête, sinon ordre du tri courant (déjà desc par date)
+  filtered.sort((a,b)=> (b.pinned?1:0) - (a.pinned?1:0));
+
   filtered.forEach((msg,i)=>{
-    const card = document.createElement("div"); card.className="msg-card"; card.style.animationDelay=`${i*0.04}s`;
+    const card = document.createElement("div"); card.className="msg-card"+(msg.pinned?" pinned":""); card.style.animationDelay=`${i*0.04}s`;
     const isNew = msg.createdAt && msg.createdAt.toDate()>=cutoff24;
-    const badges = `${isNew?`<span class="msg-badge new">${ico("sparkles")}Nouveau</span>`:""}${msg.approved?`<span class="msg-badge approved">${ico("check")}Approuvé</span>`:""}`;
+    const badges = `${msg.pinned?`<span class="msg-badge pinned">${ico("pin")}Épinglé</span>`:""}${isNew?`<span class="msg-badge new">${ico("sparkles")}Nouveau</span>`:""}${msg.approved?`<span class="msg-badge approved">${ico("check")}Approuvé</span>`:""}`;
     const replyHtml = msg.adminReply ? `<div class="msg-reply"><span class="msg-reply-lbl">${ico("reply")}Réponse de l'équipe</span>${linkify(msg.adminReply)}</div>` : "";
     card.innerHTML = `
       <div class="msg-header">${badges}</div>
@@ -859,14 +924,33 @@ function renderMessages(searchTerm=""){
       <div class="msg-footer">
         <div class="msg-time">${ico("clock")}${msg.createdAt ? formatDate(msg.createdAt.toDate()) : "À l'instant"}</div>
         <div class="msg-actions-row">
-          <button class="msg-action-btn msg-share-btn" title="Partager"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+          <button class="msg-action-btn msg-pin-btn${msg.pinned?" on":""}" title="${msg.pinned?"Désépingler":"Épingler"}">${ico("pin")}</button>
+          <button class="msg-action-btn msg-fav-btn${msg.favorite?" on fav-on":""}" title="${msg.favorite?"Retirer des favoris":"Ajouter aux favoris"}">${msg.favorite?ico("heartFilled"):ico("heart")}</button>
+          <button class="msg-action-btn msg-expand-btn" title="Agrandir">${ico("expand")}</button>
           <button class="msg-action-btn msg-copy-btn" title="Copier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
         </div>
       </div>`;
-    card.querySelector(".msg-share-btn").addEventListener("click", () => openShareModal(msg.message));
+    card.querySelector(".msg-pin-btn").addEventListener("click", () => toggleMessageFlag(msg, "pinned"));
+    card.querySelector(".msg-fav-btn").addEventListener("click", () => toggleMessageFlag(msg, "favorite"));
+    card.querySelector(".msg-expand-btn").addEventListener("click", () => openExpandModal(msg));
     card.querySelector(".msg-copy-btn").addEventListener("click", () => navigator.clipboard.writeText(msg.message).then(()=>showToast("Message copié !")));
     container.appendChild(card);
   });
+}
+
+async function toggleMessageFlag(msg, field){
+  const next = !msg[field];
+  msg[field] = next; // optimistic
+  renderMessages($("search-input")?.value.toLowerCase().trim() || "");
+  try {
+    await updateDoc(doc(db,"messages",msg.id), { [field]: next });
+    if (field==="pinned") showToast(next ? "Message épinglé !" : "Message désépinglé.");
+  } catch(e){
+    console.error(e);
+    msg[field] = !next; // revert
+    renderMessages($("search-input")?.value.toLowerCase().trim() || "");
+    showToast("Action impossible (permissions).");
+  }
 }
 
 function exportMessages(){
@@ -1079,21 +1163,53 @@ function formatDate(date){
   return date.toLocaleDateString("fr-FR",{ day:"numeric", month:"short", hour:"2-digit", minute:"2-digit", timeZone: HAITI_TZ });
 }
 
-// ── SHARE MESSAGE AS IMAGE ──
-let capturedImageBlob=null, capturedImageUrl=null;
-function openShareModal(message){
-  capturedImageBlob=null; capturedImageUrl=null;
-  const msgEl = $("shr-msg-text"); if (msgEl) msgEl.textContent = message;
-  $("shr-overlay")?.classList.remove("hidden");
-  setTimeout(() => generateShareImage(), 250);
+// ── MESSAGE EXPAND POP-UP ──
+function openExpandModal(msg){
+  const cutoff24 = new Date(nowMs() - 86400000);
+  const isNew = msg.createdAt && msg.createdAt.toDate()>=cutoff24;
+  const header = $("msg-expand-header");
+  if (header) header.innerHTML = `${msg.pinned?`<span class="msg-badge pinned">${ico("pin")}Épinglé</span>`:""}${isNew?`<span class="msg-badge new">${ico("sparkles")}Nouveau</span>`:""}${msg.approved?`<span class="msg-badge approved">${ico("check")}Approuvé</span>`:""}`;
+  const txtEl = $("msg-expand-text"); if (txtEl) txtEl.innerHTML = linkify(msg.message);
+  const replyWrap = $("msg-expand-reply-wrap");
+  if (replyWrap) replyWrap.innerHTML = msg.adminReply ? `<div class="msg-reply"><span class="msg-reply-lbl">${ico("reply")}Réponse de l'équipe</span>${linkify(msg.adminReply)}</div>` : "";
+  const meta = $("msg-expand-meta");
+  if (meta) meta.innerHTML = `${ico("clock")}${msg.createdAt ? formatDate(msg.createdAt.toDate()) : "À l'instant"}`;
+
+  const pinBtn = $("msg-expand-pin-btn");
+  if (pinBtn){ pinBtn.innerHTML = `${ico("pin")}${msg.pinned?"Désépingler":"Épingler"}`; pinBtn.classList.toggle("on", !!msg.pinned); pinBtn.onclick = () => { toggleMessageFlag(msg,"pinned"); openExpandModal(msg); }; }
+  const favBtn = $("msg-expand-fav-btn");
+  if (favBtn){ favBtn.innerHTML = `${msg.favorite?ico("heartFilled"):ico("heart")}${msg.favorite?"Retirer":"Favori"}`; favBtn.classList.toggle("fav-on", !!msg.favorite); favBtn.onclick = () => { toggleMessageFlag(msg,"favorite"); openExpandModal(msg); }; }
+  const copyBtn = $("msg-expand-copy-btn");
+  if (copyBtn){ copyBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier`; copyBtn.onclick = () => navigator.clipboard.writeText(msg.message).then(()=>showToast("Message copié !")); }
+  const shareBtn = $("msg-expand-share-btn");
+  if (shareBtn){ shareBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Générer l'image`; shareBtn.onclick = () => toggleImageSection(msg.message); }
+
+  $("msg-expand-image-section")?.classList.add("hidden");
+  capturedImageBlob=null;
+  if (capturedImageUrl) { URL.revokeObjectURL(capturedImageUrl); capturedImageUrl=null; }
+
+  $("msg-expand-overlay")?.classList.remove("hidden");
 }
-function closeShareModal(){
-  $("shr-overlay")?.classList.add("hidden");
+function closeExpandModal(){
+  $("msg-expand-overlay")?.classList.add("hidden");
   capturedImageBlob=null;
   if (capturedImageUrl) { URL.revokeObjectURL(capturedImageUrl); capturedImageUrl=null; }
 }
-$("shr-overlay")?.addEventListener("click", e => { if (e.target===$("shr-overlay")) closeShareModal(); });
-$("shr-close")?.addEventListener("click", closeShareModal);
+$("msg-expand-overlay")?.addEventListener("click", e => { if (e.target===$("msg-expand-overlay")) closeExpandModal(); });
+$("msg-expand-close")?.addEventListener("click", closeExpandModal);
+document.addEventListener("keydown", e => { if (e.key==="Escape") closeExpandModal(); });
+
+// ── SHARE MESSAGE AS IMAGE (généré directement dans la pop-up d'agrandissement) ──
+let capturedImageBlob=null, capturedImageUrl=null;
+function toggleImageSection(message){
+  const section = $("msg-expand-image-section"); if (!section) return;
+  const willShow = section.classList.contains("hidden");
+  section.classList.toggle("hidden", !willShow);
+  if (willShow && !capturedImageUrl) {
+    const msgEl = $("shr-msg-text"); if (msgEl) msgEl.textContent = message;
+    generateShareImage();
+  }
+}
 
 async function generateShareImage(){
   const card = $("shr-card");
