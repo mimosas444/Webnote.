@@ -598,7 +598,7 @@ svg{display:block}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc,
+  getFirestore, doc, setDoc, getDoc, getDocFromServer, addDoc, updateDoc, deleteDoc,
   collection, query, where, orderBy, getDocs, serverTimestamp, arrayUnion, arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -623,6 +623,37 @@ const db = getFirestore(fireApp);
 // database apply that transition automatically — no hardcoded UTC offset,
 // no drift, and it will keep working after the next switch too.
 const HAITI_TZ = "America/Port-au-Prince";
+
+// ── Server clock sync ──
+// Message times themselves are already correct (createdAt uses Firestore's
+// serverTimestamp(), never the sender's device clock). But "il y a X min"
+// is computed against THIS device's own clock — and a phone whose system
+// clock didn't switch cleanly for Haiti's March DST change can be off by
+// exactly an hour even though its timezone *setting* looks fine. Instead of
+// trusting `new Date()` as "now", we measure the gap between this device's
+// clock and Firestore's real server clock once at load, and use that
+// corrected value everywhere a relative time is computed.
+let SERVER_OFFSET_MS = 0;
+async function syncServerClock(){
+  if (!currentUser) return;
+  try {
+    const t0 = Date.now();
+    const ref = doc(db,"users",currentUser.uid);
+    await updateDoc(ref, { lastSeen: serverTimestamp() });
+    const snap = await getDocFromServer(ref);
+    const t1 = Date.now();
+    const serverMs = snap.data()?.lastSeen?.toMillis();
+    if (serverMs){
+      const roundTrip = t1 - t0;
+      const localAtServerMoment = t0 + roundTrip / 2; // assume symmetric latency
+      SERVER_OFFSET_MS = serverMs - localAtServerMoment;
+    }
+  } catch(e){
+    console.warn("Sync horloge serveur impossible, repli sur l'horloge locale.", e);
+    SERVER_OFFSET_MS = 0;
+  }
+}
+function nowMs(){ return Date.now() + SERVER_OFFSET_MS; }
 
 function $(id){ return document.getElementById(id); }
 
@@ -697,6 +728,7 @@ onAuthStateChanged(auth, async (user) => {
   $("dash-avatar").textContent = currentUsername[0].toUpperCase();
 
   buildIconPicker();
+  await syncServerClock();
   showPage("dashboard");
   hideBootSplash();
   await loadDashboard();
@@ -770,7 +802,7 @@ function setFilter(f){ currentFilter = f; document.querySelectorAll(".pill").for
 function setView(grid){ isGridView = grid; $("view-grid")?.classList.toggle("active",grid); $("view-list")?.classList.toggle("active",!grid); $("messages-container")?.classList.toggle("list-view",!grid); }
 
 function updateStats(){
-  const now = new Date(); const today = new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const now = new Date(nowMs()); const today = new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const week = new Date(today); week.setDate(today.getDate()-7);
   animateCount($("stat-total"), allMessages.length);
   animateCount($("stat-today"), allMessages.filter(m=>m.createdAt && m.createdAt.toDate()>=today).length);
@@ -783,7 +815,7 @@ function animateCount(el, target){ if(!el) return; let cur=0; const step=Math.ce
 function buildChart(){
   const chart = $("act-chart"); if(!chart) return;
   const days = [];
-  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push({key:d.toDateString(), lbl:d.toLocaleDateString("fr-FR",{weekday:"short",timeZone:HAITI_TZ}).slice(0,3), count:0}); }
+  for(let i=6;i>=0;i--){ const d=new Date(nowMs()); d.setDate(d.getDate()-i); days.push({key:d.toDateString(), lbl:d.toLocaleDateString("fr-FR",{weekday:"short",timeZone:HAITI_TZ}).slice(0,3), count:0}); }
   allMessages.forEach(m=>{ if(!m.createdAt) return; const day=days.find(d=>d.key===m.createdAt.toDate().toDateString()); if(day) day.count++; });
   const total = days.reduce((a,d)=>a+d.count,0);
   const at = $("act-total"); if(at) at.textContent = total;
@@ -805,7 +837,7 @@ function linkify(str){
 function renderMessages(searchTerm=""){
   const container = $("messages-container"); if(!container) return;
   container.innerHTML = "";
-  const now = new Date(), today = new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const now = new Date(nowMs()), today = new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const week = new Date(today); week.setDate(today.getDate()-7);
   const cutoff24 = new Date(now - 86400000);
   let filtered = [...allMessages];
@@ -840,7 +872,7 @@ function renderMessages(searchTerm=""){
 function exportMessages(){
   if (!allMessages.length) { showToast("Aucun message à exporter !"); return; }
   const sorted = [...allMessages].sort((a,b)=>(a.createdAt?.toMillis()||0)-(b.createdAt?.toMillis()||0));
-  const lines = ["Webnote — Messages anonymes",`Exporté : ${new Date().toLocaleString("fr-FR",{timeZone:HAITI_TZ})}`,`Total : ${sorted.length} message(s)`,"─".repeat(36),""];
+  const lines = ["Webnote — Messages anonymes",`Exporté : ${new Date(nowMs()).toLocaleString("fr-FR",{timeZone:HAITI_TZ})}`,`Total : ${sorted.length} message(s)`,"─".repeat(36),""];
   sorted.forEach((m,i)=>{ lines.push(`[${i+1}] ${m.createdAt?m.createdAt.toDate().toLocaleString("fr-FR",{timeZone:HAITI_TZ}):"—"}`); lines.push(`"${m.message}"`); if(m.adminReply) lines.push(`→ Réponse : ${m.adminReply}`); lines.push(""); });
   const blob = new Blob([lines.join("\n")], { type:"text/plain;charset=utf-8" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `webnote-${new Date().toISOString().slice(0,10)}.txt`; a.click(); URL.revokeObjectURL(a.href);
@@ -1039,7 +1071,7 @@ function showToast(msg, duration=2600){
 }
 function escHtml(str){ return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function formatDate(date){
-  const now = new Date(); const diff = Math.floor((now-date)/1000);
+  const now = new Date(nowMs()); const diff = Math.floor((now-date)/1000);
   if (diff<0) return "À l'instant"; if (diff<60) return "À l'instant";
   if (diff<3600) return `Il y a ${Math.floor(diff/60)} min`;
   if (diff<86400) return `Il y a ${Math.floor(diff/3600)}h`;
