@@ -23,10 +23,24 @@ body{background:var(--bg);background-image:radial-gradient(ellipse 80% 40% at 50
 @keyframes blobFloat1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,60px) scale(1.15)}}
 @keyframes blobFloat2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-50px,-40px) scale(1.1)}}
 @keyframes blobFloat3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,50px) scale(.9)}}
-body[data-wallpaper="dots"] .chat{background-image:radial-gradient(var(--bdb) 1.2px,transparent 1.2px);background-size:18px 18px}
-body[data-wallpaper="waves"] .chat{background-image:radial-gradient(ellipse 60% 30% at 20% 20%,var(--pg) 0%,transparent 60%),radial-gradient(ellipse 50% 30% at 85% 75%,rgba(192,132,252,.18) 0%,transparent 60%)}
-body[data-wallpaper="sunset"] .chat{background-image:linear-gradient(160deg,rgba(249,115,22,.10),transparent 55%),radial-gradient(ellipse 60% 40% at 80% 0%,rgba(236,72,153,.14),transparent 60%)}
-body[data-wallpaper="mint"] .chat{background-image:radial-gradient(ellipse 60% 40% at 15% 10%,rgba(16,185,129,.14),transparent 60%),radial-gradient(ellipse 50% 30% at 90% 90%,rgba(59,130,246,.12),transparent 60%)}
+:root{--wp-o:.5}
+body[data-wp-intensity="low"]{--wp-o:.28}
+body[data-wp-intensity="med"]{--wp-o:.5}
+body[data-wp-intensity="high"]{--wp-o:.75}
+.chat{background-attachment:fixed;transition:background .35s ease}
+body[data-wallpaper="none"] .chat{background-image:none}
+body[data-wallpaper="dots"] .chat{background-image:radial-gradient(var(--ac) 1.6px,transparent 1.6px);background-size:20px 20px;background-color:transparent}
+body[data-wallpaper="waves"] .chat{background-image:radial-gradient(ellipse 75% 55% at 12% 8%,rgba(91,91,246,var(--wp-o)) 0%,transparent 62%),radial-gradient(ellipse 65% 50% at 92% 88%,rgba(192,132,252,var(--wp-o)) 0%,transparent 62%),radial-gradient(ellipse 55% 45% at 55% 45%,rgba(236,72,153,calc(var(--wp-o)*.55)) 0%,transparent 70%)}
+body[data-wallpaper="sunset"] .chat{background-image:linear-gradient(160deg,rgba(249,115,22,var(--wp-o)),transparent 55%),radial-gradient(ellipse 70% 55% at 88% 0%,rgba(236,72,153,var(--wp-o)),transparent 62%),radial-gradient(ellipse 60% 45% at 8% 100%,rgba(250,204,21,calc(var(--wp-o)*.65)),transparent 62%)}
+body[data-wallpaper="mint"] .chat{background-image:radial-gradient(ellipse 75% 55% at 8% 5%,rgba(16,185,129,var(--wp-o)),transparent 62%),radial-gradient(ellipse 65% 50% at 96% 96%,rgba(59,130,246,var(--wp-o)),transparent 62%)}
+body[data-wallpaper="galaxy"] .chat{background-image:radial-gradient(ellipse 85% 65% at 18% -8%,rgba(124,58,237,var(--wp-o)),transparent 62%),radial-gradient(ellipse 75% 55% at 100% 100%,rgba(236,72,153,var(--wp-o)),transparent 62%),linear-gradient(160deg,rgba(30,27,75,calc(var(--wp-o)*.6)),transparent 72%)}
+body[data-wallpaper="aurora"] .chat{background-image:linear-gradient(120deg,rgba(5,150,105,var(--wp-o)),transparent 52%),linear-gradient(240deg,rgba(59,130,246,var(--wp-o)),transparent 52%),linear-gradient(0deg,rgba(139,92,246,calc(var(--wp-o)*.65)),transparent 62%)}
+.wp-int-row{display:flex;gap:8px;margin-top:12px}
+.wp-int-btn{flex:1;text-align:center;padding:9px 0;border-radius:10px;border:1.5px solid var(--bd);background:var(--g);font-size:.76rem;font-weight:700;cursor:pointer;color:var(--tx2);transition:.2s}
+.wp-int-btn.active{border-color:var(--p);background:var(--pg);color:var(--tx)}
+body.data-saver .bg-blob{display:none}
+body.data-saver .hdr,body.data-saver .dock,body.data-saver .menu,body.data-saver .mbr-panel,body.data-saver .ep,body.data-saver .ctx{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body.data-saver .semo{animation:none!important}
 .wp-opt{aspect-ratio:1;border-radius:14px;cursor:pointer;border:2px solid var(--bd);position:relative;transition:.2s;overflow:hidden}
 .wp-opt.active{border-color:var(--p);box-shadow:0 0 0 3px var(--pg)}
 .wp-opt span{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:.62rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)}
@@ -285,6 +299,7 @@ body.compact .bbl{padding:7px 12px!important;font-size:.85rem!important}body.com
     <div class="mi" onclick="toggleVibrate()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg><span id="vibrTxt">Vibrations</span></div>
     <div class="mi" onclick="toggleLinkPreview()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3v4M8 3v4M2 11h20"/></svg><span id="linkTxt">Aperçu des liens</span></div>
     <div class="mi" onclick="toggleAutoScroll()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="19 12 12 19 5 12"/><line x1="12" y1="5" x2="12" y2="19"/></svg><span id="autoScrollTxt">Défilement auto</span></div>
+    <div class="mi" onclick="toggleDataSaver()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6m0 8v6M4.93 4.93l4.24 4.24m5.66 5.66 4.24 4.24M2 12h6m8 0h6M4.93 19.07l4.24-4.24m5.66-5.66 4.24-4.24"/></svg><span id="dataSaverTxt">Économie de données</span></div>
     <div class="m-div"></div>
     <div class="m-sec-t">Confidentialité</div>
     <div class="mi" onclick="showPrivacyModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Confidentialité de présence</div>
@@ -326,7 +341,8 @@ body.compact .bbl{padding:7px 12px!important;font-size:.85rem!important}body.com
   <div class="typing-row" id="typRow"><div class="typing-bubble"><div class="tds"><div class="td"></div><div class="td"></div><div class="td"></div></div><span class="tn" id="typName">...</span></div></div>
   <div class="reply-bar" id="replyBar"><div style="flex:1;min-width:0"><div class="rb-name" id="rbName">—</div><div class="rb-txt" id="rbTxt">—</div></div><button class="rb-close" onclick="cancelReply()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="ibar">
-    <button class="ibtn" onclick="showEmojiPanel()" title="Emojis & Stickers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
+    <button class="ibtn" onclick="showEmojiPanel()" title="Emojis"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
+    <button class="ibtn" onclick="openStickers()" title="Stickers" style="font-size:1.05rem">🎨</button>
     <textarea class="msgi" id="msgInp" rows="1" placeholder="Écris un message au groupe..."></textarea>
     <button type="button" class="send" id="sendBtn" onclick="sendMsg()" disabled>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none"><line x1="22" y1="2" x2="11" y2="13" stroke="#fff"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff" stroke="none"/></svg>
@@ -407,6 +423,10 @@ $('vibrTxt').textContent=vibrateOn?'Vibrations : activées':'Vibrations : désac
 $('linkTxt').textContent=linkPreviewOn?'Aperçu des liens : activé':'Aperçu des liens : désactivé';
 $('autoScrollTxt').textContent=autoScrollOn?'Défilement auto : activé':'Défilement auto : désactivé';
 document.body.setAttribute('data-wallpaper',localStorage.getItem('wallpaper')||'none');
+document.body.setAttribute('data-wp-intensity',localStorage.getItem('wpIntensity')||'med');
+let dataSaverOn=localStorage.getItem('dataSaver')==='1';
+document.body.classList.toggle('data-saver',dataSaverOn);
+$('dataSaverTxt').textContent=dataSaverOn?'Économie de données : activée':'Économie de données : désactivée';
 requestAnimationFrame(()=>setThemeIco(savedTheme));
 applyFontSize(localStorage.getItem('fontSize')||'normal');
 
@@ -644,6 +664,7 @@ chatEl.addEventListener('selectstart',e=>{if(e.target.closest('.mg')&&!e.target.
 document.addEventListener('click',e=>{if(!e.target.closest('.ctx')&&!e.target.closest('.act-bar'))closeCtx();if(!e.target.closest('.ep')&&!e.target.closest('.ibtn'))$('epanel').classList.remove('open');if(!e.target.closest('.mg'))document.querySelectorAll('.act-bar.vis').forEach(a=>a.classList.remove('vis'));});
 
 window.showEmojiPanel=()=>{$('epanel').classList.toggle('open');closeMenu();};
+window.openStickers=()=>{epTab='stk';buildEpTabs();buildEpGrid();$('epanel').classList.add('open');closeMenu();};
 function buildEpTabs(){
   const t=$('epTabs');if(!t)return;t.innerHTML='';
   Object.entries(CATS).forEach(([k,c])=>{
@@ -737,11 +758,15 @@ window.clearLocalData=()=>{
 window.showWallpaperModal=()=>{
   closeMenu();
   const cur=localStorage.getItem('wallpaper')||'none';
+  const curI=localStorage.getItem('wpIntensity')||'med';
+  const ints=[{k:'low',label:'Faible'},{k:'med',label:'Moyenne'},{k:'high',label:'Forte'}];
   const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px';
-  ov.innerHTML='<div class="modal" style="max-width:360px"><div class="modal-title">🖼️ Arrière-plan de la discussion</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'+WALLPAPERS.map(w=>'<div class="wp-opt'+(cur===w.k?' active':'')+'" style="background:'+w.sw+'" onclick="setWallpaper(\''+w.k+'\',this)"><span>'+w.label+'</span></div>').join('')+'</div><div class="modal-foot"><button class="mbtn ok" onclick="this.closest(\'div[style]\').remove()">OK</button></div></div>';
+  ov.innerHTML='<div class="modal" style="max-width:360px"><div class="modal-title">🖼️ Arrière-plan de la discussion</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'+WALLPAPERS.map(w=>'<div class="wp-opt'+(cur===w.k?' active':'')+'" style="background:'+w.sw+'" onclick="setWallpaper(\''+w.k+'\',this)"><span>'+w.label+'</span></div>').join('')+'</div><div style="font-size:.72rem;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-top:16px">Intensité des couleurs</div><div class="wp-int-row">'+ints.map(i=>'<div class="wp-int-btn'+(curI===i.k?' active':'')+'" onclick="setWpIntensity(\''+i.k+'\',this)">'+i.label+'</div>').join('')+'</div><div class="modal-foot"><button class="mbtn ok" onclick="this.closest(\'div[style]\').remove()">OK</button></div></div>';
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});document.body.appendChild(ov);
 };
 window.setWallpaper=(k,el)=>{localStorage.setItem('wallpaper',k);document.body.setAttribute('data-wallpaper',k);document.querySelectorAll('.wp-opt').forEach(o=>o.classList.remove('active'));el.classList.add('active');showToast('Arrière-plan appliqué');};
+window.setWpIntensity=(k,el)=>{localStorage.setItem('wpIntensity',k);document.body.setAttribute('data-wp-intensity',k);document.querySelectorAll('.wp-int-btn').forEach(o=>o.classList.remove('active'));el.classList.add('active');showToast('Intensité : '+k);};
+window.toggleDataSaver=()=>{dataSaverOn=!dataSaverOn;localStorage.setItem('dataSaver',dataSaverOn?'1':'0');document.body.classList.toggle('data-saver',dataSaverOn);$('dataSaverTxt').textContent=dataSaverOn?'Économie de données : activée':'Économie de données : désactivée';showToast(dataSaverOn?'Économie de données activée':'Économie de données désactivée');closeMenu();};
 window.toggleMembers=()=>{$('mbrPanel').classList.toggle('open');closeMenu();};
 window.openMenu=()=>{$('menu').classList.add('open');$('menuOv').classList.add('open');};
 window.closeMenu=()=>{$('menu').classList.remove('open');$('menuOv').classList.remove('open');};
