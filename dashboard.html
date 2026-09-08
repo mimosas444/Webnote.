@@ -302,7 +302,7 @@ body.compact .bbl{padding:7px 12px!important;font-size:.85rem!important}body.com
     <div class="mi" onclick="toggleDataSaver()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6m0 8v6M4.93 4.93l4.24 4.24m5.66 5.66 4.24 4.24M2 12h6m8 0h6M4.93 19.07l4.24-4.24m5.66-5.66 4.24-4.24"/></svg><span id="dataSaverTxt">Économie de données</span></div>
     <div class="m-div"></div>
     <div class="m-sec-t">Confidentialité</div>
-    <div class="mi" onclick="showPrivacyModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Confidentialité de présence</div>
+    <div class="mi" onclick="showPrivacyModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Anonymat & confiance</div>
     <div class="mi" onclick="clearLocalData()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Effacer les préférences locales</div>
   </div>
 </div>
@@ -769,7 +769,10 @@ window.toggleAutoScroll=()=>{autoScrollOn=!autoScrollOn;localStorage.setItem('au
 window.showPrivacyModal=()=>{
   closeMenu();
   const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px';
-  ov.innerHTML='<div class="modal" style="max-width:360px"><div class="modal-title">🔒 Confidentialité de présence</div><p style="font-size:.85rem;color:var(--tx2);line-height:1.6">Seul le nombre total de membres en ligne est visible par tous. Aucun nom, avatar ou statut individuel des autres membres n\'est affiché dans cette discussion.</p><div class="modal-foot"><button class="mbtn ok" onclick="this.closest(\'div[style]\').remove()">Compris</button></div></div>';
+  ov.innerHTML='<div class="modal" style="max-width:360px"><div class="modal-title">Confidentialité de présence</div><p style="font-size:.85rem;color:var(--tx2);line-height:1.6">🛡Ton anonymat avant tout
+Messages envoyés et reçus 100 % anonymes.
+🤝 0 IA. 100 % humain. Pas de faux messages ni de réponses générées artificiellement.
+👤 Ton identité reste cachée, et seule une présence globale peut être indiquée\'.</p><div class="modal-foot"><button class="mbtn ok" onclick="this.closest(\'div[style]\').remove()">Compris</button></div></div>';
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});document.body.appendChild(ov);
 };
 window.clearLocalData=()=>{
