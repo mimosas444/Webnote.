@@ -725,12 +725,12 @@ window.toggleAutoScroll=()=>{autoScrollOn=!autoScrollOn;localStorage.setItem('au
 window.showPrivacyModal=()=>{
   closeMenu();
   const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px';
-  ov.innerHTML='<div class="modal" style="max-width:360px"><div class="modal-title">🔒 Confidentialité de présence</div><p style="font-size:.85rem;color:var(--tx2);line-height:1.6">Seul le nombre total de membres en ligne est visible par tous. Aucun nom, avatar ou statut individuel des autres membres n\\'est affiché dans cette discussion.</p><div class="modal-foot"><button class="mbtn ok" onclick="this.closest(\'div[style]\').remove()">Compris</button></div></div>';
+  ov.innerHTML='<div class="modal" style="max-width:360px"><div class="modal-title">🔒 Confidentialité de présence</div><p style="font-size:.85rem;color:var(--tx2);line-height:1.6">Seul le nombre total de membres en ligne est visible par tous. Aucun nom, avatar ou statut individuel des autres membres n\'est affiché dans cette discussion.</p><div class="modal-foot"><button class="mbtn ok" onclick="this.closest(\'div[style]\').remove()">Compris</button></div></div>';
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});document.body.appendChild(ov);
 };
 window.clearLocalData=()=>{
   closeMenu();
-  if(!confirm('Réinitialiser tes préférences locales (thème, fond d\\'écran, taille de police) ?'))return;
+  if(!confirm('Réinitialiser tes préférences locales (thème, fond d\'écran, taille de police) ?'))return;
   ['wn-theme','wallpaper','fontSize','compact','sounds','vibrate','linkPreview','autoScroll','recentEmojis','myStatus'].forEach(k=>localStorage.removeItem(k));
   showToast('Préférences réinitialisées');setTimeout(()=>location.reload(),700);
 };
