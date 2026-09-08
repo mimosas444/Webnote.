@@ -436,8 +436,16 @@ function setThemeIco(t){const s=$('themeIco');if(!s)return;s.innerHTML=t==='ligh
 onAuthStateChanged(auth,async u=>{ if(u){me=u;await init();} else window.location.href='index.html'; });
 
 async function init(){
-  let username = me.email?.split('@')[0] || 'user';
-  try { const uDoc = await getDoc(doc(db,'users',me.uid)); if (uDoc.exists()) username = uDoc.data().username; } catch(e){}
+  let username = (me.email?.split('@')[0] || 'user').toLowerCase().replace(/\s+/g,'_');
+  try {
+    const uRef = doc(db,'users',me.uid);
+    const uDoc = await getDoc(uRef);
+    if (uDoc.exists() && uDoc.data().username) {
+      username = uDoc.data().username;
+    } else {
+      await setDoc(uRef, { username, email: me.email || '', uid: me.uid }, { merge: true });
+    }
+  } catch(e){}
   myName = username;
   const isAdmin = me.email===ADMIN_EMAIL;
   $('mInit').textContent=myName.charAt(0).toUpperCase();
@@ -776,4 +784,4 @@ window.toggleCompact=()=>{compactMode=!compactMode;localStorage.setItem('compact
 window.showToast=showToast;
 </script>
 </body>
-</html>
+                                                   </html>
