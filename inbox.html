@@ -742,6 +742,7 @@ function nowMs(){ return Date.now() + SERVER_OFFSET_MS; }
 function $(id){ return document.getElementById(id); }
 
 let currentUser=null, currentUsername="", currentPhotoURL="", currentShareLink="", allMessages=[], currentFilter="all", isGridView=true, qrGenerated=false, qrVisible=false, isAdmin=false, selectedIcon="megaphone";
+let appInitialized=false, avatarUploading=false;
 
 // ── Icon set (replaces emoji) ──
 const ICONS = {
@@ -835,28 +836,40 @@ function fileToSquareBlob(file, size=256){
     img.src = url;
   });
 }
+function withTimeout(promise, ms, label){
+  return Promise.race([
+    promise,
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label} : délai dépassé`)), ms))
+  ]);
+}
 async function handleAvatarFile(file){
   if (!file) return;
+  if (avatarUploading) return; // empêche les envois simultanés (source de "boucle" si double-tap)
   if (!file.type.startsWith("image/")) return showToast("Choisis une image valide.");
   if (file.size > 3*1024*1024) return showToast("Image trop lourde (max 3 Mo).");
+  avatarUploading = true;
   const overlay = $("avatar-upload-overlay");
+  const editBtn = $("avatar-edit-btn");
   overlay?.classList.add("show");
+  if (editBtn) editBtn.style.pointerEvents = "none";
   try{
     const blob = await fileToSquareBlob(file, 256);
     const sRef = ref(storage, `avatars/${currentUser.uid}.jpg`);
-    await uploadBytes(sRef, blob, { contentType: "image/jpeg" });
-    const url = await getDownloadURL(sRef);
-    await updateDoc(doc(db,"users",currentUser.uid), { photoURL: url });
+    await withTimeout(uploadBytes(sRef, blob, { contentType: "image/jpeg" }), 20000, "Envoi de l'image");
+    const url = await withTimeout(getDownloadURL(sRef), 15000, "Récupération de l'image");
+    await withTimeout(updateDoc(doc(db,"users",currentUser.uid), { photoURL: url }), 10000, "Enregistrement du profil");
     applyAvatarEverywhere(url);
     showToast("Photo de profil mise à jour !");
   }catch(e){
     console.error("Avatar upload:", e);
-    showToast("Erreur lors de l'envoi de la photo.");
+    showToast(e?.message?.includes("délai") ? "Ça prend trop de temps, réessaie." : "Erreur lors de l'envoi de la photo.");
   }finally{
     overlay?.classList.remove("show");
+    if (editBtn) editBtn.style.pointerEvents = "";
+    avatarUploading = false;
   }
 }
-$("avatar-edit-btn")?.addEventListener("click", ()=> $("avatar-file-input")?.click());
+$("avatar-edit-btn")?.addEventListener("click", ()=> { if(!avatarUploading) $("avatar-file-input")?.click(); });
 $("avatar-file-input")?.addEventListener("change", e => { const f=e.target.files?.[0]; if(f) handleAvatarFile(f); e.target.value=""; });
 
 onAuthStateChanged(auth, async (user) => {
@@ -864,6 +877,15 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   isAdmin = user.email === ADMIN_EMAIL;
   document.querySelectorAll(".admin-only").forEach(el => el.classList.toggle("hidden", !isAdmin));
+
+  if (appInitialized) {
+    // onAuthStateChanged peut se redéclencher (ex: rafraîchissement de token Firebase).
+    // On ne relance PAS toute l'init (ça réattacherait les écouteurs en double et
+    // provoquerait l'effet de "chargement en boucle"). On se contente de resynchroniser
+    // l'affichage si nécessaire.
+    return;
+  }
+  appInitialized = true;
 
   const userRef = doc(db,"users",user.uid);
   const userDoc = await getDoc(userRef);
