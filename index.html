@@ -15,7 +15,9 @@
 <link rel="icon" type="image/png" href="https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png"/>
 <style>
 /* ════════════════════════════════════════
-   WEBNOTE — DESIGN SYSTEM  v7  (pro / violet)
+   WEBNOTE — DESIGN SYSTEM  v8  (pro / violet)
+   v8: popup d'envoi glassmorphism premium, avatar photo destinataire,
+   placeholder machine à écrire avec questions qui défilent.
 ════════════════════════════════════════ */
 
 [data-theme="light"]{
@@ -33,6 +35,8 @@
   --shadow-md:0 10px 32px -8px rgba(60,25,120,.14);
   --shadow-lg:0 24px 64px -18px rgba(60,25,120,.22);
   --skel-a:#efeafc;--skel-b:#ffffff;
+  --send-bg-a:#dfe7ff;--send-bg-b:#eee9ff;--send-bg-c:#fce6ef;
+  --send-glass:rgba(255,255,255,.62);--send-glass-bd:rgba(255,255,255,.9);
 }
 [data-theme="dark"]{
   --bg:#0a0812;--bg-2:#0f0b1c;
@@ -49,6 +53,8 @@
   --shadow-md:0 14px 36px -10px rgba(0,0,0,.55);
   --shadow-lg:0 28px 70px -20px rgba(0,0,0,.65);
   --skel-a:#181224;--skel-b:#221a36;
+  --send-bg-a:#0a0812;--send-bg-b:#150f28;--send-bg-c:#1c1030;
+  --send-glass:rgba(255,255,255,.06);--send-glass-bd:rgba(255,255,255,.12);
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -221,14 +227,65 @@ button{font-family:inherit}
 .success-icon{width:38px;height:38px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;margin:0 auto 9px;color:var(--ok);box-shadow:var(--shadow-sm)}
 .back-link{color:var(--accent);text-decoration:none;font-weight:600;display:inline-block;margin-top:7px}
 
-/* ── Send page ── */
-.send-avatar{width:clamp(60px,12vw,76px);height:clamp(60px,12vw,76px);border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:clamp(1.3rem,3.5vw,1.8rem);font-weight:700;color:var(--on-accent);margin:0 auto 18px;box-shadow:var(--shadow-md)}
+/* ── SEND PAGE — glassmorphism premium ── */
+#page-send{background:radial-gradient(ellipse 90% 60% at 20% -10%,rgba(109,40,217,.16) 0%,transparent 60%),radial-gradient(ellipse 80% 55% at 85% 105%,rgba(168,85,247,.14) 0%,transparent 60%),var(--bg)}
+#page-send .auth-popup-wrap{padding-top:clamp(50px,8vh,80px)}
+#page-send .auth-popup{
+  background:var(--send-glass);
+  backdrop-filter:blur(28px) saturate(1.6);
+  -webkit-backdrop-filter:blur(28px) saturate(1.6);
+  border:1px solid var(--send-glass-bd);
+  box-shadow:0 30px 80px -20px rgba(80,30,160,.28), inset 0 1px 0 rgba(255,255,255,.4);
+  position:relative;
+  overflow:hidden;
+}
+[data-theme="dark"] #page-send .auth-popup{box-shadow:0 30px 80px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06)}
+#page-send .auth-popup::before{
+  content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;
+  padding:1.4px;
+  background:linear-gradient(150deg,rgba(168,85,247,.55),rgba(109,40,217,.25) 45%,rgba(236,72,153,.3) 80%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+}
+#page-send .auth-popup::after{
+  content:'';position:absolute;top:-40%;right:-20%;width:70%;height:80%;
+  background:radial-gradient(circle,rgba(168,85,247,.18),transparent 65%);
+  pointer-events:none;z-index:-1;animation:sendGlow 9s ease-in-out infinite;
+}
+@keyframes sendGlow{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-16px,14px) scale(1.12)}}
+
+.send-avatar-wrap{position:relative;width:clamp(74px,14vw,92px);height:clamp(74px,14vw,92px);margin:0 auto 18px}
+.send-avatar-ring{position:absolute;inset:0;border-radius:50%;padding:3px;background:conic-gradient(from 180deg,var(--accent),var(--accent2),#ec4899,var(--accent));animation:ringSpin 6s linear infinite}
+@keyframes ringSpin{to{transform:rotate(360deg)}}
+.send-avatar{width:100%;height:100%;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:clamp(1.3rem,3.5vw,1.8rem);font-weight:700;color:var(--on-accent);box-shadow:var(--shadow-md);overflow:hidden;background-size:cover;background-position:center;border:3px solid var(--surface);position:relative;z-index:1}
 .send-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.05rem,3vw,1.35rem);font-weight:700;line-height:1.3;margin-bottom:8px;text-align:center;letter-spacing:-.3px;color:var(--tx)}
 .send-title span{color:var(--accent)}
 .send-hint{display:flex;align-items:center;justify-content:center;gap:6px;font-size:.8rem;color:var(--tx3);margin-bottom:18px;text-align:center}
 .char-count{text-align:right;font-size:.7rem;color:var(--tx3);margin:5px 0}
 .send-popup-footer{font-size:.74rem;color:var(--tx3);margin-top:16px;text-align:center}
 .send-popup-cta{color:var(--accent);font-weight:600;text-decoration:none;margin-left:4px}
+
+/* Textarea "posée" en carte à l'intérieur de la popup glass */
+.send-msg-card{
+  position:relative;background:var(--surface);border:1.5px solid var(--bd);
+  border-radius:18px;padding:2px;box-shadow:0 6px 22px -8px rgba(80,30,160,.18), inset 0 1px 0 rgba(255,255,255,.5);
+  transition:.2s;
+}
+[data-theme="dark"] .send-msg-card{box-shadow:0 6px 22px -8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.04)}
+.send-msg-card:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-lt), 0 6px 22px -8px rgba(80,30,160,.24)}
+.send-msg-inner{position:relative}
+.send-textarea-real{
+  width:100%;min-height:112px;background:transparent;border:none;outline:none;
+  color:var(--tx);font-size:.95rem;line-height:1.65;padding:16px 16px;resize:none;
+  font-family:inherit;position:relative;z-index:2;
+}
+.send-placeholder-fx{
+  position:absolute;top:16px;left:16px;right:16px;z-index:1;
+  color:var(--tx3);font-size:.95rem;line-height:1.65;pointer-events:none;
+  white-space:pre-wrap;word-break:break-word;
+}
+.send-placeholder-fx .caret{display:inline-block;width:2px;height:1.1em;background:var(--accent);margin-left:1px;vertical-align:-2px;animation:caretBlink 1s step-end infinite}
+@keyframes caretBlink{0%,100%{opacity:1}50%{opacity:0}}
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:clamp(18px,4vh,26px);left:50%;transform:translateX(-50%) translateY(16px);display:flex;align-items:center;gap:8px;background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:50px;font-size:.82rem;font-weight:600;z-index:999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;max-width:calc(100vw - 32px);text-overflow:ellipsis;overflow:hidden;box-shadow:var(--shadow-lg)}
@@ -414,10 +471,18 @@ button{font-family:inherit}
           <div class="popup-logo-icon"><img src="https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" alt="Webnote"/></div>
           <span class="popup-logo-text">webnote<span class="dot">.</span></span>
         </div>
-        <div class="send-avatar" id="send-avatar">?</div>
+        <div class="send-avatar-wrap">
+          <div class="send-avatar-ring"></div>
+          <div class="send-avatar" id="send-avatar">?</div>
+        </div>
         <h2 class="send-title">Message pour<br/><span id="send-username-display">…</span></h2>
         <p class="send-hint"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11v1a7 7 0 0 1-14 0v-1M12 19v3"/></svg>Ton identité ne sera jamais révélée</p>
-        <div class="input-wrap textarea-wrap"><textarea id="send-message" placeholder="Écris ce que tu penses vraiment…" maxlength="500" style="text-align:left"></textarea></div>
+        <div class="send-msg-card">
+          <div class="send-msg-inner">
+            <div class="send-placeholder-fx" id="send-placeholder-fx"></div>
+            <textarea id="send-message" class="send-textarea-real" maxlength="500"></textarea>
+          </div>
+        </div>
         <div class="char-count"><span id="char-count">0</span>/500</div>
         <div id="send-error" class="error-msg hidden"></div>
         <button class="btn-primary btn-full" id="send-submit"><span>Envoyer anonymement</span></button>
@@ -440,7 +505,9 @@ button{font-family:inherit}
 
 <script type="module">
 // ═══════════════════════════════════════════
-//  WEBNOTE — app.js  (landing / auth / send)  v7
+//  WEBNOTE — app.js  (landing / auth / send)  v8
+//  v8: popup d'envoi glassmorphism, avatar photo destinataire,
+//  placeholder machine à écrire avec questions qui défilent.
 // ═══════════════════════════════════════════
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -469,7 +536,7 @@ const db      = getFirestore(fireApp);
 const DEVICE_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const urlParams  = new URLSearchParams(window.location.search);
 const targetUser = urlParams.get("user");
-let isCreatingAccount = false;
+let isCreatingAccount = false; // empêche onAuthStateChanged de rediriger avant la fin de l'écriture Firestore du pseudo
 
 function $(id) { return document.getElementById(id); }
 
@@ -511,8 +578,6 @@ $("landing-start-btn")?.addEventListener("click", () => { showAuthTab("signup");
 $("landing-login-btn")?.addEventListener("click", () => { showAuthTab("login");  showPage("auth"); });
 
 // ── Navbar contextual CTA: shows the OPPOSITE action of whatever's on screen ──
-// Landing page → "S'inscrire". Once on the auth popup, it mirrors the tab that's
-// NOT currently open, so it always reads as "go do the other thing".
 function setNavCta(label, onClick) {
   const btn = $("nav-auth-cta");
   const cur = $("nav-cta-text");
@@ -638,9 +703,25 @@ async function loadSendPage(username) {
 
   $("send-content")?.classList.remove("hidden");
   if ($("send-username-display")) $("send-username-display").textContent = `@${rd.username}`;
-  if ($("send-avatar")) $("send-avatar").textContent = rd.username[0].toUpperCase();
+  const avatarEl = $("send-avatar");
+  if (avatarEl) {
+    if (rd.photoURL) {
+      avatarEl.style.backgroundImage = `url("${rd.photoURL}")`;
+      avatarEl.textContent = "";
+    } else {
+      avatarEl.style.backgroundImage = "";
+      avatarEl.textContent = rd.username[0].toUpperCase();
+    }
+  }
 
-  $("send-message")?.addEventListener("input", () => { if ($("char-count")) $("char-count").textContent = $("send-message").value.length; });
+  $("send-message")?.addEventListener("input", () => {
+    if ($("char-count")) $("char-count").textContent = $("send-message").value.length;
+    updatePlaceholderFx();
+  });
+  $("send-message")?.addEventListener("focus", updatePlaceholderFx);
+  $("send-message")?.addEventListener("blur", updatePlaceholderFx);
+  startPlaceholderTypewriter();
+
   $("send-submit")?.addEventListener("click", async () => {
     const msg = $("send-message")?.value.trim();
     $("send-error")?.classList.add("hidden");
@@ -649,8 +730,10 @@ async function loadSendPage(username) {
     $("send-submit").disabled = true;
     try {
       await addDoc(collection(db,"messages"), { message: msg, recipientId: rd.uid, recipientUsername: rd.username, approved: false, adminReply: null, createdAt: serverTimestamp() });
+      stopPlaceholderTypewriter();
       $("send-submit")?.classList.add("hidden");
-      $("send-message")?.closest(".input-wrap")?.classList.add("hidden");
+      $(".send-msg-card")?.classList.add("hidden");
+      document.querySelector(".send-msg-card")?.classList.add("hidden");
       document.querySelector(".char-count")?.classList.add("hidden");
       $("send-success")?.classList.remove("hidden");
     } catch (e) {
@@ -660,6 +743,67 @@ async function loadSendPage(username) {
     }
   });
 }
+
+// ── PLACEHOLDER MACHINE À ÉCRIRE (questions qui défilent en boucle) ──
+const PLACEHOLDER_QUESTIONS = [
+  "Qu'est-ce que tu penses vraiment de moi ?",
+  "Y a-t-il un secret que tu gardes pour toi ?",
+  "Qu'est-ce qui te fait sourire quand tu penses à moi ?",
+  "Si tu pouvais me dire une chose sans filtre, ce serait quoi ?",
+  "Qu'est-ce que tu changerais chez moi ?",
+  "Quel est ton souvenir préféré avec moi ?",
+  "Qu'est-ce que tu n'as jamais osé me dire ?",
+  "Est-ce que tu aimes quelqu'un en ce moment ?",
+  "Qu'est-ce qui te plaît le plus chez moi ?"
+];
+let phxTimer = null, phxQIndex = 0, phxCharIndex = 0, phxDeleting = false, phxRunning = false;
+function updatePlaceholderFx(){
+  const ta = $("send-message"), fx = $("send-placeholder-fx");
+  if (!ta || !fx) return;
+  const shouldShow = ta.value.length === 0 && document.activeElement !== ta;
+  fx.style.display = shouldShow ? "" : "none";
+  if (shouldShow && !phxRunning) startPlaceholderTypewriter();
+  if (!shouldShow) stopPlaceholderTypewriter();
+}
+function startPlaceholderTypewriter(){
+  const ta = $("send-message"), fx = $("send-placeholder-fx");
+  if (!ta || !fx) return;
+  if (ta.value.length > 0 || document.activeElement === ta) { fx.style.display = "none"; return; }
+  fx.style.display = "";
+  phxRunning = true;
+  clearTimeout(phxTimer);
+  phxTypeStep();
+}
+function stopPlaceholderTypewriter(){
+  phxRunning = false;
+  clearTimeout(phxTimer);
+}
+function phxTypeStep(){
+  if (!phxRunning) return;
+  const fx = $("send-placeholder-fx");
+  if (!fx) return;
+  const full = PLACEHOLDER_QUESTIONS[phxQIndex % PLACEHOLDER_QUESTIONS.length];
+  if (!phxDeleting) {
+    phxCharIndex++;
+    fx.innerHTML = esc(full.slice(0, phxCharIndex)) + '<span class="caret"></span>';
+    if (phxCharIndex >= full.length) {
+      phxTimer = setTimeout(() => { phxDeleting = true; phxTypeStep(); }, 1800);
+      return;
+    }
+    phxTimer = setTimeout(phxTypeStep, 34 + Math.random()*22);
+  } else {
+    phxCharIndex--;
+    fx.innerHTML = esc(full.slice(0, phxCharIndex)) + '<span class="caret"></span>';
+    if (phxCharIndex <= 0) {
+      phxDeleting = false;
+      phxQIndex = (phxQIndex + 1) % PLACEHOLDER_QUESTIONS.length;
+      phxTimer = setTimeout(phxTypeStep, 350);
+      return;
+    }
+    phxTimer = setTimeout(phxTypeStep, 14);
+  }
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 function showErr(el, msg) { if (!el) return; el.textContent = msg; el.classList.remove("hidden"); }
 function fbErr(code) {
