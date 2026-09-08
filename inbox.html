@@ -774,8 +774,16 @@ onAuthStateChanged(auth, async (user) => {
   isAdmin = user.email === ADMIN_EMAIL;
   document.querySelectorAll(".admin-only").forEach(el => el.classList.toggle("hidden", !isAdmin));
 
-  const userDoc = await getDoc(doc(db,"users",user.uid));
-  currentUsername = userDoc.exists() ? userDoc.data().username : (user.email?.split("@")[0] || "user");
+  const userRef = doc(db,"users",user.uid);
+  const userDoc = await getDoc(userRef);
+  if (userDoc.exists() && userDoc.data().username) {
+    currentUsername = userDoc.data().username;
+  } else {
+    currentUsername = (user.email?.split("@")[0] || "user").toLowerCase().replace(/\s+/g,"_");
+    try {
+      await setDoc(userRef, { username: currentUsername, email: user.email || "", uid: user.uid }, { merge: true });
+    } catch(e) { console.error("Impossible de réparer le profil:", e); }
+  }
   $("nav-username").textContent = `@${currentUsername}`;
   $("nav-avatar-letter").textContent = currentUsername[0].toUpperCase();
   $("dash-username-title").textContent = currentUsername;
@@ -1240,4 +1248,4 @@ $("shr-copy-btn")?.addEventListener("click", handleCopyImage);
 
 </script>
 </body>
-</html>
+             </html>
