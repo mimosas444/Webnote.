@@ -469,6 +469,7 @@ const db      = getFirestore(fireApp);
 const DEVICE_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const urlParams  = new URLSearchParams(window.location.search);
 const targetUser = urlParams.get("user");
+let isCreatingAccount = false;
 
 function $(id) { return document.getElementById(id); }
 
@@ -496,6 +497,7 @@ function showPage(name) {
 // ── AUTH STATE ──
 onAuthStateChanged(auth, async (user) => {
   if (targetUser) { await loadSendPage(targetUser); hideBootSplash(); return; }
+  if (isCreatingAccount) return;
   if (user) {
     // Connecté → direction la page des messages anonymes (pas le chat global)
     window.location.href = "inbox.html";
@@ -588,10 +590,13 @@ $("signup-submit")?.addEventListener("click", async () => {
   if (!existing.empty) return showErr(err, "Ce pseudo est déjà pris.");
   $("signup-submit").querySelector("span").textContent = "Création…";
   $("signup-submit").disabled = true;
+  isCreatingAccount = true;
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await setDoc(doc(db,"users",cred.user.uid), { username, email, uid: cred.user.uid, createdAt: serverTimestamp() });
+    window.location.href = "inbox.html";
   } catch (e) {
+    isCreatingAccount = false;
     $("signup-submit").querySelector("span").textContent = "Créer mon compte";
     $("signup-submit").disabled = false;
     showErr(err, fbErr(e.code));
