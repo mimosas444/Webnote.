@@ -171,6 +171,56 @@ svg{display:block}
 .qr-toggle-btn{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px dashed var(--bd2);border-radius:12px;padding:11px 15px;font-size:.79rem;font-weight:700;color:var(--tx2);cursor:pointer;width:100%;transition:.2s;min-height:44px}
 .qr-toggle-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-lt)}
 .qr-toggle-btn svg{width:14px;height:14px}
+
+/* ── Bouton "Créer une Story" ── */
+.story-cta-btn{display:flex;align-items:center;gap:12px;width:100%;background:linear-gradient(135deg,rgba(91,91,246,.10),rgba(192,132,252,.10));border:1.5px solid rgba(91,91,246,.22);border-radius:14px;padding:13px 16px;cursor:pointer;transition:.2s;text-align:left}
+.story-cta-btn:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 8px 22px -8px rgba(91,91,246,.32)}
+.story-cta-ico{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;font-size:1.05rem}
+.story-cta-title{font-size:.83rem;font-weight:700;color:var(--tx)}
+.story-cta-sub{font-size:.7rem;color:var(--tx3);margin-top:1px}
+
+/* ── Modal Story ── */
+.story-modal-ov{position:fixed;inset:0;z-index:900;background:rgba(10,8,20,.62);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:clamp(12px,3vw,26px)}
+.story-modal-ov.hidden{display:none!important}
+.story-modal{width:100%;max-width:920px;max-height:92vh;overflow-y:auto;background:var(--card-bg);border:1px solid var(--card-bd);border-radius:26px;padding:clamp(20px,3vw,30px);backdrop-filter:blur(26px) saturate(1.3);-webkit-backdrop-filter:blur(26px) saturate(1.3);box-shadow:0 30px 90px -20px rgba(20,10,60,.5);animation:popupIn .3s cubic-bezier(.34,1.56,.64,1) both;display:flex;flex-direction:column;gap:20px;position:relative}
+.story-modal-close{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;background:var(--surface);border:1px solid var(--bd2);color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:2}
+.story-modal-close:hover{background:var(--err-bg);color:var(--err);transform:rotate(90deg)}
+.story-modal-title{font-family:'Outfit',sans-serif;font-size:1.15rem;font-weight:800;padding-right:40px}
+.story-modal-sub{font-size:.8rem;color:var(--tx2);margin-top:-12px}
+.story-modal-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,280px);gap:24px;align-items:start}
+@media(max-width:680px){.story-modal-body{grid-template-columns:1fr}}
+.story-type-chips{display:flex;flex-wrap:wrap;gap:8px}
+.story-type-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--bd2);border-radius:50px;padding:9px 15px;font-size:.8rem;font-weight:600;color:var(--tx2);cursor:pointer;transition:.15s}
+.story-type-chip:hover{border-color:var(--accent);color:var(--accent)}
+.story-type-chip.selected{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;box-shadow:0 6px 16px -6px rgba(91,91,246,.5)}
+.story-preview-col{display:flex;flex-direction:column;gap:14px;align-items:center}
+.story-preview-wrap{position:relative;width:100%;max-width:230px;aspect-ratio:9/16;border-radius:20px;overflow:hidden;box-shadow:0 18px 46px -12px rgba(20,10,60,.4);background:var(--surface-2)}
+.story-preview-wrap canvas{width:100%;height:100%;display:block}
+.story-preview-loader{position:absolute;inset:0;background:rgba(10,8,20,.5);display:flex;align-items:center;justify-content:center;color:#fff}
+.story-preview-loader.hidden{display:none}
+.story-actions{display:flex;gap:9px;width:100%}
+.story-actions .shr-btn{flex:1}
+
+/* ── Modèle caché 9:16 pour html2canvas ── */
+.story-tpl{position:fixed;left:-9999px;top:0;width:390px;height:693px;border-radius:0;overflow:hidden;font-family:'Plus Jakarta Sans','Inter',sans-serif}
+.story-tpl-bg{position:absolute;inset:0;z-index:0}
+.story-tpl-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.18),transparent 55%),radial-gradient(circle at 85% 85%,rgba(0,0,0,.2),transparent 55%)}
+.story-tpl-logo{position:absolute;z-index:3;top:22px;right:22px;width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.story-tpl-logo img{width:100%;height:100%;object-fit:contain;padding:5px}
+.story-tpl-content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 28px;gap:22px}
+.story-tpl-card{width:100%;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 20px 50px -12px rgba(10,5,30,.4)}
+.story-tpl-card-header{padding:14px 20px;text-align:center;font-family:'Outfit',sans-serif;font-weight:800;font-size:.78rem;letter-spacing:1.5px;color:#fff}
+.story-tpl-card-body{padding:26px 22px 24px;display:flex;flex-direction:column;gap:16px}
+.story-tpl-emoji{font-size:2rem;text-align:center;line-height:1}
+.story-tpl-quote-box{background:#f5f4fb;border-radius:16px;padding:18px 16px;text-align:center}
+.story-tpl-quote-label{font-family:'Outfit',sans-serif;font-size:.62rem;font-weight:800;letter-spacing:1.5px;color:#8b5cf6;margin-bottom:8px}
+.story-tpl-quote-text{font-family:'Outfit',sans-serif;font-size:1.15rem;font-weight:700;color:#1c1730;line-height:1.35}
+.story-tpl-reply{text-align:center;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px}
+.story-tpl-reply-label{font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:800;letter-spacing:2px}
+.story-tpl-footer{position:absolute;bottom:26px;left:0;right:0;z-index:2;text-align:center;color:rgba(255,255,255,.88);display:flex;flex-direction:column;align-items:center;gap:3px}
+.story-tpl-footer-brand{font-family:'Outfit',sans-serif;font-weight:800;font-size:.72rem;letter-spacing:.3px}
+.story-tpl-footer-sub{font-size:.62rem;letter-spacing:.5px;color:rgba(255,255,255,.6)}
+
 .qr-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:6px}
 .qr-box{background:#fff;border-radius:18px;padding:14px;box-shadow:0 8px 28px rgba(0,0,0,.14)}
 #qr-code-el{width:160px;height:160px;display:flex;align-items:center;justify-content:center}
@@ -521,6 +571,10 @@ svg{display:block}
           <div class="qr-box"><div id="qr-code-el"></div></div>
           <button class="qr-dl-btn" id="qr-dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger</button>
         </div>
+        <button class="story-cta-btn" id="story-open-btn">
+          <div class="story-cta-ico">🤫</div>
+          <div><div class="story-cta-title">Créer une Story</div><div class="story-cta-sub">Invite tes amis à envoyer un type précis de message</div></div>
+        </button>
       </div>
 
       <div class="activity-card glass">
@@ -648,7 +702,57 @@ svg{display:block}
   </div>
 </div>
 
+<!-- Modèle caché 9:16 pour la carte Story (généré par type de message) -->
+<div class="story-tpl" id="story-tpl">
+  <div class="story-tpl-bg" id="story-tpl-bg"></div>
+  <div class="story-tpl-logo"><img src="https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" alt="Webnote"/></div>
+  <div class="story-tpl-content">
+    <div class="story-tpl-card">
+      <div class="story-tpl-card-header" id="story-tpl-header" style="background:linear-gradient(100deg,#6366f1,#a855f7)">CONFESSION ANONYME</div>
+      <div class="story-tpl-card-body">
+        <div class="story-tpl-emoji" id="story-tpl-emoji">🤫</div>
+        <div class="story-tpl-quote-box">
+          <div class="story-tpl-quote-label">POUR @<span id="story-tpl-username">pseudo</span></div>
+          <div class="story-tpl-quote-text" id="story-tpl-quote">Dis-moi quelque chose que tu n'oserais jamais me dire.</div>
+        </div>
+      </div>
+    </div>
+    <div class="story-tpl-reply">
+      <div class="story-tpl-reply-label">RÉPONDRE</div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 10 12 15 17 10"/><polyline points="7 5 12 10 17 5" opacity=".55"/></svg>
+    </div>
+  </div>
+  <div class="story-tpl-footer">
+    <div class="story-tpl-footer-brand">webnote.</div>
+    <div class="story-tpl-footer-sub" id="story-tpl-footer-link">webnote-gold.vercel.app</div>
+  </div>
+</div>
+
+<!-- Modal : générateur de Story par type de message -->
+<div class="story-modal-ov hidden" id="story-modal-ov">
+  <div class="story-modal">
+    <button class="story-modal-close" id="story-modal-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div><div class="story-modal-title">Créer une Story</div><p class="story-modal-sub">Choisis un type, on génère l'image et le lien qui va avec.</p></div>
+    <div class="story-modal-body">
+      <div>
+        <div class="story-type-chips" id="story-type-chips"></div>
+      </div>
+      <div class="story-preview-col">
+        <div class="story-preview-wrap">
+          <canvas id="story-canvas"></canvas>
+          <div class="story-preview-loader hidden" id="story-preview-loader"><div class="shr-spinner"></div></div>
+        </div>
+        <div class="story-actions">
+          <button class="shr-btn shr-dl" id="story-dl-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Enregistrer</button>
+          <button class="shr-btn shr-copy" id="story-share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>Partager</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast hidden"></div>
+
 
 <div class="msg-expand-overlay hidden" id="msg-expand-overlay">
   <div class="msg-expand-modal">
@@ -900,6 +1004,101 @@ async function handleAvatarFile(file){
 }
 $("avatar-edit-btn")?.addEventListener("click", ()=> { if(!avatarUploading) $("avatar-file-input")?.click(); });
 $("avatar-file-input")?.addEventListener("change", e => { const f=e.target.files?.[0]; if(f) handleAvatarFile(f); e.target.value=""; });
+
+// ── STORY / STATUT — génération d'une carte 9:16 invitant à envoyer un type de message ──
+// Les clés doivent rester identiques à celles utilisées dans index.html (?type=...)
+const MESSAGE_TYPES = {
+  confession: { emoji:"🤫", chip:"Confession", label:"CONFESSION ANONYME", quote:"Dis-moi quelque chose que tu n'oserais jamais me dire.", grad:["#4338ca","#7c3aed"] },
+  crush:      { emoji:"❤️", chip:"Crush", label:"CRUSH ANONYME", quote:"Est-ce que tu craques pour quelqu'un en ce moment ?", grad:["#db2777","#9333ea"] },
+  honest:     { emoji:"👀", chip:"Avis honnête", label:"AVIS HONNÊTE", quote:"Dis-moi ce que tu penses vraiment de moi.", grad:["#0891b2","#6366f1"] },
+  thought:    { emoji:"💭", chip:"Pensée", label:"UNE PENSÉE", quote:"Partage une pensée, simple et sincère.", grad:["#4f46e5","#a855f7"] },
+  compliment: { emoji:"🫶", chip:"Compliment", label:"COMPLIMENT", quote:"Dis-moi ce que tu apprécies chez moi.", grad:["#db2777","#f59e0b"] },
+  fun:        { emoji:"😂", chip:"Fun", label:"MESSAGE FUN", quote:"Fais-moi rire, ou surprends-moi !", grad:["#f59e0b","#ec4899"] },
+  question:   { emoji:"❓", chip:"Question", label:"UNE QUESTION", quote:"Pose-moi la question que tu n'as jamais osé poser.", grad:["#0891b2","#4338ca"] },
+  truth:      { emoji:"🔥", chip:"Vérité", label:"LA VÉRITÉ", quote:"Dis la vérité, rien que la vérité.", grad:["#dc2626","#7c3aed"] }
+};
+let storySelectedType = null, storyBlob = null, storyUrl = null, storyGenerating = false;
+
+function buildStoryChips(){
+  const wrap = $("story-type-chips"); if (!wrap || wrap.childElementCount) return;
+  Object.entries(MESSAGE_TYPES).forEach(([key,t]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "story-type-chip";
+    b.innerHTML = `<span>${t.emoji}</span>${t.chip}`;
+    b.addEventListener("click", () => selectStoryType(key));
+    wrap.appendChild(b);
+  });
+}
+function selectStoryType(key){
+  storySelectedType = key;
+  document.querySelectorAll(".story-type-chip").forEach((b,i) => b.classList.toggle("selected", Object.keys(MESSAGE_TYPES)[i]===key));
+  generateStoryImage();
+}
+function openStoryModal(){
+  buildStoryChips();
+  $("story-modal-ov")?.classList.remove("hidden");
+  if (!storySelectedType) selectStoryType("confession");
+  else generateStoryImage();
+}
+function closeStoryModal(){ $("story-modal-ov")?.classList.add("hidden"); }
+$("story-open-btn")?.addEventListener("click", openStoryModal);
+$("story-modal-close")?.addEventListener("click", closeStoryModal);
+$("story-modal-ov")?.addEventListener("click", e => { if (e.target.id === "story-modal-ov") closeStoryModal(); });
+
+async function generateStoryImage(){
+  if (storyGenerating) return;
+  const t = MESSAGE_TYPES[storySelectedType]; if (!t) return;
+  storyGenerating = true;
+  const loader = $("story-preview-loader"); loader?.classList.remove("hidden");
+  try{
+    $("story-tpl-bg").style.background = `linear-gradient(155deg, ${t.grad[0]} 0%, ${t.grad[1]} 100%)`;
+    $("story-tpl-header").style.background = `linear-gradient(100deg, ${t.grad[0]}, ${t.grad[1]})`;
+    $("story-tpl-header").textContent = t.label;
+    $("story-tpl-emoji").textContent = t.emoji;
+    $("story-tpl-username").textContent = currentUsername || "pseudo";
+    $("story-tpl-quote").textContent = t.quote;
+    $("story-tpl-footer-link").textContent = "webnote-gold.vercel.app";
+
+    const tpl = $("story-tpl");
+    const canvas = await html2canvas(tpl, { scale:2.4, useCORS:true, allowTaint:true, backgroundColor:null, logging:false, imageTimeout:10000 });
+    const prev = $("story-canvas");
+    if (prev) { prev.width = canvas.width; prev.height = canvas.height; const ctx = prev.getContext("2d"); ctx.clearRect(0,0,prev.width,prev.height); ctx.drawImage(canvas,0,0); }
+    storyBlob = await new Promise(resolve => canvas.toBlob(b => resolve(b), "image/png"));
+    if (storyUrl) URL.revokeObjectURL(storyUrl);
+    storyUrl = storyBlob ? URL.createObjectURL(storyBlob) : null;
+  }catch(e){
+    console.error("Story generation error:", e);
+    showToast("Erreur lors de la génération de la Story.");
+  }finally{
+    loader?.classList.add("hidden");
+    storyGenerating = false;
+  }
+}
+async function ensureStoryReady(){
+  if (!storyBlob) { await generateStoryImage(); await new Promise(r=>setTimeout(r,300)); }
+  return !!storyBlob;
+}
+$("story-dl-btn")?.addEventListener("click", async () => {
+  if (!(await ensureStoryReady())) return showToast("Réessaie !");
+  const a = document.createElement("a"); a.href = storyUrl; a.download = `webnote-story-${storySelectedType}.png`; a.click();
+  showToast("Story enregistrée !");
+});
+$("story-share-btn")?.addEventListener("click", async () => {
+  if (!(await ensureStoryReady())) return showToast("Réessaie !");
+  const shareLink = `${currentShareLink}${currentShareLink.includes("?") ? "&" : "?"}type=${storySelectedType}`;
+  try{
+    if (navigator.canShare && navigator.share) {
+      const file = new File([storyBlob], `webnote-story-${storySelectedType}.png`, { type:"image/png" });
+      if (navigator.canShare({ files:[file] })) {
+        await navigator.share({ files:[file], text: `Envoie-moi ${MESSAGE_TYPES[storySelectedType].chip.toLowerCase()} anonymement 👀 ${shareLink}` });
+        return;
+      }
+    }
+    const a = document.createElement("a"); a.href = storyUrl; a.download = `webnote-story-${storySelectedType}.png`; a.click();
+    navigator.clipboard?.writeText(shareLink);
+    showToast("Image enregistrée, lien copié !");
+  }catch(e){ if (e?.name !== "AbortError") { console.error(e); showToast("Erreur, réessaie."); } }
+});
 
 
 onAuthStateChanged(auth, async (user) => {
