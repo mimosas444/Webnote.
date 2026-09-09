@@ -690,7 +690,6 @@ import {
   getFirestore, doc, setDoc, getDoc, getDocFromServer, addDoc, updateDoc, deleteDoc,
   collection, query, where, orderBy, getDocs, serverTimestamp, arrayUnion, arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyASaooIcRrY2mwZiI3j5VwjHmmzY8XLIag",
@@ -705,8 +704,6 @@ const ADMIN_EMAIL = "kennysauvegardej3@gmail.com";
 const fireApp = initializeApp(firebaseConfig);
 const auth = getAuth(fireApp);
 const db = getFirestore(fireApp);
-let storage = null;
-try { storage = getStorage(fireApp); } catch(e) { console.error("Firebase Storage init a échoué:", e); }
 
 // Fixed to Haiti's IANA zone (not the visitor's device timezone). This is
 // what actually fixes the "1 hour behind" bug: America/Port-au-Prince has
@@ -818,7 +815,7 @@ function applyAvatarEverywhere(url){
     }
   });
 }
-function fileToSquareBlob(file, size=256){
+function fileToBase64Square(file, size=220, quality=0.78){
   return new Promise((resolve,reject)=>{
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -830,7 +827,8 @@ function fileToSquareBlob(file, size=256){
       const sx = (img.width - side)/2, sy = (img.height - side)/2;
       ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
       URL.revokeObjectURL(url);
-      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("toBlob a échoué")), "image/jpeg", 0.88);
+      try { resolve(canvas.toDataURL("image/jpeg", quality)); }
+      catch(err) { reject(err); }
     };
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Image invalide")); };
     img.src = url;
@@ -844,11 +842,9 @@ function withTimeout(promise, ms, label){
 }
 function avatarErrorMessage(e){
   const code = e?.code || "";
-  if (String(e?.message||"").startsWith("TIMEOUT")) return "Ça prend trop de temps (connexion lente ou bloquée). Réessaie.";
-  if (code === "storage/unauthorized") return "Accès refusé par Firebase Storage. Les règles de sécurité du bucket doivent autoriser l'écriture sur /avatars/{uid}.jpg pour un utilisateur connecté.";
-  if (code === "storage/unknown" || code === "storage/retry-limit-exceeded") return "Firebase Storage est peut-être mal configuré ou désactivé pour ce projet (CORS/bucket).";
-  if (code === "storage/canceled") return "Envoi annulé.";
+  if (String(e?.message||"").startsWith("TIMEOUT")) return "Ça prend trop de temps (connexion lente). Réessaie.";
   if (code === "permission-denied") return "Permission refusée pour enregistrer la photo (règles Firestore).";
+  if (code === "invalid-argument" || String(e?.message||"").includes("longer than")) return "Image trop volumineuse même après compression. Essaie une autre photo.";
   return `Erreur lors de l'envoi de la photo${code ? " ("+code+")" : ""}.`;
 }
 let avatarUploadToken = 0; // identifie chaque tentative pour que le filet de sécurité ne coupe pas un upload plus récent
@@ -861,8 +857,7 @@ async function handleAvatarFile(file){
   if (!file) return;
   if (avatarUploading) return; // empêche les envois simultanés (source de "boucle" si double-tap)
   if (!file.type.startsWith("image/")) return showToast("Choisis une image valide.");
-  if (file.size > 3*1024*1024) return showToast("Image trop lourde (max 3 Mo).");
-  if (!storage) { showToast("Firebase Storage indisponible."); return; }
+  if (file.size > 8*1024*1024) return showToast("Image trop lourde (max 8 Mo).");
 
   avatarUploading = true;
   const myToken = ++avatarUploadToken;
@@ -871,26 +866,28 @@ async function handleAvatarFile(file){
   overlay?.classList.add("show");
   if (editBtn) editBtn.style.pointerEvents = "none";
 
-  // Filet de sécurité ABSOLU : quoi qu'il arrive (upload bloqué sans jamais résoudre
-  // NI rejeter, ce qui peut arriver avec certaines erreurs CORS silencieuses), l'UI
-  // est forcée de se débloquer après 25s. C'est ce qui empêchait le spinner de
-  // tourner indéfiniment même quand withTimeout() aurait dû suffire.
+  // Filet de sécurité ABSOLU : quoi qu'il arrive, l'UI est forcée de se débloquer
+  // après 15s pour ne jamais rester bloquée en "chargement infini".
   const failsafe = setTimeout(() => {
     if (avatarUploadToken === myToken && avatarUploading) {
-      console.error("Avatar upload: filet de sécurité déclenché (25s), l'UI est forcée de se débloquer.");
+      console.error("Avatar upload: filet de sécurité déclenché (15s), l'UI est forcée de se débloquer.");
       forceResetAvatarUI();
-      showToast("Échec de l'envoi (délai). Vérifie ta connexion ou réessaie.");
+      showToast("Échec de l'envoi (délai). Réessaie.");
     }
-  }, 25000);
+  }, 15000);
 
   try{
-    const blob = await fileToSquareBlob(file, 256);
-    const sRef = ref(storage, `avatars/${currentUser.uid}.jpg`);
-    await withTimeout(uploadBytes(sRef, blob, { contentType: "image/jpeg" }), 18000, "Envoi de l'image");
-    const url = await withTimeout(getDownloadURL(sRef), 12000, "Récupération de l'image");
-    await withTimeout(updateDoc(doc(db,"users",currentUser.uid), { photoURL: url }), 10000, "Enregistrement du profil");
+    // Pas de Firebase Storage (nécessite le plan payant Blaze) : la photo est
+    // compressée en petite image carrée puis stockée directement en base64
+    // dans le document Firestore de l'utilisateur — 100% gratuit (plan Spark).
+    let dataUrl = await fileToBase64Square(file, 220, 0.78);
+    // Sécurité : un document Firestore est limité à ~1 Mo. On vérifie la taille
+    // et on recompresse plus fort si nécessaire pour ne jamais dépasser la limite.
+    if (dataUrl.length > 700000) dataUrl = await fileToBase64Square(file, 160, 0.55);
+    if (dataUrl.length > 700000) throw new Error("Image trop volumineuse, longer than limit");
+    await withTimeout(updateDoc(doc(db,"users",currentUser.uid), { photoURL: dataUrl }), 10000, "Enregistrement du profil");
     if (avatarUploadToken === myToken) {
-      applyAvatarEverywhere(url);
+      applyAvatarEverywhere(dataUrl);
       showToast("Photo de profil mise à jour !");
     }
   }catch(e){
@@ -903,6 +900,7 @@ async function handleAvatarFile(file){
 }
 $("avatar-edit-btn")?.addEventListener("click", ()=> { if(!avatarUploading) $("avatar-file-input")?.click(); });
 $("avatar-file-input")?.addEventListener("change", e => { const f=e.target.files?.[0]; if(f) handleAvatarFile(f); e.target.value=""; });
+
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "index.html"; return; }
