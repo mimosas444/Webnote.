@@ -641,7 +641,6 @@ svg{display:block}
       <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:1.55rem;line-height:1.28;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.35);letter-spacing:-.3px">Envoie-moi des<br/>messages anonymes <span style="opacity:.9">👀</span></div>
       <div id="wa-share-username" style="margin-top:10px;font-size:.86rem;font-weight:700;color:rgba(255,255,255,.75)">@pseudo</div>
     </div>
-    <div style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:50px;padding:9px 20px;font-size:.78rem;font-weight:700;color:#fff;backdrop-filter:blur(6px)">100% anonyme · Gratuit</div>
   </div>
   <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 26px 22px;font-size:.7rem;font-weight:700;color:rgba(255,255,255,.6)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
@@ -706,7 +705,8 @@ const ADMIN_EMAIL = "kennysauvegardej3@gmail.com";
 const fireApp = initializeApp(firebaseConfig);
 const auth = getAuth(fireApp);
 const db = getFirestore(fireApp);
-const storage = getStorage(fireApp);
+let storage = null;
+try { storage = getStorage(fireApp); } catch(e) { console.error("Firebase Storage init a échoué:", e); }
 
 // Fixed to Haiti's IANA zone (not the visitor's device timezone). This is
 // what actually fixes the "1 hour behind" bug: America/Port-au-Prince has
@@ -839,34 +839,66 @@ function fileToSquareBlob(file, size=256){
 function withTimeout(promise, ms, label){
   return Promise.race([
     promise,
-    new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label} : délai dépassé`)), ms))
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error(`TIMEOUT:${label}`)), ms))
   ]);
+}
+function avatarErrorMessage(e){
+  const code = e?.code || "";
+  if (String(e?.message||"").startsWith("TIMEOUT")) return "Ça prend trop de temps (connexion lente ou bloquée). Réessaie.";
+  if (code === "storage/unauthorized") return "Accès refusé par Firebase Storage. Les règles de sécurité du bucket doivent autoriser l'écriture sur /avatars/{uid}.jpg pour un utilisateur connecté.";
+  if (code === "storage/unknown" || code === "storage/retry-limit-exceeded") return "Firebase Storage est peut-être mal configuré ou désactivé pour ce projet (CORS/bucket).";
+  if (code === "storage/canceled") return "Envoi annulé.";
+  if (code === "permission-denied") return "Permission refusée pour enregistrer la photo (règles Firestore).";
+  return `Erreur lors de l'envoi de la photo${code ? " ("+code+")" : ""}.`;
+}
+let avatarUploadToken = 0; // identifie chaque tentative pour que le filet de sécurité ne coupe pas un upload plus récent
+function forceResetAvatarUI(){
+  $("avatar-upload-overlay")?.classList.remove("show");
+  const editBtn = $("avatar-edit-btn"); if (editBtn) editBtn.style.pointerEvents = "";
+  avatarUploading = false;
 }
 async function handleAvatarFile(file){
   if (!file) return;
   if (avatarUploading) return; // empêche les envois simultanés (source de "boucle" si double-tap)
   if (!file.type.startsWith("image/")) return showToast("Choisis une image valide.");
   if (file.size > 3*1024*1024) return showToast("Image trop lourde (max 3 Mo).");
+  if (!storage) { showToast("Firebase Storage indisponible."); return; }
+
   avatarUploading = true;
+  const myToken = ++avatarUploadToken;
   const overlay = $("avatar-upload-overlay");
   const editBtn = $("avatar-edit-btn");
   overlay?.classList.add("show");
   if (editBtn) editBtn.style.pointerEvents = "none";
+
+  // Filet de sécurité ABSOLU : quoi qu'il arrive (upload bloqué sans jamais résoudre
+  // NI rejeter, ce qui peut arriver avec certaines erreurs CORS silencieuses), l'UI
+  // est forcée de se débloquer après 25s. C'est ce qui empêchait le spinner de
+  // tourner indéfiniment même quand withTimeout() aurait dû suffire.
+  const failsafe = setTimeout(() => {
+    if (avatarUploadToken === myToken && avatarUploading) {
+      console.error("Avatar upload: filet de sécurité déclenché (25s), l'UI est forcée de se débloquer.");
+      forceResetAvatarUI();
+      showToast("Échec de l'envoi (délai). Vérifie ta connexion ou réessaie.");
+    }
+  }, 25000);
+
   try{
     const blob = await fileToSquareBlob(file, 256);
     const sRef = ref(storage, `avatars/${currentUser.uid}.jpg`);
-    await withTimeout(uploadBytes(sRef, blob, { contentType: "image/jpeg" }), 20000, "Envoi de l'image");
-    const url = await withTimeout(getDownloadURL(sRef), 15000, "Récupération de l'image");
+    await withTimeout(uploadBytes(sRef, blob, { contentType: "image/jpeg" }), 18000, "Envoi de l'image");
+    const url = await withTimeout(getDownloadURL(sRef), 12000, "Récupération de l'image");
     await withTimeout(updateDoc(doc(db,"users",currentUser.uid), { photoURL: url }), 10000, "Enregistrement du profil");
-    applyAvatarEverywhere(url);
-    showToast("Photo de profil mise à jour !");
+    if (avatarUploadToken === myToken) {
+      applyAvatarEverywhere(url);
+      showToast("Photo de profil mise à jour !");
+    }
   }catch(e){
-    console.error("Avatar upload:", e);
-    showToast(e?.message?.includes("délai") ? "Ça prend trop de temps, réessaie." : "Erreur lors de l'envoi de la photo.");
+    console.error("Avatar upload error:", e?.code || e?.message || e, e);
+    if (avatarUploadToken === myToken) showToast(avatarErrorMessage(e));
   }finally{
-    overlay?.classList.remove("show");
-    if (editBtn) editBtn.style.pointerEvents = "";
-    avatarUploading = false;
+    clearTimeout(failsafe);
+    if (avatarUploadToken === myToken) forceResetAvatarUI();
   }
 }
 $("avatar-edit-btn")?.addEventListener("click", ()=> { if(!avatarUploading) $("avatar-file-input")?.click(); });
@@ -947,7 +979,7 @@ async function loadDashboard(){
 let waShareBlob=null, waShareUrl=null;
 async function buildWaShareCard(){
   $("wa-share-username").textContent = `@${currentUsername}`;
-  $("wa-share-link-text").textContent = currentShareLink.replace(/^https?:\/\//,"");
+  $("wa-share-link-text").textContent = "webnote-gold.vercel.app";
   const avEl = $("wa-share-avatar");
   if (currentPhotoURL) {
     avEl.style.backgroundImage = `url("${currentPhotoURL}")`;
