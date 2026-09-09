@@ -287,6 +287,48 @@ button{font-family:inherit}
 .send-placeholder-fx .caret{display:inline-block;width:2px;height:1.1em;background:var(--accent);margin-left:1px;vertical-align:-2px;animation:caretBlink 1s step-end infinite}
 @keyframes caretBlink{0%,100%{opacity:1}50%{opacity:0}}
 
+/* ── Entrée séquencée du profil / type / carte de saisie ── */
+.send-stage{opacity:0;transform:translateY(14px);transition:opacity .45s cubic-bezier(.22,1,.36,1),transform .45s cubic-bezier(.22,1,.36,1)}
+.send-stage.in{opacity:1;transform:translateY(0)}
+.send-stage.scale-in{transform:translateY(10px) scale(.94)}
+.send-stage.scale-in.in{transform:translateY(0) scale(1)}
+
+/* ── Chips de type de message ── */
+.type-chips-wrap{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.type-chips-label{font-size:.68rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--tx3);text-align:center}
+.type-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.type-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--bd);border-radius:50px;padding:8px 14px;font-size:.8rem;font-weight:600;color:var(--tx2);cursor:pointer;transition:transform .15s ease,border-color .2s,background .2s,color .2s;-webkit-tap-highlight-color:transparent}
+.type-chip:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+.type-chip:active{transform:scale(.94)}
+.type-chip.more{color:var(--tx3);font-weight:700}
+.type-chip .em{font-size:.95rem;line-height:1}
+.type-chip.selected{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;box-shadow:0 6px 18px -6px rgba(109,40,217,.5)}
+
+/* ── Header de type sélectionné (remplace le titre générique) ── */
+.type-header{text-align:center;margin-bottom:16px}
+.type-header-em{font-size:2.1rem;line-height:1;margin-bottom:8px;display:inline-block;animation:typeEmPop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes typeEmPop{0%{transform:scale(.3) rotate(-14deg);opacity:0}60%{transform:scale(1.18) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+.type-header-label{font-family:'Space Grotesk',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.type-header-intro{font-size:1rem;font-weight:600;line-height:1.55;color:var(--tx);min-height:2.6em;padding:0 6px}
+.type-header-intro .caret{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:1px;vertical-align:-1px;animation:caretBlink 1s step-end infinite}
+.type-change-btn{display:inline-flex;align-items:center;gap:5px;margin-top:12px;background:none;border:none;color:var(--tx3);font-size:.72rem;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:8px;transition:.2s}
+.type-change-btn:hover{color:var(--accent);background:var(--accent-soft)}
+.type-change-btn svg{width:11px;height:11px}
+
+/* ── Bouton envoyer : feedback d'envoi ── */
+.btn-primary.sending{pointer-events:none}
+.btn-primary .send-check{display:inline-flex;animation:sendCheckPop .4s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes sendCheckPop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ── Confirmation post-envoi premium ── */
+.success-msg-v2{background:var(--surface);border:1.5px solid var(--bd);border-radius:20px;padding:28px 22px;margin-top:16px;text-align:center;box-shadow:var(--shadow-md);animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both}
+.success-icon-v2{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--ok),#22c55e);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:#fff;box-shadow:0 8px 22px -6px rgba(21,128,61,.45);animation:successPop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes successPop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.success-title-v2{font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;color:var(--tx);margin-bottom:6px}
+.success-sub-v2{font-size:.86rem;color:var(--tx2);margin-bottom:20px}
+.success-cta-wrap{border-top:1px solid var(--bd);padding-top:18px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.success-cta-label{font-size:.84rem;font-weight:600;color:var(--tx)}
+
 /* ── Toast ── */
 .toast{position:fixed;bottom:clamp(18px,4vh,26px);left:50%;transform:translateX(-50%) translateY(16px);display:flex;align-items:center;gap:8px;background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:50px;font-size:.82rem;font-weight:600;z-index:999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;max-width:calc(100vw - 32px);text-overflow:ellipsis;overflow:hidden;box-shadow:var(--shadow-lg)}
 [data-theme="dark"] .toast{background:var(--surface);color:var(--tx);border:1px solid var(--bd-strong)}
@@ -471,25 +513,53 @@ button{font-family:inherit}
           <div class="popup-logo-icon"><img src="https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" alt="Webnote"/></div>
           <span class="popup-logo-text">webnote<span class="dot">.</span></span>
         </div>
-        <div class="send-avatar-wrap">
+
+        <div class="send-avatar-wrap send-stage scale-in" id="stage-avatar">
           <div class="send-avatar-ring"></div>
           <div class="send-avatar" id="send-avatar">?</div>
         </div>
-        <h2 class="send-title">Message pour<br/><span id="send-username-display">…</span></h2>
-        <p class="send-hint"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11v1a7 7 0 0 1-14 0v-1M12 19v3"/></svg>Ton identité ne sera jamais révélée</p>
-        <div class="send-msg-card">
+        <h2 class="send-title send-stage" id="stage-title">Message pour<br/><span id="send-username-display">…</span></h2>
+        <p class="send-hint send-stage" id="stage-hint"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11v1a7 7 0 0 1-14 0v-1M12 19v3"/></svg>Ton identité ne sera jamais révélée</p>
+
+        <!-- Chips de sélection du type de message (masqué si un type vient déjà de l'URL) -->
+        <div class="type-chips-wrap send-stage" id="stage-chips">
+          <div class="type-chips-label">Choisis un type de message</div>
+          <div class="type-chips" id="type-chips"></div>
+        </div>
+
+        <!-- Header affiché une fois un type sélectionné -->
+        <div class="type-header hidden" id="type-header">
+          <div class="type-header-em" id="type-header-em">🤫</div>
+          <div class="type-header-label" id="type-header-label">CONFESSION</div>
+          <div class="type-header-intro" id="type-header-intro"></div>
+          <button class="type-change-btn" id="type-change-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Changer de type
+          </button>
+        </div>
+
+        <div class="send-msg-card send-stage" id="stage-msgcard">
           <div class="send-msg-inner">
             <div class="send-placeholder-fx" id="send-placeholder-fx"></div>
             <textarea id="send-message" class="send-textarea-real" maxlength="500"></textarea>
           </div>
         </div>
-        <div class="char-count"><span id="char-count">0</span>/500</div>
+        <div class="char-count send-stage" id="stage-charcount"><span id="char-count">0</span>/500</div>
         <div id="send-error" class="error-msg hidden"></div>
-        <button class="btn-primary btn-full" id="send-submit"><span>Envoyer anonymement</span></button>
-        <div id="send-success" class="success-msg hidden">
-          <div class="success-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-          <p>Message envoyé ! Tu restes anonyme.</p><a href="index.html" class="back-link">Créer mon propre compte →</a></div>
-        <div class="send-popup-footer">Pas encore de compte ? <a href="index.html" class="send-popup-cta">Rejoindre Webnote →</a></div>
+        <button class="btn-primary btn-full send-stage" id="send-submit" style="margin-top:6px"><span>Envoyer anonymement</span></button>
+
+        <div id="send-success" class="hidden">
+          <div class="success-msg-v2">
+            <div class="success-icon-v2"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+            <div class="success-title-v2">Message envoyé</div>
+            <div class="success-sub-v2">Ton message est parti anonymement.</div>
+            <div class="success-cta-wrap">
+              <div class="success-cta-label">À ton tour 👀</div>
+              <a href="index.html" class="btn-primary btn-full">Créer mon lien Webnote →</a>
+            </div>
+          </div>
+        </div>
+        <div class="send-popup-footer" id="send-footer-link">Pas encore de compte ? <a href="index.html" class="send-popup-cta">Rejoindre Webnote →</a></div>
       </div>
 
       <div id="send-notfound" class="hidden" style="text-align:center;padding:20px 0">
@@ -682,12 +752,143 @@ $("login-submit")?.addEventListener("click", async () => {
   }
 });
 
+// ── TYPES DE MESSAGES ──
+const MESSAGE_TYPES = {
+  confession: { emoji:"🤫", chip:"Confession", label:"CONFESSION",
+    intro:"Tu peux tout me dire.\nJe ne saurai jamais que c'est toi.",
+    questions:["Dis-moi quelque chose que tu n'oserais jamais me dire en face.","Qu'est-ce que tu caches depuis longtemps ?","Quelle vérité as-tu gardée pour toi ?","Qu'est-ce que tu n'as jamais osé avouer ?"] },
+  crush: { emoji:"❤️", chip:"Crush", label:"CRUSH",
+    intro:"Dis-lui ce que tu ressens vraiment,\nsans jamais révéler qui tu es.",
+    questions:["Est-ce que tu aimes quelqu'un en ce moment ?","Qu'est-ce qui t'attire chez moi ?","Depuis quand tu craques ?","Qu'est-ce que tu ressens quand tu me vois ?"] },
+  honest: { emoji:"👀", chip:"Avis honnête", label:"AVIS HONNÊTE",
+    intro:"Sois honnête, sans filtre.\nJe suis prêt(e) à entendre la vérité.",
+    questions:["Qu'est-ce que tu penses vraiment de moi ?","Qu'est-ce que tu changerais chez moi ?","Quel est mon plus gros défaut selon toi ?","Qu'est-ce que les gens disent de moi derrière mon dos ?"] },
+  thought: { emoji:"💭", chip:"Pensée", label:"PENSÉE",
+    intro:"Partage une pensée,\nsimple et sincère.",
+    questions:["À quoi tu penses en ce moment ?","Qu'est-ce qui t'occupe l'esprit ces derniers temps ?","Une pensée que tu n'as jamais partagée à personne ?"] },
+  compliment: { emoji:"🫶", chip:"Compliment", label:"COMPLIMENT",
+    intro:"Fais-moi sourire.\nDis-moi ce que tu apprécies chez moi.",
+    questions:["Qu'est-ce que tu apprécies le plus chez moi ?","Quel est ton souvenir préféré avec moi ?","Qu'est-ce qui te fait sourire quand tu penses à moi ?"] },
+  fun: { emoji:"😂", chip:"Fun", label:"FUN",
+    intro:"Fais-moi rire,\nou surprends-moi !",
+    questions:["Raconte-moi un truc drôle sur moi.","Quel surnom tu me donnerais ?","Si j'étais un emoji, lequel serais-je ?"] },
+  question: { emoji:"❓", chip:"Question", label:"QUESTION",
+    intro:"Pose-moi la question\nque tu n'as jamais osé poser.",
+    questions:["Quelle question tu n'as jamais osé me poser ?","Qu'est-ce que tu as toujours voulu savoir sur moi ?"] },
+  truth: { emoji:"🔥", chip:"Vérité", label:"VÉRITÉ",
+    intro:"Dis la vérité,\nrien que la vérité.",
+    questions:["Quelle est la vérité que tu me caches ?","Qu'est-ce que tu n'as jamais osé m'avouer ?"] }
+};
+const DEFAULT_QUESTIONS = [
+  "Qu'est-ce que tu penses vraiment de moi ?",
+  "Y a-t-il un secret que tu gardes pour toi ?",
+  "Qu'est-ce qui te fait sourire quand tu penses à moi ?",
+  "Si tu pouvais me dire une chose sans filtre, ce serait quoi ?",
+  "Qu'est-ce que tu changerais chez moi ?",
+  "Quel est ton souvenir préféré avec moi ?",
+  "Qu'est-ce que tu n'as jamais osé me dire ?",
+  "Est-ce que tu aimes quelqu'un en ce moment ?",
+  "Qu'est-ce qui te plaît le plus chez moi ?"
+];
+const DEFAULT_CHIP_KEYS = ["confession","crush","honest","fun"];
+let selectedType = null;
+let activeQuestions = DEFAULT_QUESTIONS;
+
+function renderTypeChips(){
+  const wrap = $("type-chips"); if (!wrap) return;
+  wrap.innerHTML = "";
+  DEFAULT_CHIP_KEYS.forEach(key => {
+    const t = MESSAGE_TYPES[key];
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "type-chip";
+    b.innerHTML = `<span class="em">${t.emoji}</span>${t.chip}`;
+    b.addEventListener("click", () => selectType(key));
+    wrap.appendChild(b);
+  });
+  const more = document.createElement("button");
+  more.type = "button"; more.className = "type-chip more";
+  more.innerHTML = "+ Plus";
+  more.addEventListener("click", () => {
+    wrap.innerHTML = "";
+    Object.keys(MESSAGE_TYPES).forEach(key => {
+      const t = MESSAGE_TYPES[key];
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "type-chip";
+      b.innerHTML = `<span class="em">${t.emoji}</span>${t.chip}`;
+      b.addEventListener("click", () => selectType(key));
+      wrap.appendChild(b);
+    });
+  });
+  wrap.appendChild(more);
+}
+
+let introTypeTimer = null;
+function typeIntroOnce(text){
+  const el = $("type-header-intro"); if (!el) return;
+  clearTimeout(introTypeTimer);
+  const full = text.split("\n");
+  let li = 0, ci = 0, out = "";
+  el.innerHTML = '<span class="caret"></span>';
+  function step(){
+    if (li >= full.length) { el.innerHTML = esc(full.join("\n")).replace(/\n/g,"<br/>"); return; }
+    const line = full[li];
+    ci++;
+    const doneLines = full.slice(0, li).map(esc).join("<br/>");
+    el.innerHTML = (doneLines ? doneLines + "<br/>" : "") + esc(line.slice(0, ci)) + '<span class="caret"></span>';
+    if (ci >= line.length) { li++; ci = 0; introTypeTimer = setTimeout(step, 90); return; }
+    introTypeTimer = setTimeout(step, 26 + Math.random()*18);
+  }
+  step();
+}
+
+function selectType(key, skipAnim){
+  const t = MESSAGE_TYPES[key]; if (!t) return;
+  selectedType = key;
+  activeQuestions = t.questions;
+  $("stage-chips")?.classList.add("hidden");
+  const header = $("type-header");
+  if (header) {
+    header.classList.remove("hidden");
+    $("type-header-em").textContent = t.emoji;
+    $("type-header-label").textContent = t.label;
+    if (skipAnim) { $("type-header-intro").textContent = t.intro; }
+    else typeIntroOnce(t.intro);
+    requestAnimationFrame(()=> header.classList.add("send-stage","in"));
+  }
+  if ($("send-username-display")) {
+    const uname = $("send-username-display").dataset.uname || $("send-username-display").textContent.replace("@","");
+    $("send-username-display").textContent = `@${uname}`;
+  }
+  phxQIndex = 0; phxCharIndex = 0; phxDeleting = false;
+  updatePlaceholderFx();
+}
+function resetType(){
+  selectedType = null;
+  activeQuestions = DEFAULT_QUESTIONS;
+  $("type-header")?.classList.add("hidden");
+  $("stage-chips")?.classList.remove("hidden");
+  phxQIndex = 0; phxCharIndex = 0; phxDeleting = false;
+  updatePlaceholderFx();
+}
+$("type-change-btn")?.addEventListener("click", resetType);
+
+// ── Animation d'entrée séquencée (rapide, élégante, pas de délai inutile) ──
+function runEntranceSequence(){
+  const order = ["stage-avatar","stage-title","stage-hint","stage-chips","stage-msgcard","stage-charcount","send-submit"];
+  order.forEach((id, i) => {
+    const el = $(id); if (!el) return;
+    el.classList.add("send-stage");
+    setTimeout(() => el.classList.add("in"), 60 + i*70);
+  });
+}
+
 // ── SEND PAGE ──
 async function loadSendPage(username) {
   showPage("send");
   $("send-skeleton")?.classList.remove("hidden");
   $("send-content")?.classList.add("hidden");
   $("send-notfound")?.classList.add("hidden");
+  renderTypeChips();
 
   let rd = null;
   try {
@@ -702,7 +903,10 @@ async function loadSendPage(username) {
   if (!rd) { $("send-notfound")?.classList.remove("hidden"); return; }
 
   $("send-content")?.classList.remove("hidden");
-  if ($("send-username-display")) $("send-username-display").textContent = `@${rd.username}`;
+  if ($("send-username-display")) {
+    $("send-username-display").textContent = `@${rd.username}`;
+    $("send-username-display").dataset.uname = rd.username;
+  }
   const avatarEl = $("send-avatar");
   if (avatarEl) {
     if (rd.photoURL) {
@@ -714,48 +918,53 @@ async function loadSendPage(username) {
     }
   }
 
+  // Lien intelligent : ?type=confession préselectionne le type sans casser les
+  // anciens liens (qui n'ont pas ce paramètre et gardent l'expérience générique).
+  const typeParam = urlParams.get("type");
+  if (typeParam && MESSAGE_TYPES[typeParam]) {
+    selectType(typeParam, true);
+  }
+
+  runEntranceSequence();
+
   $("send-message")?.addEventListener("input", () => {
     if ($("char-count")) $("char-count").textContent = $("send-message").value.length;
     updatePlaceholderFx();
   });
   $("send-message")?.addEventListener("focus", updatePlaceholderFx);
   $("send-message")?.addEventListener("blur", updatePlaceholderFx);
-  startPlaceholderTypewriter();
+  setTimeout(startPlaceholderTypewriter, 420);
 
   $("send-submit")?.addEventListener("click", async () => {
     const msg = $("send-message")?.value.trim();
     $("send-error")?.classList.add("hidden");
     if (!msg || msg.length < 2) return showErr($("send-error"), "Le message est trop court.");
-    const span = $("send-submit").querySelector("span"); if (span) span.textContent = "Envoi…";
-    $("send-submit").disabled = true;
+    const btn = $("send-submit"), span = btn.querySelector("span");
+    if (span) span.innerHTML = "Envoi…";
+    btn.disabled = true; btn.classList.add("sending");
     try {
-      await addDoc(collection(db,"messages"), { message: msg, recipientId: rd.uid, recipientUsername: rd.username, approved: false, adminReply: null, createdAt: serverTimestamp() });
+      await addDoc(collection(db,"messages"), {
+        message: msg, recipientId: rd.uid, recipientUsername: rd.username,
+        type: selectedType || null,
+        approved: false, adminReply: null, createdAt: serverTimestamp()
+      });
       stopPlaceholderTypewriter();
-      $("send-submit")?.classList.add("hidden");
-      $(".send-msg-card")?.classList.add("hidden");
-      document.querySelector(".send-msg-card")?.classList.add("hidden");
-      document.querySelector(".char-count")?.classList.add("hidden");
-      $("send-success")?.classList.remove("hidden");
+      if (span) span.innerHTML = '<span class="send-check"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>';
+      setTimeout(() => {
+        ["stage-avatar","stage-title","stage-hint","stage-chips","type-header","stage-msgcard","stage-charcount","send-submit","send-footer-link"].forEach(id => $(id)?.classList.add("hidden"));
+        $("send-error")?.classList.add("hidden");
+        $("send-success")?.classList.remove("hidden");
+      }, 380);
     } catch (e) {
+      btn.classList.remove("sending");
       if (span) span.textContent = "Envoyer anonymement";
-      $("send-submit").disabled = false;
+      btn.disabled = false;
       showErr($("send-error"), "Erreur. Réessaie.");
     }
   });
 }
 
-// ── PLACEHOLDER MACHINE À ÉCRIRE (questions qui défilent en boucle) ──
-const PLACEHOLDER_QUESTIONS = [
-  "Qu'est-ce que tu penses vraiment de moi ?",
-  "Y a-t-il un secret que tu gardes pour toi ?",
-  "Qu'est-ce qui te fait sourire quand tu penses à moi ?",
-  "Si tu pouvais me dire une chose sans filtre, ce serait quoi ?",
-  "Qu'est-ce que tu changerais chez moi ?",
-  "Quel est ton souvenir préféré avec moi ?",
-  "Qu'est-ce que tu n'as jamais osé me dire ?",
-  "Est-ce que tu aimes quelqu'un en ce moment ?",
-  "Qu'est-ce qui te plaît le plus chez moi ?"
-];
+// ── PLACEHOLDER MACHINE À ÉCRIRE (questions qui défilent en boucle, par type) ──
 let phxTimer = null, phxQIndex = 0, phxCharIndex = 0, phxDeleting = false, phxRunning = false;
 function updatePlaceholderFx(){
   const ta = $("send-message"), fx = $("send-placeholder-fx");
@@ -782,7 +991,8 @@ function phxTypeStep(){
   if (!phxRunning) return;
   const fx = $("send-placeholder-fx");
   if (!fx) return;
-  const full = PLACEHOLDER_QUESTIONS[phxQIndex % PLACEHOLDER_QUESTIONS.length];
+  const list = activeQuestions.length ? activeQuestions : DEFAULT_QUESTIONS;
+  const full = list[phxQIndex % list.length];
   if (!phxDeleting) {
     phxCharIndex++;
     fx.innerHTML = esc(full.slice(0, phxCharIndex)) + '<span class="caret"></span>';
@@ -796,13 +1006,14 @@ function phxTypeStep(){
     fx.innerHTML = esc(full.slice(0, phxCharIndex)) + '<span class="caret"></span>';
     if (phxCharIndex <= 0) {
       phxDeleting = false;
-      phxQIndex = (phxQIndex + 1) % PLACEHOLDER_QUESTIONS.length;
+      phxQIndex = (phxQIndex + 1) % list.length;
       phxTimer = setTimeout(phxTypeStep, 350);
       return;
     }
     phxTimer = setTimeout(phxTypeStep, 14);
   }
 }
+
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 function showErr(el, msg) { if (!el) return; el.textContent = msg; el.classList.remove("hidden"); }
