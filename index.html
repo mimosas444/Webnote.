@@ -279,12 +279,6 @@ button{font-family:inherit}
   color:var(--tx);font-size:.95rem;line-height:1.65;padding:16px 16px;resize:none;
   font-family:inherit;position:relative;z-index:2;
 }
-.send-placeholder-fx{
-  position:absolute;top:16px;left:16px;right:16px;z-index:1;
-  color:var(--tx3);font-size:.95rem;line-height:1.65;pointer-events:none;
-  white-space:pre-wrap;word-break:break-word;
-}
-.send-placeholder-fx .caret{display:inline-block;width:2px;height:1.1em;background:var(--accent);margin-left:1px;vertical-align:-2px;animation:caretBlink 1s step-end infinite}
 @keyframes caretBlink{0%,100%{opacity:1}50%{opacity:0}}
 
 /* ── Entrée séquencée du profil / type / carte de saisie ── */
@@ -521,18 +515,19 @@ button{font-family:inherit}
         <h2 class="send-title send-stage" id="stage-title">Message pour<br/><span id="send-username-display">…</span></h2>
         <p class="send-hint send-stage" id="stage-hint"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11v1a7 7 0 0 1-14 0v-1M12 19v3"/></svg>Ton identité ne sera jamais révélée</p>
 
-        <!-- Chips de sélection du type de message (masqué si un type vient déjà de l'URL) -->
+        <!-- Chips de sélection du type de message (masqué une fois un type choisi) -->
         <div class="type-chips-wrap send-stage" id="stage-chips">
           <div class="type-chips-label">Choisis un type de message</div>
           <div class="type-chips" id="type-chips"></div>
         </div>
 
-        <!-- Header affiché une fois un type sélectionné -->
-        <div class="type-header hidden" id="type-header">
-          <div class="type-header-em" id="type-header-em">🤫</div>
-          <div class="type-header-label" id="type-header-label">CONFESSION</div>
+        <!-- Header toujours visible : contenu générique par défaut, ou celui du type actif.
+             Une seule animation de typing tourne ici — jamais deux en même temps. -->
+        <div class="type-header send-stage" id="type-header">
+          <div class="type-header-em" id="type-header-em">💌</div>
+          <div class="type-header-label" id="type-header-label">MESSAGE ANONYME</div>
           <div class="type-header-intro" id="type-header-intro"></div>
-          <button class="type-change-btn" id="type-change-btn">
+          <button class="type-change-btn hidden" id="type-change-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             Changer de type
           </button>
@@ -540,8 +535,7 @@ button{font-family:inherit}
 
         <div class="send-msg-card send-stage" id="stage-msgcard">
           <div class="send-msg-inner">
-            <div class="send-placeholder-fx" id="send-placeholder-fx"></div>
-            <textarea id="send-message" class="send-textarea-real" maxlength="500"></textarea>
+            <textarea id="send-message" class="send-textarea-real" maxlength="500" placeholder="Écris ton message ici…"></textarea>
           </div>
         </div>
         <div class="char-count send-stage" id="stage-charcount"><span id="char-count">0</span>/500</div>
@@ -823,58 +817,64 @@ function renderTypeChips(){
 }
 
 let introTypeTimer = null;
-function typeIntroOnce(text){
-  const el = $("type-header-intro"); if (!el) return;
-  clearTimeout(introTypeTimer);
-  const full = text.split("\n");
-  let li = 0, ci = 0, out = "";
-  el.innerHTML = '<span class="caret"></span>';
-  function step(){
-    if (li >= full.length) { el.innerHTML = esc(full.join("\n")).replace(/\n/g,"<br/>"); return; }
-    const line = full[li];
-    ci++;
-    const doneLines = full.slice(0, li).map(esc).join("<br/>");
-    el.innerHTML = (doneLines ? doneLines + "<br/>" : "") + esc(line.slice(0, ci)) + '<span class="caret"></span>';
-    if (ci >= line.length) { li++; ci = 0; introTypeTimer = setTimeout(step, 90); return; }
-    introTypeTimer = setTimeout(step, 26 + Math.random()*18);
-  }
-  step();
-}
 
-function selectType(key, skipAnim){
+function selectType(key){
   const t = MESSAGE_TYPES[key]; if (!t) return;
   selectedType = key;
   activeQuestions = t.questions;
   $("stage-chips")?.classList.add("hidden");
-  const header = $("type-header");
-  if (header) {
-    header.classList.remove("hidden");
-    $("type-header-em").textContent = t.emoji;
-    $("type-header-label").textContent = t.label;
-    if (skipAnim) { $("type-header-intro").textContent = t.intro; }
-    else typeIntroOnce(t.intro);
-    requestAnimationFrame(()=> header.classList.add("send-stage","in"));
-  }
+  $("type-header-em").textContent = t.emoji;
+  $("type-header-label").textContent = t.label;
+  $("type-change-btn")?.classList.remove("hidden");
+  restartHeaderLoop();
   if ($("send-username-display")) {
     const uname = $("send-username-display").dataset.uname || $("send-username-display").textContent.replace("@","");
     $("send-username-display").textContent = `@${uname}`;
   }
-  phxQIndex = 0; phxCharIndex = 0; phxDeleting = false;
-  updatePlaceholderFx();
 }
 function resetType(){
   selectedType = null;
   activeQuestions = DEFAULT_QUESTIONS;
-  $("type-header")?.classList.add("hidden");
   $("stage-chips")?.classList.remove("hidden");
-  phxQIndex = 0; phxCharIndex = 0; phxDeleting = false;
-  updatePlaceholderFx();
+  $("type-header-em").textContent = "💌";
+  $("type-header-label").textContent = "MESSAGE ANONYME";
+  $("type-change-btn")?.classList.add("hidden");
+  restartHeaderLoop();
 }
 $("type-change-btn")?.addEventListener("click", resetType);
 
+// ── Moteur de typing unique (aucune double animation possible) ──
+// Boucle sur les questions du type actif si un contexte est présent (cas quasi
+// systématique, un lien Webnote a toujours un type), sinon sur les questions
+// génériques. Une seule instance tourne jamais à la fois.
+let headerLoopRunning = false, headerQIndex = 0, headerCharIndex = 0, headerDeleting = false;
+function restartHeaderLoop(){
+  clearTimeout(introTypeTimer);
+  headerQIndex = 0; headerCharIndex = 0; headerDeleting = false;
+  headerLoopRunning = true;
+  headerLoopStep();
+}
+function headerLoopStep(){
+  if (!headerLoopRunning) return;
+  const el = $("type-header-intro"); if (!el) return;
+  const list = activeQuestions && activeQuestions.length ? activeQuestions : DEFAULT_QUESTIONS;
+  const full = list[headerQIndex % list.length];
+  if (!headerDeleting) {
+    headerCharIndex++;
+    el.innerHTML = esc(full.slice(0, headerCharIndex)) + '<span class="caret"></span>';
+    if (headerCharIndex >= full.length) { introTypeTimer = setTimeout(() => { headerDeleting = true; headerLoopStep(); }, 1900); return; }
+    introTypeTimer = setTimeout(headerLoopStep, 28 + Math.random()*20);
+  } else {
+    headerCharIndex--;
+    el.innerHTML = esc(full.slice(0, headerCharIndex)) + '<span class="caret"></span>';
+    if (headerCharIndex <= 0) { headerDeleting = false; headerQIndex = (headerQIndex + 1) % list.length; introTypeTimer = setTimeout(headerLoopStep, 380); return; }
+    introTypeTimer = setTimeout(headerLoopStep, 15);
+  }
+}
+
 // ── Animation d'entrée séquencée (rapide, élégante, pas de délai inutile) ──
 function runEntranceSequence(){
-  const order = ["stage-avatar","stage-title","stage-hint","stage-chips","stage-msgcard","stage-charcount","send-submit"];
+  const order = ["stage-avatar","stage-title","stage-hint","stage-chips","type-header","stage-msgcard","stage-charcount","send-submit"];
   order.forEach((id, i) => {
     const el = $(id); if (!el) return;
     el.classList.add("send-stage");
@@ -920,20 +920,17 @@ async function loadSendPage(username) {
 
   // Lien intelligent : ?type=confession préselectionne le type sans casser les
   // anciens liens (qui n'ont pas ce paramètre et gardent l'expérience générique).
+  // Le contexte du type, quand il existe, prend toujours le dessus sur l'animation
+  // générique — une seule boucle de typing tourne, jamais deux à la fois.
   const typeParam = urlParams.get("type");
-  if (typeParam && MESSAGE_TYPES[typeParam]) {
-    selectType(typeParam, true);
-  }
+  if (typeParam && MESSAGE_TYPES[typeParam]) selectType(typeParam);
+  else resetType();
 
   runEntranceSequence();
 
   $("send-message")?.addEventListener("input", () => {
     if ($("char-count")) $("char-count").textContent = $("send-message").value.length;
-    updatePlaceholderFx();
   });
-  $("send-message")?.addEventListener("focus", updatePlaceholderFx);
-  $("send-message")?.addEventListener("blur", updatePlaceholderFx);
-  setTimeout(startPlaceholderTypewriter, 420);
 
   $("send-submit")?.addEventListener("click", async () => {
     const msg = $("send-message")?.value.trim();
@@ -948,7 +945,7 @@ async function loadSendPage(username) {
         type: selectedType || null,
         approved: false, adminReply: null, createdAt: serverTimestamp()
       });
-      stopPlaceholderTypewriter();
+      headerLoopRunning = false; clearTimeout(introTypeTimer);
       if (span) span.innerHTML = '<span class="send-check"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>';
       setTimeout(() => {
         ["stage-avatar","stage-title","stage-hint","stage-chips","type-header","stage-msgcard","stage-charcount","send-submit","send-footer-link"].forEach(id => $(id)?.classList.add("hidden"));
@@ -962,56 +959,6 @@ async function loadSendPage(username) {
       showErr($("send-error"), "Erreur. Réessaie.");
     }
   });
-}
-
-// ── PLACEHOLDER MACHINE À ÉCRIRE (questions qui défilent en boucle, par type) ──
-let phxTimer = null, phxQIndex = 0, phxCharIndex = 0, phxDeleting = false, phxRunning = false;
-function updatePlaceholderFx(){
-  const ta = $("send-message"), fx = $("send-placeholder-fx");
-  if (!ta || !fx) return;
-  const shouldShow = ta.value.length === 0 && document.activeElement !== ta;
-  fx.style.display = shouldShow ? "" : "none";
-  if (shouldShow && !phxRunning) startPlaceholderTypewriter();
-  if (!shouldShow) stopPlaceholderTypewriter();
-}
-function startPlaceholderTypewriter(){
-  const ta = $("send-message"), fx = $("send-placeholder-fx");
-  if (!ta || !fx) return;
-  if (ta.value.length > 0 || document.activeElement === ta) { fx.style.display = "none"; return; }
-  fx.style.display = "";
-  phxRunning = true;
-  clearTimeout(phxTimer);
-  phxTypeStep();
-}
-function stopPlaceholderTypewriter(){
-  phxRunning = false;
-  clearTimeout(phxTimer);
-}
-function phxTypeStep(){
-  if (!phxRunning) return;
-  const fx = $("send-placeholder-fx");
-  if (!fx) return;
-  const list = activeQuestions.length ? activeQuestions : DEFAULT_QUESTIONS;
-  const full = list[phxQIndex % list.length];
-  if (!phxDeleting) {
-    phxCharIndex++;
-    fx.innerHTML = esc(full.slice(0, phxCharIndex)) + '<span class="caret"></span>';
-    if (phxCharIndex >= full.length) {
-      phxTimer = setTimeout(() => { phxDeleting = true; phxTypeStep(); }, 1800);
-      return;
-    }
-    phxTimer = setTimeout(phxTypeStep, 34 + Math.random()*22);
-  } else {
-    phxCharIndex--;
-    fx.innerHTML = esc(full.slice(0, phxCharIndex)) + '<span class="caret"></span>';
-    if (phxCharIndex <= 0) {
-      phxDeleting = false;
-      phxQIndex = (phxQIndex + 1) % list.length;
-      phxTimer = setTimeout(phxTypeStep, 350);
-      return;
-    }
-    phxTimer = setTimeout(phxTypeStep, 14);
-  }
 }
 
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
