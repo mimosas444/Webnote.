@@ -308,6 +308,7 @@ svg{display:block}
 .msg-action-btn:active{transform:scale(.9)}
 .msg-action-btn.on{background:var(--accent-lt);color:var(--accent);border-color:var(--accent)}
 .msg-action-btn.on.fav-on{background:rgba(236,72,153,.12);color:#ec4899;border-color:rgba(236,72,153,.4)}
+.msg-action-btn.danger:hover{background:var(--err-bg);color:var(--err);border-color:var(--err-bd)}
 .empty-state{grid-column:1/-1;text-align:center;padding:clamp(50px,9vh,90px) 24px;color:var(--tx3);display:flex;flex-direction:column;align-items:center;gap:14px;animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both}
 .empty-icon{width:clamp(56px,9vw,68px);height:clamp(56px,9vw,68px);border-radius:50%;background:linear-gradient(135deg,var(--accent-lt),rgba(192,132,252,.14));display:flex;align-items:center;justify-content:center;color:var(--accent);box-shadow:inset 0 0 0 1px rgba(91,91,246,.12)}
 .empty-icon svg{width:46%;height:46%}
@@ -425,6 +426,21 @@ svg{display:block}
 @keyframes dotPulse{0%,100%{opacity:1}50%{opacity:.35}}
 @media(max-width:520px){.fab-chat-label{display:none}}
 
+/* ── Barre de navigation mobile (remplace les onglets du header, cachés sous 768px) ──
+   C'est ce qui manquait pour accéder à Communauté/Admin (et donc au Feedback) sur mobile :
+   .nav-tabs disparaissait complètement sans aucune alternative. */
+.mobile-tabbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:150;background:var(--nav-bg);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);border-top:1px solid var(--bd);padding:6px clamp(10px,4vw,18px) calc(6px + env(safe-area-inset-bottom,0px));align-items:stretch;justify-content:space-around;gap:4px}
+.mobile-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--tx3);font-size:.63rem;font-weight:700;padding:7px 10px;border-radius:12px;cursor:pointer;transition:.18s;position:relative;flex:1;max-width:110px}
+.mobile-tab svg{width:19px;height:19px}
+.mobile-tab.active{color:var(--accent);background:var(--accent-lt)}
+.mobile-tab:active{transform:scale(.93)}
+.mobile-tab .nav-badge{position:absolute;top:2px;right:calc(50% - 20px)}
+@media(max-width:768px){
+  .mobile-tabbar{display:flex}
+  .page{padding-bottom:70px}
+  .fab-chat{bottom:calc(70px + clamp(10px,2vh,16px))}
+}
+
 /* ── Responsive ── */
 @media(max-width:768px){.nav-tabs{display:none!important}}
 @media(max-width:520px){
@@ -494,6 +510,8 @@ svg{display:block}
 .msg-expand-action-btn.fav-on{border-color:rgba(236,72,153,.4);color:#ec4899;background:rgba(236,72,153,.1)}
 .msg-expand-action-btn.primary{background:var(--accent);color:#fff;border-color:transparent}
 .msg-expand-action-btn.primary:hover{background:var(--accent-dk);color:#fff}
+.msg-expand-action-btn.danger{color:var(--err)}
+.msg-expand-action-btn.danger:hover{border-color:var(--err-bd);color:var(--err);background:var(--err-bg)}
 
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -531,6 +549,23 @@ svg{display:block}
       <button class="btn-icon-sm" id="nav-logout-btn" title="Déconnexion"><svg viewBox="0 0 20 20" fill="none" width="14"><path d="M7 17H4a1 1 0 01-1-1V4a1 1 0 011-1h3M13 14l4-4-4-4M17 10H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
   </div>
+</nav>
+
+<!-- ══ NAVIGATION MOBILE ══ (les boutons ci-dessous ont la classe .nav-tab :
+     le JS existant les gère automatiquement, aucune logique dupliquée) -->
+<nav class="mobile-tabbar" id="mobile-tabbar">
+  <button class="nav-tab mobile-tab active" data-page="dashboard">
+    <svg viewBox="0 0 20 20" fill="none"><path d="M3 10L10 3l7 7M5 8.5V17h4v-4h2v4h4V8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Messages</span><span class="nav-badge hidden" id="nav-badge-new-m">0</span>
+  </button>
+  <button class="nav-tab mobile-tab" data-page="community">
+    <svg viewBox="0 0 20 20" fill="none"><path d="M17 8.5c0 3.6-3.1 6.5-7 6.5a7.8 7.8 0 01-3-.6L3 15.5l.8-3.5A6.3 6.3 0 013 8.5C3 4.9 6.1 2 10 2s7 2.9 7 6.5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Communauté</span>
+  </button>
+  <button class="nav-tab mobile-tab admin-only hidden" data-page="admin">
+    <svg viewBox="0 0 20 20" fill="none"><path d="M10 2l1.5 4.5H16l-3.5 2.5 1.5 4.5L10 11l-4 2.5 1.5-4.5L4 6.5h4.5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Admin</span>
+  </button>
 </nav>
 
 <!-- ══ FLOATING CHAT BUTTON ══ -->
@@ -785,6 +820,7 @@ svg{display:block}
       <button class="msg-expand-action-btn" id="msg-expand-pin-btn"></button>
       <button class="msg-expand-action-btn" id="msg-expand-fav-btn"></button>
       <button class="msg-expand-action-btn" id="msg-expand-copy-btn"></button>
+      <button class="msg-expand-action-btn danger" id="msg-expand-delete-btn"></button>
       <button class="msg-expand-action-btn primary" id="msg-expand-share-btn"></button>
     </div>
   </div>
@@ -1279,9 +1315,12 @@ async function fetchMessages(){
 function updateNavBadge(){
   const cutoff24 = new Date(nowMs() - 86400000);
   const count = allMessages.filter(m => m.createdAt && m.createdAt.toDate() >= cutoff24).length;
-  const badge = $("nav-badge-new"); if (!badge) return;
-  badge.textContent = count > 99 ? "99+" : count;
-  badge.classList.toggle("hidden", count === 0);
+  const label = count > 99 ? "99+" : String(count);
+  [$("nav-badge-new"), $("nav-badge-new-m")].forEach(badge => {
+    if (!badge) return;
+    badge.textContent = label;
+    badge.classList.toggle("hidden", count === 0);
+  });
 }
 function setFilter(f){
   currentFilter = f; document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active")); $(`filter-${f}`)?.classList.add("active");
@@ -1358,12 +1397,14 @@ function renderMessages(searchTerm=""){
           <button class="msg-action-btn msg-fav-btn${msg.favorite?" on fav-on":""}" title="${msg.favorite?"Retirer des favoris":"Ajouter aux favoris"}">${msg.favorite?ico("heartFilled"):ico("heart")}</button>
           <button class="msg-action-btn msg-expand-btn" title="Agrandir">${ico("expand")}</button>
           <button class="msg-action-btn msg-copy-btn" title="Copier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          <button class="msg-action-btn msg-delete-btn danger" title="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
         </div>
       </div>`;
     card.querySelector(".msg-pin-btn").addEventListener("click", () => toggleMessageFlag(msg, "pinned"));
     card.querySelector(".msg-fav-btn").addEventListener("click", () => toggleMessageFlag(msg, "favorite"));
     card.querySelector(".msg-expand-btn").addEventListener("click", () => openExpandModal(msg));
     card.querySelector(".msg-copy-btn").addEventListener("click", () => navigator.clipboard.writeText(msg.message).then(()=>showToast("Message copié !")));
+    card.querySelector(".msg-delete-btn").addEventListener("click", (e) => { e.stopPropagation(); deleteMessage(msg); });
     container.appendChild(card);
   });
 }
@@ -1380,6 +1421,21 @@ async function toggleMessageFlag(msg, field){
     msg[field] = !next;
     renderMessages($("search-input")?.value.toLowerCase().trim() || "");
     showToast("Action impossible (permissions).");
+  }
+}
+async function deleteMessage(msg){
+  if (!confirm("Supprimer définitivement ce message ?")) return;
+  const idx = allMessages.findIndex(m => m.id === msg.id);
+  const removed = idx !== -1 ? allMessages.splice(idx, 1)[0] : null; // optimiste
+  updateStats(); buildChart(); renderMessages($("search-input")?.value.toLowerCase().trim() || ""); updateNavBadge();
+  try {
+    await deleteDoc(doc(db,"messages",msg.id));
+    showToast("Message supprimé.");
+  } catch(e){
+    console.error(e);
+    if (removed) allMessages.splice(idx, 0, removed); // annule si échec
+    updateStats(); buildChart(); renderMessages($("search-input")?.value.toLowerCase().trim() || ""); updateNavBadge();
+    showToast("Suppression impossible (permissions).");
   }
 }
 
@@ -1613,6 +1669,8 @@ function openExpandModal(msg){
   if (favBtn){ favBtn.innerHTML = `${msg.favorite?ico("heartFilled"):ico("heart")}${msg.favorite?"Retirer":"Favori"}`; favBtn.classList.toggle("fav-on", !!msg.favorite); favBtn.onclick = () => { toggleMessageFlag(msg,"favorite"); openExpandModal(msg); }; }
   const copyBtn = $("msg-expand-copy-btn");
   if (copyBtn){ copyBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier`; copyBtn.onclick = () => navigator.clipboard.writeText(msg.message).then(()=>showToast("Message copié !")); }
+  const deleteBtn = $("msg-expand-delete-btn");
+  if (deleteBtn){ deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Supprimer`; deleteBtn.onclick = () => { closeExpandModal(); deleteMessage(msg); }; }
   const shareBtn = $("msg-expand-share-btn");
   if (shareBtn){ shareBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Générer l'image`; shareBtn.onclick = () => toggleImageSection(msg.message); }
 
