@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Webnote Widget</title>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;font-family:'Inter','Plus Jakarta Sans',sans-serif}
+html,body{width:100%;height:100%;background:transparent}
+body{display:flex;align-items:center;justify-content:center;padding:8px}
+a.wn-badge{
+  display:flex;align-items:center;gap:12px;width:100%;max-width:340px;
+  background:linear-gradient(135deg,#6d28d9,#a855f7);color:#fff;text-decoration:none;
+  border-radius:16px;padding:14px 16px;box-shadow:0 10px 28px -8px rgba(109,40,217,.45);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+a.wn-badge:hover{transform:translateY(-2px);box-shadow:0 14px 34px -8px rgba(109,40,217,.55)}
+a.wn-badge:active{transform:scale(.98)}
+.wn-avatar{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.35);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.05rem;overflow:hidden;background-size:cover;background-position:center}
+.wn-body{flex:1;min-width:0}
+.wn-title{font-weight:800;font-size:.88rem;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wn-sub{font-size:.68rem;color:rgba(255,255,255,.8);margin-top:2px;display:flex;align-items:center;gap:4px}
+.wn-arrow{flex-shrink:0;color:#fff;opacity:.85}
+.wn-skel{width:100%;max-width:340px;height:70px;border-radius:16px;background:linear-gradient(90deg,#e9e5fb,#f6f4fe,#e9e5fb);background-size:200% 100%;animation:wnShimmer 1.4s ease-in-out infinite}
+@keyframes wnShimmer{to{background-position:-200% 0}}
+.wn-hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wn-skel" id="wn-skel"></div>
+<a class="wn-badge wn-hidden" id="wn-badge" target="_blank" rel="noopener noreferrer">
+  <div class="wn-avatar" id="wn-avatar">?</div>
+  <div class="wn-body">
+    <div class="wn-title" id="wn-title">Envoie-moi un message anonyme</div>
+    <div class="wn-sub"><span>💌</span><span>via webnote</span></div>
+  </div>
+  <svg class="wn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</a>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyASaooIcRrY2mwZiI3j5VwjHmmzY8XLIag",
+  authDomain: "webnote-63e2b.firebaseapp.com",
+  projectId: "webnote-63e2b",
+  storageBucket: "webnote-63e2b.firebasestorage.app",
+  messagingSenderId: "756128668649",
+  appId: "1:756128668649:web:da1ac2ec48f661d1688978"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const username = (params.get("user") || "").trim().toLowerCase();
+const typeParam = params.get("type");
+
+function $(id){ return document.getElementById(id); }
+
+async function init(){
+  if (!username) { $("wn-skel").textContent = "Widget : ajoute ?user=pseudo à l'URL."; return; }
+  let rd = null;
+  try {
+    const snap = await getDocs(query(collection(db,"users"), where("username","==",username)));
+    if (!snap.empty) rd = snap.docs[0].data();
+  } catch(e){ console.error(e); }
+
+  $("wn-skel").classList.add("wn-hidden");
+  const badge = $("wn-badge");
+  badge.classList.remove("wn-hidden");
+
+  const displayName = rd ? rd.username : username;
+  const targetBase = window.location.href.replace(/widget\.html.*$/, "index.html");
+  let href = `${targetBase}?user=${encodeURIComponent(displayName)}`;
+  if (typeParam) href += `&type=${encodeURIComponent(typeParam)}`;
+  badge.href = href;
+
+  $("wn-title").textContent = `Envoie un message anonyme à @${displayName}`;
+  const avatarEl = $("wn-avatar");
+  if (rd && rd.photoURL) { avatarEl.style.backgroundImage = `url("${rd.photoURL}")`; avatarEl.textContent = ""; }
+  else { avatarEl.textContent = displayName ? displayName[0].toUpperCase() : "?"; }
+}
+init();
+</script>
+</body>
+</html>
