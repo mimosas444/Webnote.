@@ -260,6 +260,7 @@ button{font-family:inherit}
 .send-avatar{width:100%;height:100%;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:clamp(1.3rem,3.5vw,1.8rem);font-weight:700;color:var(--on-accent);box-shadow:var(--shadow-md);overflow:hidden;background-size:cover;background-position:center;border:3px solid var(--surface);position:relative;z-index:1}
 .send-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.05rem,3vw,1.35rem);font-weight:700;line-height:1.3;margin-bottom:8px;text-align:center;letter-spacing:-.3px;color:var(--tx)}
 .send-title span{color:var(--accent)}
+.send-bio{text-align:center;font-size:.83rem;color:var(--tx2);font-weight:600;margin-bottom:12px;padding:0 10px;line-height:1.5}
 .send-hint{display:flex;align-items:center;justify-content:center;gap:6px;font-size:.8rem;color:var(--tx3);margin-bottom:18px;text-align:center}
 .char-count{text-align:right;font-size:.7rem;color:var(--tx3);margin:5px 0}
 .send-popup-footer{font-size:.74rem;color:var(--tx3);margin-top:16px;text-align:center}
@@ -513,6 +514,7 @@ button{font-family:inherit}
           <div class="send-avatar" id="send-avatar">?</div>
         </div>
         <h2 class="send-title send-stage" id="stage-title">Message pour<br/><span id="send-username-display">…</span></h2>
+        <p class="send-bio hidden" id="send-bio"></p>
         <p class="send-hint send-stage" id="stage-hint"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11v1a7 7 0 0 1-14 0v-1M12 19v3"/></svg>Ton identité ne sera jamais révélée</p>
 
         <!-- Chips de sélection du type de message (masqué une fois un type choisi) -->
@@ -898,7 +900,7 @@ function headerLoopStep(){
 
 // ── Animation d'entrée séquencée (rapide, élégante, pas de délai inutile) ──
 function runEntranceSequence(){
-  const order = ["stage-avatar","stage-title","stage-hint","stage-chips","type-header","stage-msgcard","stage-charcount","send-submit"];
+  const order = ["stage-avatar","stage-title","send-bio","stage-hint","stage-chips","type-header","stage-msgcard","stage-charcount","send-submit"];
   order.forEach((id, i) => {
     const el = $(id); if (!el) return;
     el.classList.add("send-stage");
@@ -931,6 +933,11 @@ async function loadSendPage(username) {
   if ($("send-username-display")) {
     $("send-username-display").textContent = `@${rd.username}`;
     $("send-username-display").dataset.uname = rd.username;
+  }
+  const bioEl = $("send-bio");
+  if (bioEl) {
+    if (rd.bio && rd.bio.trim()) { bioEl.textContent = rd.bio.trim(); bioEl.classList.remove("hidden"); bioEl.classList.add("send-stage"); }
+    else { bioEl.classList.add("hidden"); }
   }
   const avatarEl = $("send-avatar");
   if (avatarEl) {
@@ -973,7 +980,7 @@ async function loadSendPage(username) {
       headerLoopRunning = false; clearTimeout(introTypeTimer);
       if (span) span.innerHTML = '<span class="send-check"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>';
       setTimeout(() => {
-        ["stage-avatar","stage-title","stage-hint","stage-chips","type-header","stage-msgcard","stage-charcount","send-submit","send-footer-link"].forEach(id => $(id)?.classList.add("hidden"));
+        ["stage-avatar","stage-title","send-bio","stage-hint","stage-chips","type-header","stage-msgcard","stage-charcount","send-submit","send-footer-link"].forEach(id => $(id)?.classList.add("hidden"));
         $("send-error")?.classList.add("hidden");
         $("send-success")?.classList.remove("hidden");
       }, 380);
