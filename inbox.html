@@ -137,6 +137,14 @@ svg{display:block}
 .avatar-spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
 .dash-title{font-family:'Outfit',sans-serif;font-size:clamp(1.25rem,3.4vw,1.65rem);font-weight:800;letter-spacing:-.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
 .dash-sub{font-size:.81rem;color:var(--tx3);margin-top:4px;font-weight:500}
+.dash-bio-wrap{display:flex;align-items:center;gap:7px;margin-top:6px}
+.dash-bio-text{font-size:.8rem;color:var(--tx2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:min(60vw,320px)}
+.dash-bio-text.empty{color:var(--tx3);font-weight:500;font-style:italic}
+.dash-bio-edit-btn{width:20px;height:20px;border-radius:6px;background:none;border:none;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
+.dash-bio-edit-btn:hover{color:var(--accent);background:var(--accent-lt)}
+.dash-bio-edit-btn svg{width:12px;height:12px}
+.dash-bio-input{margin-top:6px;width:min(100%,320px);background:var(--inp-bg,var(--surface-2));border:1.5px solid var(--bd2);border-radius:9px;padding:7px 11px;font-size:.8rem;color:var(--tx);outline:none;transition:.2s;font-family:inherit}
+.dash-bio-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-lt)}
 .btn-refresh{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--bd2);border-radius:50px;padding:10px 18px;font-size:.79rem;font-weight:700;color:var(--tx2);cursor:pointer;transition:.2s;min-height:40px;flex-shrink:0}
 .btn-refresh:hover{background:var(--accent-lt);border-color:var(--accent);color:var(--accent)}
 .btn-refresh.loading .refresh-ico{animation:spin .8s linear infinite}
@@ -255,6 +263,28 @@ svg{display:block}
 .qr-dl-btn:hover{background:var(--accent-lt);border-color:var(--accent);color:var(--accent)}
 .qr-dl-btn svg{width:13px;height:13px}
 
+/* ── Programme de parrainage ── */
+.referral-card{border-radius:20px;padding:clamp(18px,3vw,26px);display:flex;flex-direction:column;gap:16px}
+.referral-head{display:flex;align-items:center;gap:13px}
+.referral-ico{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#ec4899);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;box-shadow:0 6px 16px -6px rgba(236,72,153,.45)}
+.referral-title{font-size:.92rem;font-weight:800}
+.referral-sub{font-size:.73rem;color:var(--tx3);margin-top:2px}
+.referral-progress-wrap{display:flex;flex-direction:column;gap:7px}
+.referral-progress-bar{width:100%;height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.referral-progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#f59e0b,#ec4899);transition:width .6s cubic-bezier(.23,1,.32,1)}
+.referral-progress-label{font-size:.72rem;font-weight:700;color:var(--tx2);text-align:right}
+.badge-status{display:flex;align-items:center;gap:10px;border-radius:13px;padding:12px 15px;font-size:.82rem;font-weight:600}
+.badge-status.pending{background:var(--accent-lt);border:1px solid rgba(99,102,241,.2);color:var(--accent)}
+.badge-status.approved{background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(236,72,153,.1));border:1px solid rgba(245,158,11,.3);color:#b45309}
+[data-theme="dark"] .badge-status.approved{color:#fbbf24}
+.badge-status.rejected{background:var(--err-bg);border:1px solid var(--err-bd);color:var(--err)}
+.badge-status svg{width:16px;height:16px;flex-shrink:0}
+.badge-request-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:linear-gradient(135deg,#f59e0b,#ec4899);color:#fff;border:none;border-radius:13px;padding:12px 16px;font-size:.83rem;font-weight:700;cursor:pointer;transition:.2s;box-shadow:0 6px 18px -8px rgba(236,72,153,.4)}
+.badge-request-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px -8px rgba(236,72,153,.5)}
+.badge-request-btn:active{transform:scale(.97)}
+.badge-request-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.user-badge-pill{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#f59e0b,#ec4899);color:#fff;font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:99px;vertical-align:middle;margin-left:6px}
+
 .activity-card{border-radius:20px;padding:clamp(18px,3vw,24px);display:flex;flex-direction:column;gap:18px}
 .act-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .act-title{font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:8px}
@@ -352,6 +382,25 @@ svg{display:block}
 .poll-option-text{font-size:.84rem;font-weight:600}
 .poll-option-pct{font-size:.78rem;font-weight:700;color:var(--accent);flex-shrink:0}
 .poll-total{font-size:.68rem;color:var(--tx3);margin-top:12px}
+/* ── Classement communautaire ── */
+.wall-item{background:var(--card-bg);border:1px solid var(--card-bd);border-radius:16px;padding:clamp(15px,2.2vw,19px);display:flex;gap:14px;animation:fadeUp .35s cubic-bezier(.22,1,.36,1) both;position:relative}
+.wall-rank{width:30px;height:30px;border-radius:50%;background:var(--surface-2);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:800;font-size:.82rem;color:var(--tx2);flex-shrink:0}
+.wall-item:nth-child(1) .wall-rank{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#fff;border-color:transparent}
+.wall-item:nth-child(2) .wall-rank{background:linear-gradient(135deg,#94a3b8,#cbd5e1);color:#fff;border-color:transparent}
+.wall-item:nth-child(3) .wall-rank{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border-color:transparent}
+.wall-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.wall-badges{display:flex;gap:6px;flex-wrap:wrap}
+.wall-text{font-size:.88rem;line-height:1.6;word-break:break-word}
+.wall-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}
+.wall-owner{font-size:.72rem;color:var(--tx3);font-weight:600}
+.wall-vote-btn{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--bd2);border-radius:50px;padding:6px 13px;font-size:.76rem;font-weight:700;color:var(--tx2);cursor:pointer;transition:.18s}
+.wall-vote-btn svg{width:13px;height:13px}
+.wall-vote-btn:hover,.wall-vote-btn.voted{background:rgba(236,72,153,.12);border-color:rgba(236,72,153,.4);color:#ec4899}
+.wall-vote-btn:active{transform:scale(.94)}
+.wall-remove-btn{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;background:var(--surface);border:1px solid var(--bd2);color:var(--tx3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s}
+.wall-remove-btn:hover{background:var(--err-bg);color:var(--err);border-color:var(--err-bd)}
+.wall-remove-btn svg{width:11px;height:11px}
+
 .feature-submit{border-radius:16px;padding:clamp(16px,2.4vw,20px);display:flex;flex-direction:column;gap:12px}
 .feature-submit-label{font-size:.83rem;font-weight:700}
 .feature-submit .btn-primary{align-self:flex-end}
@@ -614,7 +663,17 @@ svg{display:block}
             </button>
           </div>
           <input type="file" id="avatar-file-input" accept="image/*" class="hidden"/>
-          <div style="min-width:0"><h2 class="dash-title">Bonjour, <span id="dash-username-title">…</span></h2><p class="dash-sub" id="dash-count">Chargement…</p></div>
+          <div style="min-width:0;flex:1">
+            <h2 class="dash-title">Bonjour, <span id="dash-username-title">…</span></h2>
+            <p class="dash-sub" id="dash-count">Chargement…</p>
+            <div class="dash-bio-wrap" id="dash-bio-wrap">
+              <span class="dash-bio-text" id="dash-bio-text"></span>
+              <button class="dash-bio-edit-btn" id="dash-bio-edit-btn" title="Modifier ta bio">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </button>
+            </div>
+            <input type="text" id="dash-bio-input" class="dash-bio-input hidden" maxlength="80" placeholder="Ex : 🎓 Étudiant à Paris"/>
+          </div>
         </div>
         <button class="btn-refresh" id="refresh-btn"><svg class="refresh-ico" viewBox="0 0 20 20" fill="none" width="15"><path d="M4 10a6 6 0 1010.7-3.7M4 10V6M4 10H8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Actualiser</span></button>
       </div>
@@ -648,6 +707,25 @@ svg{display:block}
           <div class="story-cta-ico">✏️</div>
           <div><div class="story-cta-title">Personnaliser mes questions</div><div class="story-cta-sub">Remplace les questions par défaut par les tiennes</div></div>
         </button>
+      </div>
+
+      <div class="referral-card glass">
+        <div class="referral-head">
+          <div class="referral-ico">🎖️</div>
+          <div>
+            <div class="referral-title">Programme de parrainage</div>
+            <div class="referral-sub">Invite tes amis, débloque le badge Ambassadeur</div>
+          </div>
+        </div>
+        <div class="referral-progress-wrap">
+          <div class="referral-progress-bar"><div class="referral-progress-fill" id="referral-progress-fill" style="width:0%"></div></div>
+          <div class="referral-progress-label"><span id="referral-count">0</span>/<span id="referral-threshold">3</span> filleuls</div>
+        </div>
+        <div class="share-card-inner">
+          <div class="share-info"><div class="share-label">Ton lien de parrainage</div><div class="share-link-text" id="referral-link">chargement…</div></div>
+          <button class="btn-copy" id="referral-copy-btn"><svg viewBox="0 0 20 20" fill="none" width="14"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3 13V5a2 2 0 012-2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Copier</button>
+        </div>
+        <div id="badge-status-area"></div>
       </div>
 
       <div class="activity-card glass">
@@ -688,6 +766,11 @@ svg{display:block}
 <div id="page-community" class="page">
   <div class="page-container">
     <div class="section-header"><h2 class="section-title">Communauté</h2><p class="section-sub">Communiqués, sondages et suggestions</p></div>
+    <div class="sec-block">
+      <div class="sec-label">🏆 Classement communautaire</div>
+      <p class="section-sub" style="margin-top:-6px">Les meilleurs messages reçus, partagés volontairement par leurs destinataires. L'expéditeur reste toujours anonyme.</p>
+      <div id="wall-list" class="stack-gap"><div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10l-1 8a4 4 0 0 1-8 0z"/><path d="M5 4h2v4a3 3 0 0 1-3-3zM19 4h-2v4a3 3 0 0 0 3-3z"/></svg></div><p>Aucun message publié pour l'instant.</p></div></div>
+    </div>
     <div class="sec-block"><div class="sec-label">Communiqués officiels</div><div id="announcements-list" class="stack-gap"><div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v14L3 15v-4z"/><path d="M6 15v4a2 2 0 0 0 2 2h1v-6"/></svg></div><p>Aucun communiqué pour l'instant.</p></div></div></div>
     <div class="sec-block"><div class="sec-label">Sondages actifs</div><div id="polls-list" class="stack-gap"><div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 15v3M12 10v8M17 6v12"/></svg></div><p>Aucun sondage pour l'instant.</p></div></div></div>
     <div class="sec-block">
@@ -710,6 +793,7 @@ svg{display:block}
       <button class="admin-tab active" data-atab="announcements">Communiqués</button>
       <button class="admin-tab" data-atab="polls">Sondages</button>
       <button class="admin-tab" data-atab="feedback">Feedback <span class="admin-count" id="feedback-count">0</span></button>
+      <button class="admin-tab" data-atab="referrals">Parrainages <span class="admin-count" id="referrals-count">0</span></button>
     </div>
     <div class="admin-panel active" id="atab-announcements">
       <div class="admin-form glass">
@@ -735,6 +819,10 @@ svg{display:block}
     <div class="admin-panel" id="atab-feedback">
       <div class="admin-info glass"><svg viewBox="0 0 20 20" fill="none" width="16"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M10 7v3M10 13h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Approuve, réponds ou archive les suggestions.</div>
       <div id="admin-feedback-list" class="stack-gap"></div>
+    </div>
+    <div class="admin-panel" id="atab-referrals">
+      <div class="admin-info glass"><svg viewBox="0 0 20 20" fill="none" width="16"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M10 7v3M10 13h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Approuve ou refuse les demandes de badge Ambassadeur.</div>
+      <div id="admin-referrals-list" class="stack-gap"></div>
     </div>
   </div>
 </div>
@@ -849,6 +937,7 @@ svg{display:block}
       <button class="msg-expand-action-btn" id="msg-expand-pin-btn"></button>
       <button class="msg-expand-action-btn" id="msg-expand-fav-btn"></button>
       <button class="msg-expand-action-btn" id="msg-expand-copy-btn"></button>
+      <button class="msg-expand-action-btn" id="msg-expand-wall-btn"></button>
       <button class="msg-expand-action-btn danger" id="msg-expand-delete-btn"></button>
       <button class="msg-expand-action-btn primary" id="msg-expand-share-btn"></button>
     </div>
@@ -865,7 +954,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, getDoc, getDocFromServer, addDoc, updateDoc, deleteDoc,
-  collection, query, where, orderBy, getDocs, serverTimestamp, arrayUnion, arrayRemove
+  collection, query, where, orderBy, limit, getDocs, onSnapshot, serverTimestamp, arrayUnion, arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -917,6 +1006,7 @@ function $(id){ return document.getElementById(id); }
 
 let currentUser=null, currentUsername="", currentPhotoURL="", currentShareLink="", allMessages=[], currentFilter="all", isGridView=true, qrGenerated=false, qrVisible=false, isAdmin=false, selectedIcon="megaphone";
 let myCustomQuestions = {};
+let myBio = "";
 let appInitialized=false, avatarUploading=false;
 
 // ── Icon set (replaces emoji) ──
@@ -1240,6 +1330,35 @@ async function shareStoryCard(key){
   }catch(e){ if (e?.name !== "AbortError") { console.error(e); showToast("Erreur, réessaie."); } }
 }
 
+// ── BIO / STATUT ──
+function renderBio(){
+  const txt = $("dash-bio-text"); if (!txt) return;
+  if (myBio) { txt.textContent = myBio; txt.classList.remove("empty"); }
+  else { txt.textContent = "Ajouter une bio…"; txt.classList.add("empty"); }
+}
+function openBioEdit(){
+  const wrap = $("dash-bio-wrap"), input = $("dash-bio-input");
+  if (!wrap || !input) return;
+  wrap.classList.add("hidden");
+  input.classList.remove("hidden");
+  input.value = myBio;
+  input.focus(); input.select();
+}
+async function saveBio(){
+  const wrap = $("dash-bio-wrap"), input = $("dash-bio-input");
+  if (!wrap || !input) return;
+  const val = input.value.trim().slice(0, 80);
+  input.classList.add("hidden");
+  wrap.classList.remove("hidden");
+  if (val === myBio) return; // rien à sauvegarder
+  myBio = val; renderBio();
+  try { await updateDoc(doc(db,"users",currentUser.uid), { bio: val }); }
+  catch(e){ console.error("saveBio:", e); showToast("Erreur lors de l'enregistrement de la bio."); }
+}
+$("dash-bio-edit-btn")?.addEventListener("click", openBioEdit);
+$("dash-bio-input")?.addEventListener("blur", saveBio);
+$("dash-bio-input")?.addEventListener("keydown", e => { if (e.key === "Enter") $("dash-bio-input").blur(); if (e.key === "Escape") { $("dash-bio-input").value = myBio; $("dash-bio-input").blur(); } });
+
 // ── QUESTIONS PERSONNALISÉES PAR TYPE ──
 // Remplace, sur le lien de la personne, la question par défaut d'un type par
 // celle qu'elle a écrite elle-même. Vide = on garde la question par défaut.
@@ -1286,6 +1405,88 @@ $("cq-save-btn")?.addEventListener("click", async () => {
 });
 
 
+// ── PARRAINAGE & BADGE AMBASSADEUR ──
+const BADGE_THRESHOLD = 3; // nombre de filleuls nécessaires pour débloquer la demande de badge
+let badgeListenerAttached = false, badgeFirstSnapshot = true;
+
+async function loadReferralSection(){
+  if ($("referral-threshold")) $("referral-threshold").textContent = BADGE_THRESHOLD;
+  const base = window.location.origin + window.location.pathname.replace(/inbox\.html$/, "index.html");
+  const referralLink = `${base}?ref=${encodeURIComponent(currentUsername)}`;
+  if ($("referral-link")) $("referral-link").textContent = referralLink;
+  $("referral-copy-btn")?.addEventListener("click", () => navigator.clipboard.writeText(referralLink).then(()=>showToast("Lien de parrainage copié !")));
+
+  let referralCount = 0;
+  try {
+    const snap = await getDocs(query(collection(db,"referrals"), where("referrerUsername","==",currentUsername)));
+    referralCount = snap.size;
+  } catch(e){ console.error("referralCount:", e); }
+  if ($("referral-count")) $("referral-count").textContent = referralCount;
+  const pct = Math.min(100, Math.round((referralCount / BADGE_THRESHOLD) * 100));
+  if ($("referral-progress-fill")) $("referral-progress-fill").style.width = pct + "%";
+
+  listenBadgeStatus(referralCount);
+}
+
+function renderBadgeStatusArea(status, referralCount){
+  const area = $("badge-status-area"); if (!area) return;
+  const pillHtml = '<span class="user-badge-pill">🎖️ Ambassadeur</span>';
+  [$("nav-username"), $("dash-username-title")].forEach(el => {
+    if (!el) return;
+    const existingPill = el.querySelector(".user-badge-pill");
+    if (status === "approved" && !existingPill) el.insertAdjacentHTML("beforeend", pillHtml);
+    else if (status !== "approved" && existingPill) existingPill.remove();
+  });
+  if (status === "approved") {
+    area.innerHTML = `<div class="badge-status approved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.5 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9z"/></svg>Badge Ambassadeur obtenu ! Il apparaît à côté de ton pseudo.</div>`;
+  } else if (status === "pending") {
+    area.innerHTML = `<div class="badge-status pending"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>Ta demande de badge est en attente de validation par l'équipe.</div>`;
+  } else if (referralCount >= BADGE_THRESHOLD) {
+    area.innerHTML = `<button class="badge-request-btn" id="badge-request-btn">🎖️ Demander mon badge Ambassadeur</button>`;
+    $("badge-request-btn")?.addEventListener("click", () => requestAmbassadorBadge(referralCount));
+  } else {
+    area.innerHTML = `<div class="badge-status pending" style="background:var(--surface-2);border-color:var(--bd2);color:var(--tx3)">Encore ${BADGE_THRESHOLD - referralCount} filleul(s) pour débloquer la demande de badge.</div>`;
+  }
+}
+
+async function requestAmbassadorBadge(referralCount){
+  const btn = $("badge-request-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "Envoi…"; }
+  try {
+    await addDoc(collection(db,"badgeRequests"), {
+      uid: currentUser.uid, username: currentUsername,
+      referralCountAtRequest: referralCount, status: "pending", createdAt: serverTimestamp()
+    });
+    showToast("Demande envoyée à l'équipe !");
+  } catch(e){
+    console.error("requestAmbassadorBadge:", e);
+    showToast("Erreur — vérifie les règles Firestore pour badgeRequests.");
+    if (btn) { btn.disabled = false; btn.textContent = "🎖️ Demander mon badge Ambassadeur"; }
+  }
+}
+
+function listenBadgeStatus(referralCount){
+  if (badgeListenerAttached) { renderBadgeStatusArea(null, referralCount); return; }
+  badgeListenerAttached = true;
+  try {
+    const q = query(collection(db,"badgeRequests"), where("uid","==",currentUser.uid), orderBy("createdAt","desc"), limit(1));
+    onSnapshot(q, snap => {
+      const latest = snap.empty ? null : snap.docs[0].data();
+      const status = latest ? latest.status : null;
+      renderBadgeStatusArea(status, referralCount);
+      if (!badgeFirstSnapshot && status) {
+        if (status === "approved") notifyGeneric("🎖️ Badge approuvé !", "Ton badge Ambassadeur a été validé par l'équipe Webnote.");
+        else if (status === "rejected") notifyGeneric("Demande de badge refusée", "Ta demande de badge Ambassadeur n'a pas été retenue cette fois-ci.");
+      }
+      badgeFirstSnapshot = false;
+    }, e => { console.error("listenBadgeStatus:", e); renderBadgeStatusArea(null, referralCount); });
+  } catch(e){ console.error("listenBadgeStatus setup:", e); renderBadgeStatusArea(null, referralCount); }
+}
+function notifyGeneric(title, body){
+  if (typeof Notification === "undefined" || Notification.permission !== "granted" || !notifPrefEnabled()) { showToast(title); return; }
+  try{ new Notification(title, { body, icon: "https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" }); }catch(e){ showToast(title); }
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "index.html"; return; }
   currentUser = user;
@@ -1317,6 +1518,8 @@ onAuthStateChanged(auth, async (user) => {
   const photoURL = userDoc.exists() ? (userDoc.data().photoURL || "") : "";
   applyAvatarEverywhere(photoURL);
   myCustomQuestions = userDoc.exists() ? (userDoc.data().customQuestions || {}) : {};
+  myBio = userDoc.exists() ? (userDoc.data().bio || "") : "";
+  renderBio();
 
   buildIconPicker();
   await syncServerClock();
@@ -1355,6 +1558,7 @@ async function loadDashboard(){
   $("search-input")?.addEventListener("input", e => renderMessages(e.target.value.toLowerCase().trim()));
 
   listenMessages();
+  loadReferralSection();
   await new Promise(r => setTimeout(r, 350)); // laisse le premier instantané Firestore arriver avant de retirer le skeleton
   setDashboardLoading(false);
 }
@@ -1537,6 +1741,7 @@ function renderMessages(searchTerm=""){
           <button class="msg-action-btn msg-fav-btn${msg.favorite?" on fav-on":""}" title="${msg.favorite?"Retirer des favoris":"Ajouter aux favoris"}">${msg.favorite?ico("heartFilled"):ico("heart")}</button>
           <button class="msg-action-btn msg-expand-btn" title="Agrandir">${ico("expand")}</button>
           <button class="msg-action-btn msg-copy-btn" title="Copier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          <button class="msg-action-btn msg-wall-btn${msg.publishedToWall?" on":""}" title="${msg.publishedToWall?"Retirer du mur communautaire":"Publier au mur communautaire"}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></button>
           <button class="msg-action-btn msg-delete-btn danger" title="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
         </div>
       </div>`;
@@ -1544,6 +1749,7 @@ function renderMessages(searchTerm=""){
     card.querySelector(".msg-fav-btn").addEventListener("click", () => toggleMessageFlag(msg, "favorite"));
     card.querySelector(".msg-expand-btn").addEventListener("click", () => openExpandModal(msg));
     card.querySelector(".msg-copy-btn").addEventListener("click", () => navigator.clipboard.writeText(msg.message).then(()=>showToast("Message copié !")));
+    card.querySelector(".msg-wall-btn").addEventListener("click", (e) => { e.stopPropagation(); toggleWallPublish(msg); });
     card.querySelector(".msg-delete-btn").addEventListener("click", (e) => { e.stopPropagation(); deleteMessage(msg); });
     container.appendChild(card);
   });
@@ -1578,6 +1784,30 @@ async function deleteMessage(msg){
     showToast("Suppression impossible (permissions).");
   }
 }
+async function toggleWallPublish(msg){
+  const willPublish = !msg.publishedToWall;
+  try {
+    if (willPublish) {
+      const wallRef = await addDoc(collection(db,"communityWall"), {
+        text: msg.message, type: msg.type || null,
+        ownerUsername: currentUsername, ownerUid: currentUser.uid,
+        sourceMessageId: msg.id, votes: 0, voters: [], createdAt: serverTimestamp()
+      });
+      await updateDoc(doc(db,"messages",msg.id), { publishedToWall: true, wallId: wallRef.id });
+      msg.publishedToWall = true; msg.wallId = wallRef.id;
+      showToast("Publié sur le mur communautaire !");
+    } else {
+      if (msg.wallId) { try { await deleteDoc(doc(db,"communityWall",msg.wallId)); } catch(e){} }
+      await updateDoc(doc(db,"messages",msg.id), { publishedToWall: false, wallId: null });
+      msg.publishedToWall = false; msg.wallId = null;
+      showToast("Retiré du mur communautaire.");
+    }
+    renderMessages($("search-input")?.value.toLowerCase().trim() || "");
+  } catch(e){
+    console.error("toggleWallPublish:", e);
+    showToast("Erreur — vérifie les règles Firestore pour communityWall.");
+  }
+}
 
 function exportMessages(){
   if (!allMessages.length) { showToast("Aucun message à exporter !"); return; }
@@ -1590,7 +1820,61 @@ function exportMessages(){
 }
 
 // ── COMMUNITY ──
-async function loadCommunity(){ await Promise.all([loadAnnouncements(), loadPolls(), loadFeatureRequests()]); }
+async function loadCommunity(){ await Promise.all([loadCommunityWall(), loadAnnouncements(), loadPolls(), loadFeatureRequests()]); }
+
+async function loadCommunityWall(){
+  const list = $("wall-list"); if (!list) return;
+  let snap;
+  try { snap = await getDocs(query(collection(db,"communityWall"), orderBy("votes","desc"))); }
+  catch(e){ console.error("loadCommunityWall:", e); list.innerHTML = '<p style="color:var(--tx3);font-size:.8rem;padding:10px 0">Impossible de charger (vérifie les règles Firestore pour communityWall).</p>'; return; }
+  list.innerHTML = "";
+  if (snap.empty) { list.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10l-1 8a4 4 0 0 1-8 0z"/><path d="M5 4h2v4a3 3 0 0 1-3-3zM19 4h-2v4a3 3 0 0 0 3-3z"/></svg></div><p>Aucun message publié pour l'instant.</p></div>`; return; }
+  snap.docs.slice(0, 20).forEach((d,i) => {
+    const data = d.data();
+    const hasVoted = currentUser && (data.voters||[]).includes(currentUser.uid);
+    const canRemove = currentUser && (data.ownerUid === currentUser.uid || isAdmin);
+    const typeInfo = data.type && MESSAGE_TYPES[data.type] ? MESSAGE_TYPES[data.type] : null;
+    const item = document.createElement("div"); item.className = "wall-item"; item.style.animationDelay = `${Math.min(i,10)*0.04}s`;
+    item.innerHTML = `
+      <div class="wall-rank">${i+1}</div>
+      <div class="wall-body">
+        <div class="wall-badges">${typeInfo?`<span class="msg-badge mtype">${typeInfo.emoji} ${typeInfo.chip}</span>`:""}</div>
+        <div class="wall-text">${linkify(data.text||"")}</div>
+        <div class="wall-meta">
+          <span class="wall-owner">Reçu par @${escHtml(data.ownerUsername||"?")}</span>
+          <button class="wall-vote-btn${hasVoted?" voted":""}" data-id="${d.id}"><svg viewBox="0 0 24 24" fill="${hasVoted?"currentColor":"none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>${data.votes||0}</button>
+        </div>
+      </div>
+      ${canRemove?`<button class="wall-remove-btn" data-id="${d.id}" title="Retirer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`:""}`;
+    item.querySelector(".wall-vote-btn").addEventListener("click", () => voteWall(d.id, hasVoted, data.votes||0));
+    item.querySelector(".wall-remove-btn")?.addEventListener("click", () => removeFromWall(d.id, data.sourceMessageId));
+    list.appendChild(item);
+  });
+}
+async function voteWall(wallId, hasVoted, currentVotes){
+  if (!currentUser) return showToast("Connecte-toi pour voter !");
+  try {
+    const ref = doc(db,"communityWall",wallId);
+    const newVotes = hasVoted ? Math.max(0,currentVotes-1) : currentVotes+1;
+    if (hasVoted) await updateDoc(ref, { votes:newVotes, voters:arrayRemove(currentUser.uid) });
+    else await updateDoc(ref, { votes:newVotes, voters:arrayUnion(currentUser.uid) });
+    loadCommunityWall();
+  } catch(e){ console.error("voteWall:", e); showToast("Erreur lors du vote."); }
+}
+async function removeFromWall(wallId, sourceMessageId){
+  if (!confirm("Retirer ce message du mur communautaire ?")) return;
+  try {
+    await deleteDoc(doc(db,"communityWall",wallId));
+    if (sourceMessageId) {
+      const m = allMessages.find(x => x.id === sourceMessageId);
+      if (m) { m.publishedToWall = false; m.wallId = null; }
+      try { await updateDoc(doc(db,"messages",sourceMessageId), { publishedToWall:false, wallId:null }); } catch(e){}
+      renderMessages($("search-input")?.value.toLowerCase().trim() || "");
+    }
+    showToast("Retiré du mur.");
+    loadCommunityWall();
+  } catch(e){ console.error("removeFromWall:", e); showToast("Suppression impossible (permissions)."); }
+}
 
 async function loadAnnouncements(){
   const list = $("announcements-list"); if(!list) return;
@@ -1695,7 +1979,7 @@ function buildIconPicker(){
 
 async function loadAdminPanel(){
   if (!isAdmin) return;
-  await Promise.all([loadAdminAnnouncements(), loadAdminPolls(), loadAdminFeedback()]);
+  await Promise.all([loadAdminAnnouncements(), loadAdminPolls(), loadAdminFeedback(), loadAdminReferrals()]);
   document.querySelectorAll(".admin-tab").forEach(tab=>{
     tab.onclick = () => {
       document.querySelectorAll(".admin-tab").forEach(t=>t.classList.remove("active"));
@@ -1773,6 +2057,30 @@ async function loadAdminFeedback(){
   });
 }
 
+async function loadAdminReferrals(){
+  const list = $("admin-referrals-list"); if(!list) return;
+  let snap;
+  try { snap = await getDocs(query(collection(db,"badgeRequests"), orderBy("createdAt","desc"))); }
+  catch(e){ console.error("loadAdminReferrals:", e); list.innerHTML = '<p style="color:var(--tx3);font-size:.8rem;padding:10px 0">Impossible de charger (vérifie les règles Firestore pour badgeRequests).</p>'; return; }
+  list.innerHTML = "";
+  const pending = snap.docs.filter(d=>d.data().status==="pending").length;
+  const badge = $("referrals-count"); if(badge) badge.textContent = pending;
+  if (snap.empty) { list.innerHTML = `<div class="empty-state" style="padding:26px 0"><div class="empty-icon">🎖️</div><p>Aucune demande de badge pour l'instant.</p></div>`; return; }
+  snap.forEach(d=>{
+    const data = d.data();
+    const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString("fr-FR",{timeZone:HAITI_TZ}) : "";
+    const statusLabel = data.status==="approved" ? "✅ Approuvé" : data.status==="rejected" ? "❌ Refusé" : "⏳ En attente";
+    const item = document.createElement("div"); item.className="admin-item";
+    item.innerHTML = `<div class="admin-item-header"><div><div class="admin-item-text">🎖️ @${escHtml(data.username)}</div><div class="admin-item-meta">${data.referralCountAtRequest||0} filleul(s) au moment de la demande · ${date} · ${statusLabel}</div></div></div><div class="admin-item-actions">
+      <button class="admin-action approve" ${data.status==="approved"?"disabled":""}>Approuver</button>
+      <button class="admin-action delete" ${data.status==="rejected"?"disabled":""}>Refuser</button>
+    </div>`;
+    item.querySelector(".approve").onclick = async () => { await updateDoc(doc(db,"badgeRequests",d.id), { status:"approved", decidedAt:serverTimestamp() }); showToast("Badge approuvé !"); loadAdminReferrals(); };
+    item.querySelector(".delete").onclick = async () => { await updateDoc(doc(db,"badgeRequests",d.id), { status:"rejected", decidedAt:serverTimestamp() }); showToast("Demande refusée."); loadAdminReferrals(); };
+    list.appendChild(item);
+  });
+}
+
 // ── TOAST & HELPERS ──
 function showToast(msg, duration=2600){
   const t=$("toast"); if(!t) return; t.textContent=msg; t.classList.remove("hidden");
@@ -1809,6 +2117,8 @@ function openExpandModal(msg){
   if (favBtn){ favBtn.innerHTML = `${msg.favorite?ico("heartFilled"):ico("heart")}${msg.favorite?"Retirer":"Favori"}`; favBtn.classList.toggle("fav-on", !!msg.favorite); favBtn.onclick = () => { toggleMessageFlag(msg,"favorite"); openExpandModal(msg); }; }
   const copyBtn = $("msg-expand-copy-btn");
   if (copyBtn){ copyBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier`; copyBtn.onclick = () => navigator.clipboard.writeText(msg.message).then(()=>showToast("Message copié !")); }
+  const wallBtn = $("msg-expand-wall-btn");
+  if (wallBtn){ wallBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>${msg.publishedToWall?"Publié":"Publier"}`; wallBtn.classList.toggle("on", !!msg.publishedToWall); wallBtn.onclick = () => { toggleWallPublish(msg); openExpandModal(msg); }; }
   const deleteBtn = $("msg-expand-delete-btn");
   if (deleteBtn){ deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Supprimer`; deleteBtn.onclick = () => { closeExpandModal(); deleteMessage(msg); }; }
   const shareBtn = $("msg-expand-share-btn");
