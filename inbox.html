@@ -95,9 +95,10 @@ svg{display:block}
 .nav-tab.active{background:var(--accent);border-color:transparent;color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.32)}
 .nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:#ec4899;color:#fff;font-size:.6rem;font-weight:800;line-height:1;box-shadow:0 0 0 2px var(--nav-bg)}
 .nav-tab.active .nav-badge{background:#fff;color:var(--accent)}
-.theme-toggle{width:36px;height:36px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-bd);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx2);transition:.2s;flex-shrink:0}
+.theme-toggle{width:36px;height:36px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-bd);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx2);transition:.2s;flex-shrink:0;position:relative}
 .theme-toggle:hover{color:var(--accent);transform:rotate(16deg)}
 .theme-toggle svg{width:16px;height:16px}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 2px var(--nav-bg)}
 .nav-user{display:flex;align-items:center;gap:9px}
 .nav-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.76rem;color:#fff;flex-shrink:0;overflow:hidden;background-size:cover;background-position:center}
 .nav-uname{font-size:.78rem;font-weight:700;color:var(--tx2);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -214,6 +215,17 @@ svg{display:block}
 .story-carousel-hint{display:flex;align-items:center;justify-content:center;gap:6px;font-size:.72rem;color:var(--tx3);font-weight:600}
 .story-carousel-hint svg{width:12px;height:12px;animation:hintNudge 1.6s ease-in-out infinite}
 @keyframes hintNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+/* ── Modal : questions personnalisées ── */
+.cq-modal-body{display:flex;flex-direction:column;gap:12px;max-height:52vh;overflow-y:auto;padding-right:4px}
+.cq-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--bd);border-radius:14px;padding:12px 14px}
+.cq-row-ico{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff}
+.cq-row-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.cq-row-label{font-size:.72rem;font-weight:700;color:var(--tx2)}
+.cq-row-input{width:100%;background:var(--inp-bg,var(--surface-2));border:1.5px solid var(--bd2);border-radius:9px;padding:8px 11px;font-size:.82rem;color:var(--tx);outline:none;transition:.2s;font-family:inherit}
+.cq-row-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-lt)}
+.cq-row-count{font-size:.63rem;color:var(--tx3);text-align:right}
+.cq-modal-footer{display:flex;gap:10px;padding-top:4px;border-top:1px solid var(--bd)}
 
 /* ── Modèle caché 9:16 pour html2canvas ── */
 .story-tpl{position:fixed;left:-9999px;top:0;width:390px;height:693px;border-radius:0;overflow:hidden;font-family:'Plus Jakarta Sans','Inter',sans-serif}
@@ -542,6 +554,7 @@ svg{display:block}
     </button>
   </div>
   <div class="nav-actions">
+    <button class="theme-toggle" id="notif-toggle-btn" title="Notifications"><span id="notif-ico"></span><span class="notif-dot hidden" id="notif-dot"></span></button>
     <button class="theme-toggle" id="themeToggle"><span id="theme-ico"></span></button>
     <div class="nav-user">
       <div class="nav-avatar" id="nav-avatar-letter">?</div>
@@ -630,6 +643,10 @@ svg{display:block}
         <button class="story-cta-btn" id="story-open-btn">
           <div class="story-cta-ico">🤫</div>
           <div><div class="story-cta-title">Créer une Story</div><div class="story-cta-sub">Invite tes amis à envoyer un type précis de message</div></div>
+        </button>
+        <button class="story-cta-btn" id="customq-open-btn" style="margin-top:10px">
+          <div class="story-cta-ico">✏️</div>
+          <div><div class="story-cta-title">Personnaliser mes questions</div><div class="story-cta-sub">Remplace les questions par défaut par les tiennes</div></div>
         </button>
       </div>
 
@@ -794,6 +811,18 @@ svg{display:block}
   </div>
 </div>
 
+<!-- Modal : questions personnalisées par type -->
+<div class="story-modal-ov hidden" id="cq-modal-ov">
+  <div class="story-modal" style="max-width:480px">
+    <button class="story-modal-close" id="cq-modal-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div><div class="story-modal-title">Mes questions</div><p class="story-modal-sub">Laisse vide pour garder les questions par défaut de Webnote.</p></div>
+    <div class="cq-modal-body" id="cq-modal-body"></div>
+    <div class="cq-modal-footer">
+      <button class="btn-primary btn-full" id="cq-save-btn"><span>Enregistrer</span></button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast hidden"></div>
 
 
@@ -887,10 +916,13 @@ function nowMs(){ return Date.now() + SERVER_OFFSET_MS; }
 function $(id){ return document.getElementById(id); }
 
 let currentUser=null, currentUsername="", currentPhotoURL="", currentShareLink="", allMessages=[], currentFilter="all", isGridView=true, qrGenerated=false, qrVisible=false, isAdmin=false, selectedIcon="megaphone";
+let myCustomQuestions = {};
 let appInitialized=false, avatarUploading=false;
 
 // ── Icon set (replaces emoji) ──
 const ICONS = {
+  bellOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  bellOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.7 3.7A6 6 0 0 1 18 8c0 3.3.9 5.6 1.6 7M17.4 17.4C16.5 17.8 13 18 12 18H3s2.4-1.7 3-7"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="2" y1="2" x2="22" y2="22"/></svg>',
   megaphone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a2 2 0 0 0 2 2h1l1 5h2l-1-5h2l7 4V6l-7 4H6a2 2 0 0 0-2 2z"/><path d="M17 8a3 3 0 0 1 0 8"/></svg>',
   rocket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.5-2 5-2 5s3.5-.5 5-2c.8-.8.8-2.2 0-3s-2.2-.8-3 0z"/><path d="M12 15l-3-3a22 22 0 0 1 8-9c3 0 5.5 2.5 5.5 5.5a22 22 0 0 1-9 8z"/><circle cx="15" cy="9" r="1.5"/></svg>',
   sparkles: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>',
@@ -928,6 +960,52 @@ $("themeToggle")?.addEventListener("click", () => {
   if (qrVisible) { qrGenerated = false; generateQR(); }
 });
 function updateThemeIcon(t){ const el=$("theme-ico"); if(el) el.innerHTML = t==="dark" ? ico("sun") : ico("moon"); }
+
+// ── NOTIFICATIONS NAVIGATEUR (temps réel, tant que le navigateur est ouvert) ──
+// Pas de vraie notification "push" (nécessiterait Firebase Cloud Functions,
+// payant) : ici la notification part dès qu'un nouveau message arrive dans
+// Firestore pendant que l'onglet est ouvert (même en arrière-plan/minimisé).
+const NOTIF_PREF_KEY = "wn-notif-enabled";
+function notifPrefEnabled(){ return localStorage.getItem(NOTIF_PREF_KEY) !== "0"; } // activé par défaut si permission déjà accordée
+function updateNotifIcon(){
+  const el = $("notif-ico"), dot = $("notif-dot"); if (!el) return;
+  const perm = typeof Notification !== "undefined" ? Notification.permission : "unsupported";
+  const on = perm === "granted" && notifPrefEnabled();
+  el.innerHTML = on ? ico("bellOn") : ico("bellOff");
+  dot?.classList.toggle("hidden", !on);
+}
+async function toggleNotifications(){
+  if (typeof Notification === "undefined") { showToast("Notifications non supportées par ce navigateur."); return; }
+  const perm = Notification.permission;
+  if (perm === "denied") { showToast("Bloquées par le navigateur — active-les dans les réglages du site."); return; }
+  if (perm === "default") {
+    const res = await Notification.requestPermission();
+    if (res === "granted") { localStorage.setItem(NOTIF_PREF_KEY, "1"); showToast("Notifications activées !"); notifyTest(); }
+    else showToast("Notifications refusées.");
+    updateNotifIcon(); return;
+  }
+  // déjà "granted" → simple interrupteur marche/arrêt côté préférence utilisateur
+  const nowOn = !notifPrefEnabled();
+  localStorage.setItem(NOTIF_PREF_KEY, nowOn ? "1" : "0");
+  showToast(nowOn ? "Notifications activées !" : "Notifications désactivées.");
+  updateNotifIcon();
+}
+function notifyTest(){
+  try{ new Notification("Webnote", { body: "Tu recevras désormais une notification à chaque nouveau message 🔔", icon: "https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" }); }catch(e){}
+}
+function notifyNewMessage(msg){
+  if (typeof Notification === "undefined" || Notification.permission !== "granted" || !notifPrefEnabled()) return;
+  if (document.visibilityState === "visible" && document.hasFocus()) return; // pas besoin si l'utilisateur regarde déjà l'écran
+  const t = msg.type && MESSAGE_TYPES[msg.type] ? MESSAGE_TYPES[msg.type] : null;
+  const title = t ? `${t.emoji} Nouveau message : ${t.chip}` : "💌 Nouveau message anonyme";
+  const body = (msg.message || "").slice(0, 90) + ((msg.message||"").length > 90 ? "…" : "");
+  try{
+    const n = new Notification(title, { body, icon: "https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png", tag: `wn-msg-${msg.id}` });
+    n.onclick = () => { window.focus(); n.close(); showPage("dashboard"); setFilter("unread"); };
+  }catch(e){ console.error("Notification error:", e); }
+}
+updateNotifIcon();
+$("notif-toggle-btn")?.addEventListener("click", toggleNotifications);
 
 function hideBootSplash(){ const el=$("boot-splash"); if(!el||el.classList.contains("hide"))return; el.classList.add("hide"); setTimeout(()=>el.remove(),450); }
 
@@ -1162,6 +1240,51 @@ async function shareStoryCard(key){
   }catch(e){ if (e?.name !== "AbortError") { console.error(e); showToast("Erreur, réessaie."); } }
 }
 
+// ── QUESTIONS PERSONNALISÉES PAR TYPE ──
+// Remplace, sur le lien de la personne, la question par défaut d'un type par
+// celle qu'elle a écrite elle-même. Vide = on garde la question par défaut.
+function openCustomQModal(){
+  const body = $("cq-modal-body"); if (!body) return;
+  body.innerHTML = "";
+  Object.entries(MESSAGE_TYPES).forEach(([key,t]) => {
+    const existing = myCustomQuestions[key] || "";
+    const row = document.createElement("div"); row.className = "cq-row";
+    row.innerHTML = `
+      <div class="cq-row-ico" style="background:linear-gradient(135deg, ${t.grad[0]}, ${t.grad[1]})">${t.emoji}</div>
+      <div class="cq-row-body">
+        <div class="cq-row-label">${t.chip}</div>
+        <input type="text" class="cq-row-input" data-key="${key}" maxlength="140" placeholder="${escAttr(t.quote)}" value="${escAttr(existing)}"/>
+      </div>`;
+    body.appendChild(row);
+  });
+  $("cq-modal-ov")?.classList.remove("hidden");
+}
+function escAttr(s){ return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+function closeCustomQModal(){ $("cq-modal-ov")?.classList.add("hidden"); }
+$("customq-open-btn")?.addEventListener("click", openCustomQModal);
+$("cq-modal-close")?.addEventListener("click", closeCustomQModal);
+$("cq-modal-ov")?.addEventListener("click", e => { if (e.target.id === "cq-modal-ov") closeCustomQModal(); });
+$("cq-save-btn")?.addEventListener("click", async () => {
+  const btn = $("cq-save-btn"), span = btn.querySelector("span");
+  const original = span.textContent; span.textContent = "Enregistrement…"; btn.disabled = true;
+  const customQuestions = {};
+  document.querySelectorAll(".cq-row-input").forEach(inp => {
+    const v = inp.value.trim();
+    if (v) customQuestions[inp.dataset.key] = v;
+  });
+  try {
+    await updateDoc(doc(db,"users",currentUser.uid), { customQuestions });
+    myCustomQuestions = customQuestions;
+    showToast("Questions enregistrées !");
+    closeCustomQModal();
+  } catch(e) {
+    console.error("save customQuestions:", e);
+    showToast("Erreur lors de l'enregistrement.");
+  } finally {
+    span.textContent = original; btn.disabled = false;
+  }
+});
+
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "index.html"; return; }
@@ -1193,6 +1316,7 @@ onAuthStateChanged(auth, async (user) => {
 
   const photoURL = userDoc.exists() ? (userDoc.data().photoURL || "") : "";
   applyAvatarEverywhere(photoURL);
+  myCustomQuestions = userDoc.exists() ? (userDoc.data().customQuestions || {}) : {};
 
   buildIconPicker();
   await syncServerClock();
@@ -1230,7 +1354,8 @@ async function loadDashboard(){
   $("view-list")?.addEventListener("click", () => setView(false));
   $("search-input")?.addEventListener("input", e => renderMessages(e.target.value.toLowerCase().trim()));
 
-  await fetchMessages();
+  listenMessages();
+  await new Promise(r => setTimeout(r, 350)); // laisse le premier instantané Firestore arriver avant de retirer le skeleton
   setDashboardLoading(false);
 }
 
@@ -1304,13 +1429,28 @@ function downloadQR(){
   showToast("QR Code téléchargé !");
 }
 
-async function fetchMessages(){
-  try {
-    const q = query(collection(db,"messages"), where("recipientId","==",currentUser.uid), orderBy("createdAt","desc"));
-    const snap = await getDocs(q);
+let messagesListenerAttached = false, messagesFirstSnapshot = true;
+function listenMessages(){
+  if (messagesListenerAttached) return; // évite d'empiler plusieurs écouteurs (même logique que le garde-fou d'init général)
+  messagesListenerAttached = true;
+  const q = query(collection(db,"messages"), where("recipientId","==",currentUser.uid), orderBy("createdAt","desc"));
+  onSnapshot(q, snap => {
+    const wasFirstLoad = messagesFirstSnapshot;
     allMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    updateStats(); buildChart(); renderMessages(); updateNavBadge();
-  } catch(e){ console.error("fetchMessages:", e); }
+    updateStats(); buildChart(); renderMessages($("search-input")?.value.toLowerCase().trim() || ""); updateNavBadge();
+    if (!wasFirstLoad) {
+      // Seuls les messages ajoutés APRÈS le chargement initial déclenchent une
+      // notification (sinon on notifierait pour tout l'historique à l'ouverture).
+      snap.docChanges().forEach(ch => { if (ch.type === "added") notifyNewMessage({ id: ch.doc.id, ...ch.doc.data() }); });
+    }
+    messagesFirstSnapshot = false;
+  }, e => console.error("listenMessages:", e));
+}
+async function fetchMessages(){
+  // Les messages sont déjà synchronisés en temps réel via listenMessages().
+  // Ce "refresh" manuel ne fait que redessiner à partir du cache local, pour
+  // donner un retour visuel immédiat au clic sur le bouton Actualiser.
+  updateStats(); buildChart(); renderMessages($("search-input")?.value.toLowerCase().trim() || ""); updateNavBadge();
 }
 function updateNavBadge(){
   const cutoff24 = new Date(nowMs() - 86400000);
