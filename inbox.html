@@ -296,6 +296,22 @@ svg{display:block}
 .bar.empty{background:var(--bd2)!important;opacity:1}
 .bar-day{font-size:.55rem;color:var(--tx3);font-weight:700;text-transform:uppercase}
 
+/* ── Statistiques avancées ── */
+.type-breakdown-list{display:flex;flex-direction:column;gap:11px}
+.tb-row{display:flex;align-items:center;gap:10px}
+.tb-em{width:26px;text-align:center;font-size:1rem;flex-shrink:0}
+.tb-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.tb-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tb-label{font-size:.78rem;font-weight:700;color:var(--tx)}
+.tb-count{font-size:.72rem;font-weight:700;color:var(--tx3)}
+.tb-bar-bg{width:100%;height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.tb-bar-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.23,1,.32,1)}
+.hour-chart{height:56px;align-items:flex-end;gap:2px}
+.hour-chart .bar-col{gap:0}
+.hour-chart .bar{min-height:3px}
+.hour-chart-insight{font-size:.76rem;color:var(--tx2);text-align:center;font-weight:600;padding-top:2px}
+.hour-chart-insight span{color:var(--accent);font-weight:800}
+
 .export-card{border-radius:20px;padding:clamp(16px,2.6vw,20px);cursor:pointer;display:flex;align-items:center;gap:14px;transition:transform .2s}
 .export-card:hover{transform:translateY(-2px)}
 .export-ico{width:42px;height:42px;border-radius:12px;background:var(--accent-lt);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0}
@@ -402,6 +418,11 @@ svg{display:block}
 .wall-remove-btn svg{width:11px;height:11px}
 
 .feature-submit{border-radius:16px;padding:clamp(16px,2.4vw,20px);display:flex;flex-direction:column;gap:12px}
+.widget-preview-wrap{background:var(--surface-2);border:1px dashed var(--bd2);border-radius:16px;padding:14px}
+.widget-code-block{display:flex;flex-direction:column;gap:6px}
+.widget-code-label{font-size:.7rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--tx3)}
+.widget-code-textarea{width:100%;background:var(--surface-2);border:1.5px solid var(--bd2);border-radius:11px;padding:10px 12px;font-size:.76rem;font-family:'Courier New',monospace;color:var(--tx2);resize:none;outline:none}
+.widget-code-textarea:focus{border-color:var(--accent)}
 .feature-submit-label{font-size:.83rem;font-weight:700}
 .feature-submit .btn-primary{align-self:flex-end}
 .features-list{display:flex;flex-direction:column;gap:11px}
@@ -707,6 +728,10 @@ svg{display:block}
           <div class="story-cta-ico">✏️</div>
           <div><div class="story-cta-title">Personnaliser mes questions</div><div class="story-cta-sub">Remplace les questions par défaut par les tiennes</div></div>
         </button>
+        <button class="story-cta-btn" id="widget-open-btn" style="margin-top:10px">
+          <div class="story-cta-ico">🧩</div>
+          <div><div class="story-cta-title">Widget pour ton site</div><div class="story-cta-sub">Un bouton à coller sur ton blog, Linktree, Notion…</div></div>
+        </button>
       </div>
 
       <div class="referral-card glass">
@@ -731,6 +756,17 @@ svg{display:block}
       <div class="activity-card glass">
         <div class="act-head"><div class="act-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Activité — 7 derniers jours</div><div class="act-total">Total : <span id="act-total">0</span></div></div>
         <div class="chart" id="act-chart"></div>
+      </div>
+
+      <div class="activity-card glass" id="type-breakdown-card">
+        <div class="act-head"><div class="act-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 9 9h-9z"/></svg>Répartition par type</div></div>
+        <div class="type-breakdown-list" id="type-breakdown-list"></div>
+      </div>
+
+      <div class="activity-card glass">
+        <div class="act-head"><div class="act-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>Heures de réception</div></div>
+        <div class="chart hour-chart" id="hour-chart"></div>
+        <div class="hour-chart-insight" id="hour-chart-insight"></div>
       </div>
 
       <div class="export-card share-card glass" id="export-btn">
@@ -907,6 +943,30 @@ svg{display:block}
     <div class="cq-modal-body" id="cq-modal-body"></div>
     <div class="cq-modal-footer">
       <button class="btn-primary btn-full" id="cq-save-btn"><span>Enregistrer</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : widget intégrable -->
+<div class="story-modal-ov hidden" id="widget-modal-ov">
+  <div class="story-modal" style="max-width:500px">
+    <button class="story-modal-close" id="widget-modal-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div><div class="story-modal-title">Widget pour ton site</div><p class="story-modal-sub">Colle ce bouton sur ton blog, Notion, Linktree, portfolio…</p></div>
+
+    <div class="widget-preview-wrap">
+      <iframe id="widget-preview-frame" style="width:100%;max-width:360px;height:90px;border:none;margin:0 auto;display:block" title="Aperçu du widget"></iframe>
+    </div>
+
+    <div class="widget-code-block">
+      <div class="widget-code-label">Code à intégrer (iframe)</div>
+      <textarea class="widget-code-textarea" id="widget-code-iframe" readonly rows="3"></textarea>
+      <button class="btn-copy" id="widget-copy-iframe-btn" style="margin-top:8px"><svg viewBox="0 0 20 20" fill="none" width="14"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3 13V5a2 2 0 012-2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Copier le code</button>
+    </div>
+
+    <div class="widget-code-block">
+      <div class="widget-code-label">Pour ta bio Instagram (lien seul)</div>
+      <textarea class="widget-code-textarea" id="widget-code-bio" readonly rows="2"></textarea>
+      <button class="btn-copy" id="widget-copy-bio-btn" style="margin-top:8px"><svg viewBox="0 0 20 20" fill="none" width="14"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3 13V5a2 2 0 012-2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Copier le texte</button>
     </div>
   </div>
 </div>
@@ -1404,6 +1464,24 @@ $("cq-save-btn")?.addEventListener("click", async () => {
   }
 });
 
+// ── WIDGET INTÉGRABLE ──
+function openWidgetModal(){
+  const base = window.location.origin + window.location.pathname.replace(/inbox\.html$/, "");
+  const widgetUrl = `${base}widget.html?user=${encodeURIComponent(currentUsername)}`;
+  const frame = $("widget-preview-frame"); if (frame) frame.src = widgetUrl;
+  const iframeCode = `<iframe src="${widgetUrl}" width="340" height="90" style="border:none;max-width:100%" title="Webnote"></iframe>`;
+  const bioText = `💌 ${window.location.origin}${window.location.pathname.replace(/inbox\.html$/, "")}?user=${currentUsername} — envoie-moi un message anonyme !`;
+  if ($("widget-code-iframe")) $("widget-code-iframe").value = iframeCode;
+  if ($("widget-code-bio")) $("widget-code-bio").value = bioText;
+  $("widget-modal-ov")?.classList.remove("hidden");
+}
+function closeWidgetModal(){ $("widget-modal-ov")?.classList.add("hidden"); }
+$("widget-open-btn")?.addEventListener("click", openWidgetModal);
+$("widget-modal-close")?.addEventListener("click", closeWidgetModal);
+$("widget-modal-ov")?.addEventListener("click", e => { if (e.target.id === "widget-modal-ov") closeWidgetModal(); });
+$("widget-copy-iframe-btn")?.addEventListener("click", () => { $("widget-code-iframe")?.select(); navigator.clipboard.writeText($("widget-code-iframe").value).then(()=>showToast("Code copié !")); });
+$("widget-copy-bio-btn")?.addEventListener("click", () => { $("widget-code-bio")?.select(); navigator.clipboard.writeText($("widget-code-bio").value).then(()=>showToast("Texte copié !")); });
+
 
 // ── PARRAINAGE & BADGE AMBASSADEUR ──
 const BADGE_THRESHOLD = 3; // nombre de filleuls nécessaires pour débloquer la demande de badge
@@ -1700,6 +1778,67 @@ function buildChart(){
     bar.style.height="0%"; setTimeout(()=>{ bar.style.height=(d.count===0?5:Math.max(Math.round(d.count/max*100),8))+"%"; },80);
     const lbl = document.createElement("div"); lbl.className="bar-day"; lbl.textContent=d.lbl;
     col.appendChild(bar); col.appendChild(lbl); chart.appendChild(col);
+  });
+  buildTypeBreakdown();
+  buildHourChart();
+}
+
+function buildTypeBreakdown(){
+  const list = $("type-breakdown-list"); if (!list) return;
+  const counts = {};
+  allMessages.forEach(m => { if (m.type && MESSAGE_TYPES[m.type]) counts[m.type] = (counts[m.type]||0) + 1; });
+  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const card = $("type-breakdown-card");
+  if (!entries.length) {
+    if (card) card.style.display = "none";
+    return;
+  }
+  if (card) card.style.display = "";
+  const total = entries.reduce((a,[,c])=>a+c, 0);
+  const max = Math.max(...entries.map(([,c])=>c), 1);
+  list.innerHTML = "";
+  entries.forEach(([key,count]) => {
+    const t = MESSAGE_TYPES[key];
+    const pct = Math.round((count/total)*100);
+    const row = document.createElement("div"); row.className = "tb-row";
+    row.innerHTML = `
+      <div class="tb-em">${t.emoji}</div>
+      <div class="tb-body">
+        <div class="tb-top"><span class="tb-label">${t.chip}</span><span class="tb-count">${count} (${pct}%)</span></div>
+        <div class="tb-bar-bg"><div class="tb-bar-fill" style="width:0%;background:linear-gradient(90deg, ${t.grad[0]}, ${t.grad[1]})"></div></div>
+      </div>`;
+    list.appendChild(row);
+    const fill = row.querySelector(".tb-bar-fill");
+    setTimeout(() => { fill.style.width = Math.max(Math.round((count/max)*100), 6) + "%"; }, 80);
+  });
+}
+
+function buildHourChart(){
+  const chart = $("hour-chart"); if (!chart) return;
+  const hours = Array.from({length:24}, (_,h) => ({ h, count: 0 }));
+  allMessages.forEach(m => {
+    if (!m.createdAt) return;
+    const h = parseInt(new Intl.DateTimeFormat("fr-FR", { hour:"2-digit", hour12:false, timeZone: HAITI_TZ }).format(m.createdAt.toDate()), 10);
+    if (!isNaN(h) && hours[h % 24]) hours[h % 24].count++;
+  });
+  const max = Math.max(...hours.map(x=>x.count), 1);
+  const insight = $("hour-chart-insight");
+  const totalMsgs = hours.reduce((a,x)=>a+x.count,0);
+  chart.innerHTML = "";
+  if (totalMsgs === 0) {
+    if (insight) insight.textContent = "Pas encore assez de messages pour dégager une tendance.";
+  } else {
+    const peak = hours.reduce((a,b) => b.count > a.count ? b : a, hours[0]);
+    if (insight) insight.innerHTML = `Tu reçois le plus de messages vers <span>${String(peak.h).padStart(2,"0")}h</span>.`;
+  }
+  hours.forEach(x => {
+    const col = document.createElement("div"); col.className = "bar-col";
+    const bar = document.createElement("div"); bar.className = "bar" + (x.count===0 ? " empty" : "");
+    bar.title = `${String(x.h).padStart(2,"0")}h : ${x.count} message${x.count>1?"s":""}`;
+    bar.style.height = "0%"; setTimeout(() => { bar.style.height = (x.count===0 ? 4 : Math.max(Math.round(x.count/max*100), 10)) + "%"; }, 80);
+    col.appendChild(bar);
+    if (x.h % 6 === 0) { const lbl = document.createElement("div"); lbl.className="bar-day"; lbl.style.fontSize=".5rem"; lbl.textContent = String(x.h).padStart(2,"0"); col.appendChild(lbl); }
+    chart.appendChild(col);
   });
 }
 
