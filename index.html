@@ -600,6 +600,7 @@ const db      = getFirestore(fireApp);
 const DEVICE_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const urlParams  = new URLSearchParams(window.location.search);
 const targetUser = urlParams.get("user");
+const pendingRef = (urlParams.get("ref") || "").trim().toLowerCase(); // pseudo du parrain, si présent dans le lien
 let isCreatingAccount = false; // empêche onAuthStateChanged de rediriger avant la fin de l'écriture Firestore du pseudo
 
 function $(id) { return document.getElementById(id); }
@@ -632,6 +633,14 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     // Connecté → direction la page des messages anonymes (pas le chat global)
     window.location.href = "inbox.html";
+    return;
+  }
+  if (pendingRef) {
+    showAuthTab("signup");
+    showPage("auth");
+    const sub = $("auth-subtitle");
+    if (sub) sub.textContent = `Invité(e) par @${pendingRef} — crée ton compte gratuitement`;
+    hideBootSplash();
     return;
   }
   showPage("landing"); hideBootSplash();
@@ -723,6 +732,15 @@ $("signup-submit")?.addEventListener("click", async () => {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await setDoc(doc(db,"users",cred.user.uid), { username, email, uid: cred.user.uid, createdAt: serverTimestamp() });
+    // Parrainage : best-effort, ne doit jamais bloquer la création de compte si ça échoue.
+    if (pendingRef && pendingRef !== username) {
+      try {
+        const refSnap = await getDocs(query(collection(db,"users"), where("username","==",pendingRef)));
+        if (!refSnap.empty) {
+          await addDoc(collection(db,"referrals"), { referrerUsername: pendingRef, newUsername: username, newUid: cred.user.uid, createdAt: serverTimestamp() });
+        }
+      } catch(refErr) { console.error("Parrainage non enregistré:", refErr); }
+    }
     window.location.href = "inbox.html";
   } catch (e) {
     isCreatingAccount = false;
@@ -787,6 +805,7 @@ const DEFAULT_QUESTIONS = [
 const DEFAULT_CHIP_KEYS = ["confession","crush","honest","fun"];
 let selectedType = null;
 let activeQuestions = DEFAULT_QUESTIONS;
+let recipientCustomQuestions = {};
 
 function renderTypeChips(){
   const wrap = $("type-chips"); if (!wrap) return;
@@ -821,7 +840,8 @@ let introTypeTimer = null;
 function selectType(key){
   const t = MESSAGE_TYPES[key]; if (!t) return;
   selectedType = key;
-  activeQuestions = t.questions;
+  const custom = recipientCustomQuestions?.[key];
+  activeQuestions = (custom && custom.trim()) ? [custom.trim()] : t.questions;
   $("stage-chips")?.classList.add("hidden");
   $("type-header-em").textContent = t.emoji;
   $("type-header-label").textContent = t.label;
@@ -862,7 +882,11 @@ function headerLoopStep(){
   if (!headerDeleting) {
     headerCharIndex++;
     el.innerHTML = esc(full.slice(0, headerCharIndex)) + '<span class="caret"></span>';
-    if (headerCharIndex >= full.length) { introTypeTimer = setTimeout(() => { headerDeleting = true; headerLoopStep(); }, 1900); return; }
+    if (headerCharIndex >= full.length) {
+      if (list.length <= 1) return; // question unique (personnalisée) : on s'arrête là, curseur stable, pas de boucle inutile
+      introTypeTimer = setTimeout(() => { headerDeleting = true; headerLoopStep(); }, 1900);
+      return;
+    }
     introTypeTimer = setTimeout(headerLoopStep, 28 + Math.random()*20);
   } else {
     headerCharIndex--;
@@ -901,6 +925,7 @@ async function loadSendPage(username) {
   $("send-skeleton")?.classList.add("hidden");
 
   if (!rd) { $("send-notfound")?.classList.remove("hidden"); return; }
+  recipientCustomQuestions = rd.customQuestions || {};
 
   $("send-content")?.classList.remove("hidden");
   if ($("send-username-display")) {
