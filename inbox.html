@@ -1167,19 +1167,41 @@ async function toggleNotifications(){
   showToast(nowOn ? "Notifications activées !" : "Notifications désactivées.");
   updateNotifIcon();
 }
+// Enregistre le service worker nécessaire pour des notifications fiables
+// (Chrome/Opera mobile EXIGENT showNotification() via un service worker —
+// new Notification() y est bloqué avec une erreur silencieuse).
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(e => console.error("Enregistrement du service worker échoué:", e));
+}
+
+// Affiche une notification de la façon la plus fiable possible selon le
+// navigateur : via le service worker en priorité (fonctionne partout, y
+// compris Chrome/Opera mobile), avec repli sur l'ancienne méthode pour les
+// navigateurs qui ne supportent pas les service workers.
+async function showBrowserNotification(title, options){
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") return false;
+  try {
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(title, options);
+      return true;
+    }
+  } catch(e){ console.warn("showNotification via service worker a échoué, repli en cours:", e); }
+  try { new Notification(title, options); return true; }
+  catch(e){ console.error("Notification indisponible sur ce navigateur:", e); return false; }
+}
 function notifyTest(){
-  try{ new Notification("Webnote", { body: "Tu recevras désormais une notification à chaque nouveau message 🔔", icon: "https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" }); }catch(e){}
+  showBrowserNotification("Webnote", { body: "Tu recevras désormais une notification à chaque nouveau message 🔔", icon: "https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" });
 }
 function notifyNewMessage(msg){
   if (typeof Notification === "undefined" || Notification.permission !== "granted" || !notifPrefEnabled()) return;
-  if (document.visibilityState === "visible" && document.hasFocus()) return; // pas besoin si l'utilisateur regarde déjà l'écran
   const t = msg.type && MESSAGE_TYPES[msg.type] ? MESSAGE_TYPES[msg.type] : null;
   const title = t ? `${t.emoji} Nouveau message : ${t.chip}` : "💌 Nouveau message anonyme";
   const body = (msg.message || "").slice(0, 90) + ((msg.message||"").length > 90 ? "…" : "");
-  try{
-    const n = new Notification(title, { body, icon: "https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png", tag: `wn-msg-${msg.id}` });
-    n.onclick = () => { window.focus(); n.close(); showPage("dashboard"); setFilter("unread"); };
-  }catch(e){ console.error("Notification error:", e); }
+  showBrowserNotification(title, {
+    body, icon: "https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png",
+    tag: `wn-msg-${msg.id}`, data: { url: "./inbox.html" }
+  });
 }
 updateNotifIcon();
 $("notif-toggle-btn")?.addEventListener("click", toggleNotifications);
@@ -1592,7 +1614,7 @@ function listenBadgeStatus(referralCount){
 }
 function notifyGeneric(title, body){
   if (typeof Notification === "undefined" || Notification.permission !== "granted" || !notifPrefEnabled()) { showToast(title); return; }
-  try{ new Notification(title, { body, icon: "https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" }); }catch(e){ showToast(title); }
+  showBrowserNotification(title, { body, icon: "https://i.postimg.cc/K8pBvfp5/file-000000007e8481f7b4efe1e8e7ba5484.png" }).then(ok => { if (!ok) showToast(title); });
 }
 
 onAuthStateChanged(auth, async (user) => {
