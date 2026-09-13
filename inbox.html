@@ -423,6 +423,14 @@ svg{display:block}
 .widget-code-label{font-size:.7rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--tx3)}
 .widget-code-textarea{width:100%;background:var(--surface-2);border:1.5px solid var(--bd2);border-radius:11px;padding:10px 12px;font-size:.76rem;font-family:'Courier New',monospace;color:var(--tx2);resize:none;outline:none}
 .widget-code-textarea:focus{border-color:var(--accent)}
+.export-choice-list{display:flex;flex-direction:column;gap:10px}
+.export-choice-btn{display:flex;align-items:center;gap:14px;width:100%;background:var(--surface);border:1.5px solid var(--bd2);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.18s;text-align:left}
+.export-choice-btn:hover:not(:disabled){border-color:var(--accent);background:var(--accent-lt);transform:translateY(-1px)}
+.export-choice-btn:active:not(:disabled){transform:scale(.98)}
+.export-choice-btn:disabled{opacity:.45;cursor:not-allowed}
+.export-choice-ico{width:38px;height:38px;border-radius:11px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.export-choice-title{font-size:.86rem;font-weight:700;color:var(--tx)}
+.export-choice-sub{font-size:.72rem;color:var(--tx3);margin-top:2px}
 .feature-submit-label{font-size:.83rem;font-weight:700}
 .feature-submit .btn-primary{align-self:flex-end}
 .features-list{display:flex;flex-direction:column;gap:11px}
@@ -967,6 +975,24 @@ svg{display:block}
       <div class="widget-code-label">Pour ta bio Instagram (lien seul)</div>
       <textarea class="widget-code-textarea" id="widget-code-bio" readonly rows="2"></textarea>
       <button class="btn-copy" id="widget-copy-bio-btn" style="margin-top:8px"><svg viewBox="0 0 20 20" fill="none" width="14"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3 13V5a2 2 0 012-2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Copier le texte</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : choix de l'export -->
+<div class="story-modal-ov hidden" id="export-modal-ov">
+  <div class="story-modal" style="max-width:400px">
+    <button class="story-modal-close" id="export-modal-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div><div class="story-modal-title">Exporter mes messages</div><p class="story-modal-sub">Choisis ce que tu veux inclure dans le fichier .txt.</p></div>
+    <div class="export-choice-list">
+      <button class="export-choice-btn" id="export-choice-all">
+        <div class="export-choice-ico">📤</div>
+        <div class="export-choice-body"><div class="export-choice-title">Tous les messages</div><div class="export-choice-sub"><span id="export-all-count">0</span> message(s)</div></div>
+      </button>
+      <button class="export-choice-btn" id="export-choice-fav">
+        <div class="export-choice-ico">⭐</div>
+        <div class="export-choice-body"><div class="export-choice-title">Favoris uniquement</div><div class="export-choice-sub"><span id="export-fav-count">0</span> favori(s)</div></div>
+      </button>
     </div>
   </div>
 </div>
@@ -1629,7 +1655,7 @@ async function loadDashboard(){
     b.classList.remove("loading"); b.disabled = false;
     showToast("Actualisé !");
   });
-  $("export-btn")?.addEventListener("click", exportMessages);
+  $("export-btn")?.addEventListener("click", openExportModal);
   ["all","today","week","unread","fav"].forEach(f => $(`filter-${f}`)?.addEventListener("click", () => setFilter(f)));
   $("view-grid")?.addEventListener("click", () => setView(true));
   $("view-list")?.addEventListener("click", () => setView(false));
@@ -1948,15 +1974,39 @@ async function toggleWallPublish(msg){
   }
 }
 
-function exportMessages(){
-  if (!allMessages.length) { showToast("Aucun message à exporter !"); return; }
-  const sorted = [...allMessages].sort((a,b)=>(a.createdAt?.toMillis()||0)-(b.createdAt?.toMillis()||0));
-  const lines = ["Webnote — Messages anonymes",`Exporté : ${new Date(nowMs()).toLocaleString("fr-FR",{timeZone:HAITI_TZ})}`,`Total : ${sorted.length} message(s)`,"─".repeat(36),""];
-  sorted.forEach((m,i)=>{ lines.push(`[${i+1}] ${m.createdAt?m.createdAt.toDate().toLocaleString("fr-FR",{timeZone:HAITI_TZ}):"—"}`); lines.push(`"${m.message}"`); if(m.adminReply) lines.push(`→ Réponse : ${m.adminReply}`); lines.push(""); });
+function exportMessages(scope){
+  const source = scope === "favorites" ? allMessages.filter(m => m.favorite) : allMessages;
+  if (!source.length) { showToast(scope === "favorites" ? "Aucun favori à exporter !" : "Aucun message à exporter !"); return; }
+  const sorted = [...source].sort((a,b)=>(a.createdAt?.toMillis()||0)-(b.createdAt?.toMillis()||0));
+  const label = scope === "favorites" ? "Messages favoris" : "Messages anonymes";
+  const lines = [`Webnote — ${label}`,`Exporté : ${new Date(nowMs()).toLocaleString("fr-FR",{timeZone:HAITI_TZ})}`,`Total : ${sorted.length} message(s)`,"─".repeat(36),""];
+  sorted.forEach((m,i)=>{
+    const typeInfo = m.type && MESSAGE_TYPES[m.type] ? MESSAGE_TYPES[m.type] : null;
+    lines.push(`[${i+1}] ${m.createdAt?m.createdAt.toDate().toLocaleString("fr-FR",{timeZone:HAITI_TZ}):"—"}${typeInfo?` · ${typeInfo.emoji} ${typeInfo.chip}`:""}`);
+    lines.push(`"${m.message}"`);
+    if(m.adminReply) lines.push(`→ Réponse : ${m.adminReply}`);
+    lines.push("");
+  });
   const blob = new Blob([lines.join("\n")], { type:"text/plain;charset=utf-8" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `webnote-${new Date().toISOString().slice(0,10)}.txt`; a.click(); URL.revokeObjectURL(a.href);
+  const suffix = scope === "favorites" ? "favoris" : "tous";
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `webnote-${suffix}-${new Date().toISOString().slice(0,10)}.txt`; a.click(); URL.revokeObjectURL(a.href);
   showToast("Export téléchargé !");
+  closeExportModal();
 }
+function openExportModal(){
+  const allCount = allMessages.length;
+  const favCount = allMessages.filter(m => m.favorite).length;
+  if ($("export-all-count")) $("export-all-count").textContent = allCount;
+  if ($("export-fav-count")) $("export-fav-count").textContent = favCount;
+  $("export-choice-all")?.toggleAttribute("disabled", allCount === 0);
+  $("export-choice-fav")?.toggleAttribute("disabled", favCount === 0);
+  $("export-modal-ov")?.classList.remove("hidden");
+}
+function closeExportModal(){ $("export-modal-ov")?.classList.add("hidden"); }
+$("export-modal-close")?.addEventListener("click", closeExportModal);
+$("export-modal-ov")?.addEventListener("click", e => { if (e.target.id === "export-modal-ov") closeExportModal(); });
+$("export-choice-all")?.addEventListener("click", () => exportMessages("all"));
+$("export-choice-fav")?.addEventListener("click", () => exportMessages("favorites"));
 
 // ── COMMUNITY ──
 async function loadCommunity(){ await Promise.all([loadCommunityWall(), loadAnnouncements(), loadPolls(), loadFeatureRequests()]); }
