@@ -423,6 +423,13 @@ svg{display:block}
 .widget-code-label{font-size:.7rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--tx3)}
 .widget-code-textarea{width:100%;background:var(--surface-2);border:1.5px solid var(--bd2);border-radius:11px;padding:10px 12px;font-size:.76rem;font-family:'Courier New',monospace;color:var(--tx2);resize:none;outline:none}
 .widget-code-textarea:focus{border-color:var(--accent)}
+.preview-frame-wrap{border-radius:16px;overflow:hidden;border:1px solid var(--bd2);box-shadow:0 10px 30px -10px rgba(20,10,60,.25)}
+.preview-frame-bar{display:flex;align-items:center;gap:6px;padding:9px 12px;background:var(--surface-2);border-bottom:1px solid var(--bd)}
+.preview-frame-bar span{width:9px;height:9px;border-radius:50%;background:var(--bd2)}
+.preview-frame-bar span:nth-child(1){background:#f87171}
+.preview-frame-bar span:nth-child(2){background:#fbbf24}
+.preview-frame-bar span:nth-child(3){background:#4ade80}
+#preview-frame{width:100%;height:min(56vh,460px);border:none;display:block;background:var(--surface)}
 .export-choice-list{display:flex;flex-direction:column;gap:10px}
 .export-choice-btn{display:flex;align-items:center;gap:14px;width:100%;background:var(--surface);border:1.5px solid var(--bd2);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.18s;text-align:left}
 .export-choice-btn:hover:not(:disabled){border-color:var(--accent);background:var(--accent-lt);transform:translateY(-1px)}
@@ -736,9 +743,9 @@ svg{display:block}
           <div class="story-cta-ico">✏️</div>
           <div><div class="story-cta-title">Personnaliser mes questions</div><div class="story-cta-sub">Remplace les questions par défaut par les tiennes</div></div>
         </button>
-        <button class="story-cta-btn" id="widget-open-btn" style="margin-top:10px">
-          <div class="story-cta-ico">🧩</div>
-          <div><div class="story-cta-title">Widget pour ton site</div><div class="story-cta-sub">Un bouton à coller sur ton blog, Linktree, Notion…</div></div>
+        <button class="story-cta-btn" id="preview-open-btn" style="margin-top:10px">
+          <div class="story-cta-ico">👁️</div>
+          <div><div class="story-cta-title">Aperçu de mon lien</div><div class="story-cta-sub">Vois exactement ce que voient tes amis avant de partager</div></div>
         </button>
       </div>
 
@@ -956,25 +963,19 @@ svg{display:block}
 </div>
 
 <!-- Modal : widget intégrable -->
-<div class="story-modal-ov hidden" id="widget-modal-ov">
-  <div class="story-modal" style="max-width:500px">
-    <button class="story-modal-close" id="widget-modal-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <div><div class="story-modal-title">Widget pour ton site</div><p class="story-modal-sub">Colle ce bouton sur ton blog, Notion, Linktree, portfolio…</p></div>
+<div class="story-modal-ov hidden" id="preview-modal-ov">
+  <div class="story-modal" style="max-width:420px">
+    <button class="story-modal-close" id="preview-modal-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div><div class="story-modal-title">Aperçu de mon lien</div><p class="story-modal-sub">C'est exactement ce que voit quelqu'un qui clique sur ton lien.</p></div>
 
-    <div class="widget-preview-wrap">
-      <iframe id="widget-preview-frame" style="width:100%;max-width:360px;height:90px;border:none;margin:0 auto;display:block" title="Aperçu du widget"></iframe>
+    <div class="preview-frame-wrap">
+      <div class="preview-frame-bar"><span></span><span></span><span></span></div>
+      <iframe id="preview-frame" title="Aperçu du lien Webnote"></iframe>
     </div>
 
-    <div class="widget-code-block">
-      <div class="widget-code-label">Code à intégrer (iframe)</div>
-      <textarea class="widget-code-textarea" id="widget-code-iframe" readonly rows="3"></textarea>
-      <button class="btn-copy" id="widget-copy-iframe-btn" style="margin-top:8px"><svg viewBox="0 0 20 20" fill="none" width="14"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3 13V5a2 2 0 012-2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Copier le code</button>
-    </div>
-
-    <div class="widget-code-block">
-      <div class="widget-code-label">Pour ta bio Instagram (lien seul)</div>
-      <textarea class="widget-code-textarea" id="widget-code-bio" readonly rows="2"></textarea>
-      <button class="btn-copy" id="widget-copy-bio-btn" style="margin-top:8px"><svg viewBox="0 0 20 20" fill="none" width="14"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3 13V5a2 2 0 012-2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Copier le texte</button>
+    <div class="story-actions">
+      <button class="shr-btn shr-copy" id="preview-copy-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copier le lien</button>
+      <button class="shr-btn shr-dl" id="preview-share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>Partager</button>
     </div>
   </div>
 </div>
@@ -1490,23 +1491,26 @@ $("cq-save-btn")?.addEventListener("click", async () => {
   }
 });
 
-// ── WIDGET INTÉGRABLE ──
-function openWidgetModal(){
-  const base = window.location.origin + window.location.pathname.replace(/inbox\.html$/, "");
-  const widgetUrl = `${base}widget.html?user=${encodeURIComponent(currentUsername)}`;
-  const frame = $("widget-preview-frame"); if (frame) frame.src = widgetUrl;
-  const iframeCode = `<iframe src="${widgetUrl}" width="340" height="90" style="border:none;max-width:100%" title="Webnote"></iframe>`;
-  const bioText = `💌 ${window.location.origin}${window.location.pathname.replace(/inbox\.html$/, "")}?user=${currentUsername} — envoie-moi un message anonyme !`;
-  if ($("widget-code-iframe")) $("widget-code-iframe").value = iframeCode;
-  if ($("widget-code-bio")) $("widget-code-bio").value = bioText;
-  $("widget-modal-ov")?.classList.remove("hidden");
+// ── APERÇU DE MON LIEN ──
+function openPreviewModal(){
+  const frame = $("preview-frame");
+  if (frame) frame.src = currentShareLink;
+  $("preview-modal-ov")?.classList.remove("hidden");
 }
-function closeWidgetModal(){ $("widget-modal-ov")?.classList.add("hidden"); }
-$("widget-open-btn")?.addEventListener("click", openWidgetModal);
-$("widget-modal-close")?.addEventListener("click", closeWidgetModal);
-$("widget-modal-ov")?.addEventListener("click", e => { if (e.target.id === "widget-modal-ov") closeWidgetModal(); });
-$("widget-copy-iframe-btn")?.addEventListener("click", () => { $("widget-code-iframe")?.select(); navigator.clipboard.writeText($("widget-code-iframe").value).then(()=>showToast("Code copié !")); });
-$("widget-copy-bio-btn")?.addEventListener("click", () => { $("widget-code-bio")?.select(); navigator.clipboard.writeText($("widget-code-bio").value).then(()=>showToast("Texte copié !")); });
+function closePreviewModal(){
+  $("preview-modal-ov")?.classList.add("hidden");
+  const frame = $("preview-frame"); if (frame) frame.src = "about:blank"; // libère la ressource une fois fermé
+}
+$("preview-open-btn")?.addEventListener("click", openPreviewModal);
+$("preview-modal-close")?.addEventListener("click", closePreviewModal);
+$("preview-modal-ov")?.addEventListener("click", e => { if (e.target.id === "preview-modal-ov") closePreviewModal(); });
+$("preview-copy-btn")?.addEventListener("click", () => navigator.clipboard.writeText(currentShareLink).then(()=>showToast("Lien copié !")));
+$("preview-share-btn")?.addEventListener("click", async () => {
+  try {
+    if (navigator.share) await navigator.share({ title:"Webnote", text:"Envoie-moi un message anonyme 👀", url: currentShareLink });
+    else { await navigator.clipboard.writeText(currentShareLink); showToast("Lien copié !"); }
+  } catch(e){ if (e?.name !== "AbortError") console.error(e); }
+});
 
 
 // ── PARRAINAGE & BADGE AMBASSADEUR ──
